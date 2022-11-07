@@ -280,8 +280,8 @@ def main():
                 evaluation_output  = evaluate(hps, model, dev_dataloader, loss_function, optimizer)
                 # print('\n')
                 logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(evaluation_output[0]))
-                logger.info("[Dev Metrics] Dev Attack Accuracy: \t{}".format(evaluation_output[2]))
-                # logger.info("[Dev Metrics] Dev Loss: \t{}".format(evaluation_output[1]))
+                # logger.info("[Dev Metrics] Dev Attack Accuracy: \t{}".format(evaluation_output[2]))
+                logger.info("[Dev Metrics] Dev Loss: \t{}".format(evaluation_output[1]))
                 # logger.info("[Dev Metrics] Dev Attack Loss: \t{}".format(evaluation_output[3]))
 
 
