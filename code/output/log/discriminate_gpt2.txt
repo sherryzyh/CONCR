@@ -2,3 +2,42 @@
 2022-11-07 17:39:30,098 INFO    : [INFO] Hypothesis Only:	False
 2022-11-07 17:41:17,405 INFO    : [INFO] Loading Data
 2022-11-07 17:41:17,405 INFO    : [INFO] Hypothesis Only:	False
+2022-11-07 17:48:28,157 INFO    : [INFO] Loading Data
+2022-11-07 17:48:28,157 INFO    : [INFO] Hypothesis Only:	False
+2022-11-07 17:53:00,224 INFO    : [INFO] Loading Data
+2022-11-07 17:53:00,224 INFO    : [INFO] Hypothesis Only:	False
+2022-11-07 18:36:54,836 INFO    : [INFO] Loading Data
+2022-11-07 18:36:54,836 INFO    : [INFO] Hypothesis Only:	False
+2022-11-07 18:36:54,900 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-07 18:43:54,403 INFO    : [INFO] Loading Data
+2022-11-07 18:43:54,404 INFO    : [INFO] Hypothesis Only:	False
+2022-11-07 18:43:54,466 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-07 18:45:31,243 INFO    : [INFO] Loading Data
+2022-11-07 18:45:31,243 INFO    : [INFO] Hypothesis Only:	False
+2022-11-07 18:45:31,305 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-07 18:50:29,646 INFO    : [INFO] Loading Data
+2022-11-07 18:50:29,646 INFO    : [INFO] Hypothesis Only:	False
+2022-11-07 18:50:29,709 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-07 18:53:30,642 INFO    : [INFO] Loading Data
+2022-11-07 18:53:30,642 INFO    : [INFO] Hypothesis Only:	False
+2022-11-07 18:53:30,704 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-07 18:53:37,694 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-07 18:53:37,696 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-07 18:54:27,445 INFO    : [INFO] Start Training
+2022-11-07 18:54:27,445 INFO    : [Epoch] 0
+2022-11-07 18:57:53,797 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-07 18:59:16,645 INFO    : [Dev Metrics] Dev Accuracy: 	0.5572232645403377
+2022-11-07 18:59:16,646 INFO    : [Dev Metrics] Dev Attack Accuracy: 	0.4831144465290807
+2022-11-07 18:59:16,646 INFO    : [Dev Metrics] Dev Loss: 	92.98082506656647
+2022-11-07 18:59:16,646 INFO    : [Dev Metrics] Dev Attack Loss: 	46.858667612075806
+2022-11-07 19:02:19,478 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-07 19:03:42,831 INFO    : [Dev Metrics] Dev Accuracy: 	0.6013133208255159
+2022-11-07 19:03:42,831 INFO    : [Dev Metrics] Dev Attack Accuracy: 	0.5412757973733584
+2022-11-07 19:03:42,831 INFO    : [Dev Metrics] Dev Loss: 	91.9552583694458
+2022-11-07 19:03:42,831 INFO    : [Dev Metrics] Dev Attack Loss: 	46.33101546764374
+2022-11-07 19:04:42,662 INFO    : [Epoch] 1
+2022-11-07 19:06:44,971 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-07 19:08:07,685 INFO    : [Dev Metrics] Dev Accuracy: 	0.6318011257035647
+2022-11-07 19:08:07,685 INFO    : [Dev Metrics] Dev Attack Accuracy: 	0.5834896810506567
+2022-11-07 19:08:07,685 INFO    : [Dev Metrics] Dev Loss: 	90.20649516582489
+2022-11-07 19:08:07,685 INFO    : [Dev Metrics] Dev Attack Loss: 	45.8150332570076
