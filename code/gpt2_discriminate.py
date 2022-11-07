@@ -240,8 +240,8 @@ def main():
         model.cuda(gpu_ids[0])
         if len(gpu_ids) > 1:
             model = nn.DataParallel(model, device_ids=gpu_ids)
-            for i in range(len(gpu_ids)-1):
-                model.cuda(gpu_ids[i+1])
+            for i in range(len(gpu_ids)):
+                model.cuda(gpu_ids[i])
          
         
             
