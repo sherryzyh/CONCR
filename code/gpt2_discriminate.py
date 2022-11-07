@@ -101,7 +101,7 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
             loss += tmp_loss.item()
             labels += tmp_labels.cpu().numpy().tolist()
             
-            attack_model.eval()
+            # attack_model.eval()
             state_dict = attack_model.state_dict()
             print(state_dict['model.transformer.wte.weight'])
             # embedding_grad = F.softmax(embedding_grad, 1)
