@@ -45,16 +45,15 @@ def tokenization(data, hps):
     pos = []
 
     for example in data:
-        print(example)
         if not hps.hyp_only:
             if example['ask-for'] == 'cause':
-                inputs.append([example['alternative1'], example['premise']])
-                inputs.append([example['alternative2'], example['premise']])
+                inputs.append([example['hypothesis1'], example['premise']])
+                inputs.append([example['hypothesis2'], example['premise']])
             else:
-                inputs.append([example['premise'], example['alternative1']])
-                inputs.append([example['premise'], example['alternative2']])
+                inputs.append([example['premise'], example['hypothesis1']])
+                inputs.append([example['premise'], example['hypothesis2']])
         else:
-            inputs += [example['alternative1'], example['alternative2']]
+            inputs += [example['hypothesis1'], example['hypothesis2']]
         labels += [0, 1] if example['label'] == 1 else [1, 0]
     outputs = tokenizer(inputs, return_length=True)
     input_ids = outputs['input_ids']
