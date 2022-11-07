@@ -339,7 +339,7 @@ def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
 
 
 def load_data(path):
-    data = [json.laods(line) for line in open(path, 'r')]
+    data = [json.loads(line) for line in open(path, 'r')]
     return data
 
 
