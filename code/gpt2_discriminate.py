@@ -103,7 +103,7 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
             
             attack_model.eval()
             state_dict = attack_model.state_dict()
-            print(state_dict)
+            print(state_dict['model.transformer.wte.weight'])
             # embedding_grad = F.softmax(embedding_grad, 1)
             attack_embedding = torch.sum(embedding_grad * embedding_grad, -1)
             attack_embedding = attack_embedding.pow(0.5).unsqueeze(-1)
