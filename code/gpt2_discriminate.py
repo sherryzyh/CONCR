@@ -205,22 +205,22 @@ def main():
     logger.info("[INFO] Hypothesis Only:\t{}".format(hps.hyp_only))
     train_data = load_data(os.path.join(hps.data_dir, hps.train))
     dev_data = load_data(os.path.join(hps.data_dir, hps.dev))
-    test_data = load_data(os.path.join(hps.data_dir, hps.test))
+    # test_data = load_data(os.path.join(hps.data_dir, hps.test))
 
     # Tokenization
     logger.info("[INFO] Tokenization and Padding for Data")
     train_ids, train_mask, train_pos, train_labels = tokenization(train_data, hps)
     dev_ids, dev_mask, dev_pos, dev_labels = tokenization(dev_data, hps)
-    test_ids, test_mask, test_pos, test_labels = tokenization(test_data, hps)
+    # test_ids, test_mask, test_pos, test_labels = tokenization(test_data, hps)
 
     # Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")
     TRAIN = TensorDataset(train_ids, train_mask, train_pos, train_labels)
     DEV = TensorDataset(dev_ids, dev_mask, dev_pos, dev_labels)
-    TEST = TensorDataset(test_ids, test_mask, test_pos, test_labels)
+    # TEST = TensorDataset(test_ids, test_mask, test_pos, test_labels)
     train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-    test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+    # test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
 
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
@@ -282,29 +282,29 @@ def main():
                 logger.info("[Dev Metrics] Dev Attack Loss: \t{}".format(evaluation_output[3]))
 
 
-                if evaluation_output[0] >= best_accuracy:
-                    patient = 0
-                    best_accuracy = evaluation_output[0]
-                    logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-                    # torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
-                    logger.info("[Test Evaluation] Start Evaluation on Test Set")
+                # if evaluation_output[0] >= best_accuracy:
+                #     patient = 0
+                #     best_accuracy = evaluation_output[0]
+                #     logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
+                #     # torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
+                #     logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
-                    evaluation_output = evaluate(hps, model, test_dataloader, loss_function, optimizer)
+                #     evaluation_output = evaluate(hps, model, test_dataloader, loss_function, optimizer)
 
-                    print('\n')
-                    logger.info("[Test Metrics] Test Accuracy: \t{}".format(evaluation_output[0]))
-                    logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(evaluation_output[2]))
-                    logger.info("[Test Metrics] Test Loss: \t{}".format(evaluation_output[1]))
-                    logger.info("[Test Metrics] Test Attack Loss: \t{}".format(evaluation_output[3]))
-                else:
-                    patient += 1
+                #     print('\n')
+                #     logger.info("[Test Metrics] Test Accuracy: \t{}".format(evaluation_output[0]))
+                #     logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(evaluation_output[2]))
+                #     logger.info("[Test Metrics] Test Loss: \t{}".format(evaluation_output[1]))
+                #     logger.info("[Test Metrics] Test Attack Loss: \t{}".format(evaluation_output[3]))
+                # else:
+                #     patient += 1
 
-                logger.info("[Patient] {}".format(patient))
+                # logger.info("[Patient] {}".format(patient))
 
-                if patient >= hps.patient:
-                    logger.info("[INFO] Stopping Training by Early Stopping")
-                    stop_train = True
-                    break
+                # if patient >= hps.patient:
+                #     logger.info("[INFO] Stopping Training by Early Stopping")
+                #     stop_train = True
+                #     break
             step += 1
 
         if stop_train:
