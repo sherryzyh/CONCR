@@ -233,11 +233,9 @@ def main():
     # Multi-Gpu training
     if hps.cuda:
         gpu_ids = [int(x) for x in hps.gpu.split(' ')]
-        # model.cuda(gpu_ids[0])
+        model.cuda(gpu_ids[0])
         if len(gpu_ids) > 1:
             model = nn.DataParallel(model, device_ids=gpu_ids)
-            for i in range(len(gpu_ids)):
-                model.cuda(gpu_ids[i])
             
 
     # training
