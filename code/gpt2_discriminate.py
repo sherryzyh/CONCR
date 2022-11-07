@@ -45,6 +45,7 @@ def tokenization(data, hps):
     pos = []
 
     for example in data:
+        print(example)
         if not hps.hyp_only:
             if example['ask-for'] == 'cause':
                 inputs.append([example['alternative1'], example['premise']])
