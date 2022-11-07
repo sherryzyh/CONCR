@@ -78,7 +78,7 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
     # model.eval()
     for batch in dataloader:
         attack_model = copy.deepcopy(model)
-        attack_model.eval()
+        # attack_model.eval()
         optimizer.zero_grad()
         if hps.cuda:
             batch = tuple(term.cuda() for term in batch)
@@ -100,7 +100,8 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
             tmp_loss = loss_function(logits, tmp_labels.float())
             loss += tmp_loss.item()
             labels += tmp_labels.cpu().numpy().tolist()
-
+            
+            attack_model.eval()
             state_dict = attack_model.state_dict()
             # embedding_grad = F.softmax(embedding_grad, 1)
             attack_embedding = torch.sum(embedding_grad * embedding_grad, -1)
