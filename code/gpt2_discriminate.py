@@ -238,7 +238,7 @@ def main():
     if hps.cuda:
         gpu_ids = [int(x) for x in hps.gpu.split(' ')]
         model.cuda(gpu_ids[0])
-        device = torch.device("cuda:0,1,2,3")
+        device = torch.device("cuda")
         if len(gpu_ids) > 1:
             model = nn.DataParallel(model, device_ids=gpu_ids)
             model.to(device)
