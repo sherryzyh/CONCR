@@ -78,7 +78,7 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
     # model.eval()
     for batch in dataloader:
         attack_model = copy.deepcopy(model)
-        # attack_model.eval()
+        attack_model.eval()
         optimizer.zero_grad()
         if hps.cuda:
             batch = tuple(term.cuda() for term in batch)
@@ -101,18 +101,18 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
             loss += tmp_loss.item()
             labels += tmp_labels.cpu().numpy().tolist()
 
-            # state_dict = attack_model.state_dict()
-            # # embedding_grad = F.softmax(embedding_grad, 1)
-            # attack_embedding = torch.sum(embedding_grad * embedding_grad, -1)
-            # attack_embedding = attack_embedding.pow(0.5).unsqueeze(-1)
-            # attack_embedding = attack_embedding.pow(-1) * embedding_grad
-            # state_dict['model.transformer.wte.weight'] += hps.attack_rate * attack_embedding
-            # attack_model.load_state_dict(state_dict)
-            # # pdb.set_trace()
-            # attack_model.eval()
-            # attack_logits = attack_model(input_ids, attention_mask=attention_mask, pos=pos)
-            # attack_predictions += attack_logits.cpu().tolist()
-            # attack_loss += loss_function(attack_logits, tmp_labels.float()).item()
+            state_dict = attack_model.state_dict()
+            # embedding_grad = F.softmax(embedding_grad, 1)
+            attack_embedding = torch.sum(embedding_grad * embedding_grad, -1)
+            attack_embedding = attack_embedding.pow(0.5).unsqueeze(-1)
+            attack_embedding = attack_embedding.pow(-1) * embedding_grad
+            state_dict['model.transformer.wte.weight'] += hps.attack_rate * attack_embedding
+            attack_model.load_state_dict(state_dict)
+            # pdb.set_trace()
+            attack_model.eval()
+            attack_logits = attack_model(input_ids, attention_mask=attention_mask, pos=pos)
+            attack_predictions += attack_logits.cpu().tolist()
+            attack_loss += loss_function(attack_logits, tmp_labels.float()).item()
 
 
     a1 = torch.FloatTensor(predictions[::2]).unsqueeze(1)
@@ -125,25 +125,25 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
     t_a = torch.cat((t_a1, t_a2), dim=1)
     true_labels = torch.argmax(t_a, 1).tolist()
 
-    # a_t1 = torch.FloatTensor(attack_predictions[::2]).unsqueeze(1)
-    # a_t2 = torch.FloatTensor(attack_predictions[1::2]).unsqueeze(1)
-    # a_t = torch.cat((a_t1, a_t2), 1)
-    # attack_predict_labels = torch.argmax(a_t, 1)
+    a_t1 = torch.FloatTensor(attack_predictions[::2]).unsqueeze(1)
+    a_t2 = torch.FloatTensor(attack_predictions[1::2]).unsqueeze(1)
+    a_t = torch.cat((a_t1, a_t2), 1)
+    attack_predict_labels = torch.argmax(a_t, 1)
 
     count, attack_count = 0, 0
     for i in range(len(predict_labels)):
-        # if predict_labels[i] == true_labels[i] and attack_predict_labels[i] == true_labels[i]:
-        if predict_labels[i] == true_labels[i]:
+        if predict_labels[i] == true_labels[i] and attack_predict_labels[i] == true_labels[i]:
+        # if predict_labels[i] == true_labels[i]:
             count += 1
             attack_count += 1
         elif predict_labels[i] == true_labels[i]:
             count += 1
-        # elif attack_predict_labels[i] == true_labels[i]:
-        #     attack_count += 1
+        elif attack_predict_labels[i] == true_labels[i]:
+            attack_count += 1
         else:
             continue
-    # return count/len(true_labels), loss, attack_count/len(true_labels), attack_loss
-    return count/len(true_labels), loss
+    return count/len(true_labels), loss, attack_count/len(true_labels), attack_loss
+    # return count/len(true_labels), loss
 
 
 
@@ -280,9 +280,9 @@ def main():
                 evaluation_output  = evaluate(hps, model, dev_dataloader, loss_function, optimizer)
                 # print('\n')
                 logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(evaluation_output[0]))
-                # logger.info("[Dev Metrics] Dev Attack Accuracy: \t{}".format(evaluation_output[2]))
+                logger.info("[Dev Metrics] Dev Attack Accuracy: \t{}".format(evaluation_output[2]))
                 logger.info("[Dev Metrics] Dev Loss: \t{}".format(evaluation_output[1]))
-                # logger.info("[Dev Metrics] Dev Attack Loss: \t{}".format(evaluation_output[3]))
+                logger.info("[Dev Metrics] Dev Attack Loss: \t{}".format(evaluation_output[3]))
 
 
                 if evaluation_output[0] >= best_accuracy:
