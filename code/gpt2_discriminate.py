@@ -285,11 +285,11 @@ def main():
                 # logger.info("[Dev Metrics] Dev Attack Loss: \t{}".format(evaluation_output[3]))
 
 
-                # if evaluation_output[0] >= best_accuracy:
-                #     patient = 0
-                #     best_accuracy = evaluation_output[0]
-                #     logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-                #     # torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
+                if evaluation_output[0] >= best_accuracy:
+                    patient = 0
+                    best_accuracy = evaluation_output[0]
+                    logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
+                    torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
                 #     logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
                 #     evaluation_output = evaluate(hps, model, test_dataloader, loss_function, optimizer)
@@ -299,8 +299,8 @@ def main():
                 #     logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(evaluation_output[2]))
                 #     logger.info("[Test Metrics] Test Loss: \t{}".format(evaluation_output[1]))
                 #     logger.info("[Test Metrics] Test Attack Loss: \t{}".format(evaluation_output[3]))
-                # else:
-                #     patient += 1
+                else:
+                    patient += 1
 
                 # logger.info("[Patient] {}".format(patient))
 
