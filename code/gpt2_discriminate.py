@@ -235,7 +235,9 @@ def main():
         gpu_ids = [int(x) for x in hps.gpu.split(' ')]
         model.cuda(gpu_ids[0])
         if len(gpu_ids) > 1:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model = nn.DataParallel(model, device_ids=gpu_ids)
+            model.to(device)
 
     # training
     logger.info("[INFO] Start Training")
