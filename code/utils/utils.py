@@ -21,9 +21,9 @@ import json
 def tokenize_data(data, model_path, model_name):
     # tokenizer = BertTokenizer(vocab_file=model_path+'/'+'vocab.txt')
     if model_name == 'bert':
-        tokenizer = BertTokenizer.from_pretrained(model_path)
+        tokenizer = BertTokenizer.from_pretrained(model_path, padding_side='left')
     elif model_name == 'roberta':
-        tokenizer = RobertaTokenizer.from_pretrained(model_path)
+        tokenizer = RobertaTokenizer.from_pretrained(model_path, padding_side='left')
 
     # unique ids
     cls_id = tokenizer._convert_token_to_id('[CLS]')
@@ -68,19 +68,19 @@ def tokenize_data(data, model_path, model_name):
 def tokenize_multi_choices(data, hps):
     # load pretrained tokenizer
     if hps.model_name == 'bert':
-        tokenizer = BertTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = BertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     elif hps.model_name == 'roberta':
-        tokenizer = RobertaTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = RobertaTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     elif hps.model_name == 'albert':
-        tokenizer = AlbertTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = AlbertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     elif hps.model_name == 'gpt':
-        tokenizer = OpenAIGPTTokenizer.from_pretrained(hps.model_dir, unk_token="<unk>")
+        tokenizer = OpenAIGPTTokenizer.from_pretrained(hps.model_dir, unk_token="<unk>", padding_side='left')
         tokenizer.pad_token = tokenizer.unk_token
     elif hps.model_name == 'gpt2':
         tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
         tokenizer.pad_token = tokenizer.unk_token
     elif hps.model_name == 'bart':
-        tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     else:
         tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     
@@ -116,21 +116,21 @@ def tokenize_multi_choices(data, hps):
 def quick_tokenize(data, hps):
     # load pretrained tokenizer
     if hps.model_name == 'bert':
-        tokenizer = BertTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = BertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     elif hps.model_name == 'roberta':
-        tokenizer = RobertaTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = RobertaTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     elif hps.model_name == 'albert':
-        tokenizer = AlbertTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = AlbertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     elif hps.model_name == 'gpt':
-        tokenizer = OpenAIGPTTokenizer.from_pretrained(hps.model_dir, unk_token="<unk>")
+        tokenizer = OpenAIGPTTokenizer.from_pretrained(hps.model_dir, unk_token="<unk>", padding_side='left')
         tokenizer.pad_token = tokenizer.unk_token
     elif hps.model_name == 'gpt2':
         tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
         tokenizer.pad_token = tokenizer.unk_token
     elif hps.model_name == 'bart':
-        tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     else:
-        tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir, padding_side='left')
 
     instances = []
     labels = []
@@ -165,7 +165,7 @@ def quick_tokenize(data, hps):
 
 
 def tokenize_multi_task(hps, data):
-    tokenizer = RobertaTokenizer.from_pretrained(hps.discriminate_model_dir)
+    tokenizer = RobertaTokenizer.from_pretrained(hps.discriminate_model_dir, padding_side='left')
     instances1 = []
     instances2 = []
     labels = []
@@ -251,7 +251,7 @@ def compute_ppl(hps, model, data):
 
 
 def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
-    tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
+    tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
     count = 0
     for batch1, batch2, t in zip(dataloader_input, dataloader_output, trange(len(dataloader_input))):
@@ -304,7 +304,7 @@ def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
 
 
 # def evaluate_multi_task(model, dataloader, hps):
-#     tokenizer = GPT2Tokenizer.from_pretrained(hps.generate_model_dir)
+#     tokenizer = GPT2Tokenizer.from_pretrained(hps.generate_model_dir, padding_side='left')
 #     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
 #     count = 0
 #     for batch in dataloader:
@@ -517,7 +517,7 @@ def tokenize_gen(data, hps):
 
 
 def evaluation_bart(dataloader, model, hps):
-    tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
+    tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     score = 0
     for batch in dataloader:
         if hps.cuda:
@@ -732,7 +732,7 @@ def gpt2_evaluate(model, length, data_loader, hps):
 
 
 def bart_evaluate(model, data_loader, hps):
-    tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
+    tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
 
     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
     rouge1p, rouge1r, rouge1f, rouge2p, rouge2r, rouge2f, rougelp, rougelr, rougelf = 0, 0, 0, 0, 0, 0, 0, 0, 0
