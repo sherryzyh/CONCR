@@ -19,14 +19,13 @@ from nltk import bleu
 import csv
 import copy
 import torch.nn.functional as F
-import tokenize
 
 
 class gpt2_multi_task(nn.Module):
     def __init__(self, hps):
         super(gpt2_multi_task, self).__init__()
         self.hps = hps
-        self.model = GPT2LMHeadModel.from_pretrained(hps.model_dir)
+        self.model = GPT2LMHeadModel.from_pretrained(hps.model_dir, pad_token_id=50256)
         self.linear = nn.Linear(self.model.config.hidden_size, 1)
 
     def forward(self, input_ids, attention_mask, pos, mode='train', token_type_ids=None):
@@ -122,7 +121,7 @@ class gpt2_multi_task(nn.Module):
 
 
 def tokenization(data, hps):
-    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
     tokenizer.pad_token = tokenizer.eos_token
 
     inputs = []
@@ -202,7 +201,7 @@ def tokenization(data, hps):
 
 def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
     
-    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
     # predictions = []
     labels = []
     predict_labels, attack_predict_labels = [], []
@@ -370,7 +369,7 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
 
 def compute_ppl(hps, model, data):
     # pdb.set_trace()
-    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
     lls = []
     total_length = 0
     for example in data:
