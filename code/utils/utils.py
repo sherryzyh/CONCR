@@ -38,7 +38,7 @@ def tokenize_data(data, model_path, model_name):
 
     # tokenization
     for example in data:
-        premise, a1, a2 = example['premise'], example['alternative1'], example['alternative2']
+        premise, a1, a2 = example['premise'], example['hypothesis1'], example['hypothesis2']
         premise_id = tokenizer.convert_tokens_to_ids(tokenizer._tokenize(premise))
         a1_id = tokenizer.convert_tokens_to_ids(tokenizer._tokenize(a1))
         a2_id = tokenizer.convert_tokens_to_ids(tokenizer._tokenize(a2))
@@ -172,8 +172,8 @@ def tokenize_multi_task(hps, data):
     truths = []
 
     for example in data:
-        truth, premise, a1, a2 = example['general_truth'], example['premise'], example['alternative1'], example[
-            'alternative2']
+        truth, premise, a1, a2 = example['conceptual_explanation'], example['premise'], example['hypothesis1'], example[
+            'hypothesis2']
         truths.append(truth)
         if example['ask-for'] == 'cause':
             instances1.append([a1, premise])
@@ -204,7 +204,7 @@ def compute_ppl(hps, model, data):
         total_length = 0
         for example in data:
             input_text = example['cause'] + ' ' + example['effect']
-            truth = example['general_truth']
+            truth = example['conceptual_explanation']
             inputs = tokenizer(input_text)
             input_ids = torch.LongTensor(inputs['input_ids']).unsqueeze(0).cuda()
             attention_mask = torch.LongTensor(inputs['attention_mask']).unsqueeze(0).cuda()
@@ -229,7 +229,7 @@ def compute_ppl(hps, model, data):
         total_length = 0
         for example in data:
             input_text = example['cause'] + ' ' + example['effect']
-            truth = example['general_truth']
+            truth = example['conceptual_explanation']
             inputs = tokenizer(input_text)
             input_ids = torch.LongTensor(inputs['input_ids']).unsqueeze(0).cuda()
             attention_mask = torch.LongTensor(inputs['attention_mask']).unsqueeze(0).cuda()
