@@ -1,0 +1,75 @@
+2022-11-08 04:33:39,832 INFO    : [MODEL] xlnet
+2022-11-08 04:33:39,833 INFO    : [INFO] Loading Data
+2022-11-08 04:33:39,833 INFO    : [INFO] Hypothesis Only: False
+2022-11-08 04:33:39,894 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 04:33:45,412 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-08 04:33:45,412 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-08 04:33:48,251 INFO    : [INFO] Start Training
+2022-11-08 04:33:48,251 INFO    : [Epoch] 0
+2022-11-08 04:36:59,914 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 04:37:17,517 INFO    : [Dev Metrics] Dev Accuracy: 	0.6228893058161351
+2022-11-08 04:37:17,517 INFO    : [Dev Metrics] Dev Loss: 	45.184209525585175
+2022-11-08 04:37:17,517 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 04:37:20,965 INFO    : [Patient] 0
+2022-11-08 04:40:31,895 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 04:40:48,119 INFO    : [Dev Metrics] Dev Accuracy: 	0.6543151969981238
+2022-11-08 04:40:48,120 INFO    : [Dev Metrics] Dev Loss: 	44.11630529165268
+2022-11-08 04:40:48,120 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 04:40:51,465 INFO    : [Patient] 0
+2022-11-08 04:41:51,486 INFO    : [Epoch] 1
+2022-11-08 04:43:57,204 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 04:44:14,374 INFO    : [Dev Metrics] Dev Accuracy: 	0.6955909943714822
+2022-11-08 04:44:14,374 INFO    : [Dev Metrics] Dev Loss: 	43.150471210479736
+2022-11-08 04:44:14,374 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 04:44:17,719 INFO    : [Patient] 0
+2022-11-08 04:47:26,722 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 04:47:42,958 INFO    : [Dev Metrics] Dev Accuracy: 	0.6927767354596623
+2022-11-08 04:47:42,958 INFO    : [Dev Metrics] Dev Loss: 	42.59803915023804
+2022-11-08 04:47:42,958 INFO    : [Patient] 1
+2022-11-08 04:49:45,068 INFO    : [Epoch] 2
+2022-11-08 04:50:48,656 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 04:51:05,750 INFO    : [Dev Metrics] Dev Accuracy: 	0.6969981238273921
+2022-11-08 04:51:05,751 INFO    : [Dev Metrics] Dev Loss: 	42.413316786289215
+2022-11-08 04:51:05,751 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 04:51:09,093 INFO    : [Patient] 0
+2022-11-08 04:54:29,342 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 04:54:47,592 INFO    : [Dev Metrics] Dev Accuracy: 	0.698405253283302
+2022-11-08 04:54:47,592 INFO    : [Dev Metrics] Dev Loss: 	42.64752218127251
+2022-11-08 04:54:47,592 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 04:54:51,050 INFO    : [Patient] 0
+2022-11-08 04:58:14,486 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 04:58:32,409 INFO    : [Dev Metrics] Dev Accuracy: 	0.7223264540337712
+2022-11-08 04:58:32,409 INFO    : [Dev Metrics] Dev Loss: 	42.658202826976776
+2022-11-08 04:58:32,409 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 04:58:35,754 INFO    : [Patient] 0
+2022-11-08 04:58:35,754 INFO    : [Epoch] 3
+2022-11-08 05:01:41,223 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 05:01:57,418 INFO    : [Dev Metrics] Dev Accuracy: 	0.724671669793621
+2022-11-08 05:01:57,419 INFO    : [Dev Metrics] Dev Loss: 	42.19054341316223
+2022-11-08 05:01:57,419 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 05:02:00,765 INFO    : [Patient] 0
+2022-11-08 05:05:03,399 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 05:05:19,614 INFO    : [Dev Metrics] Dev Accuracy: 	0.7373358348968105
+2022-11-08 05:05:19,614 INFO    : [Dev Metrics] Dev Loss: 	42.80262008309364
+2022-11-08 05:05:19,614 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 05:05:22,958 INFO    : [Patient] 0
+2022-11-08 05:06:24,928 INFO    : [Epoch] 4
+2022-11-08 05:08:30,581 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 05:08:46,787 INFO    : [Dev Metrics] Dev Accuracy: 	0.7392120075046904
+2022-11-08 05:08:46,787 INFO    : [Dev Metrics] Dev Loss: 	42.617704182863235
+2022-11-08 05:08:46,787 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 05:08:50,138 INFO    : [Patient] 0
+2022-11-08 05:11:54,717 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 05:12:11,187 INFO    : [Dev Metrics] Dev Accuracy: 	0.7218574108818011
+2022-11-08 05:12:11,187 INFO    : [Dev Metrics] Dev Loss: 	42.35635009407997
+2022-11-08 05:12:11,187 INFO    : [Patient] 1
+2022-11-08 05:14:22,917 INFO    : [Epoch] 5
+2022-11-08 05:15:30,418 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 05:15:48,800 INFO    : [Dev Metrics] Dev Accuracy: 	0.7340525328330206
+2022-11-08 05:15:48,800 INFO    : [Dev Metrics] Dev Loss: 	45.18234285712242
+2022-11-08 05:15:48,800 INFO    : [Patient] 2
+2022-11-08 05:19:13,147 INFO    : [Dev Evaluation] Strain Evaluation on Dev Set
+2022-11-08 05:19:31,470 INFO    : [Dev Metrics] Dev Accuracy: 	0.7359287054409006
+2022-11-08 05:19:31,470 INFO    : [Dev Metrics] Dev Loss: 	45.74338561296463
+2022-11-08 05:19:31,470 INFO    : [Patient] 3
+2022-11-08 05:19:31,470 INFO    : [INFO] Stopping Training by Early Stopping
