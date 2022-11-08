@@ -75,22 +75,22 @@ def main():
     logger.info("[INFO] Hypothesis Only: {}".format(hps.hyp_only))
     train_data = load_data(os.path.join(hps.data_dir, hps.train))
     dev_data = load_data(os.path.join(hps.data_dir, hps.dev))
-    test_data = load_data(os.path.join(hps.data_dir, hps.test))
+    # test_data = load_data(os.path.join(hps.data_dir, hps.test))
 
     # Tokenization
     logger.info("[INFO] Tokenization and Padding for Data")
     train_ids, train_mask, train_seg_ids, train_labels, train_length = quick_tokenize(train_data, hps)
     dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = quick_tokenize(dev_data, hps)
-    test_ids, test_mask, test_seg_ids, test_labels, test_length = quick_tokenize(test_data, hps)
+    # test_ids, test_mask, test_seg_ids, test_labels, test_length = quick_tokenize(test_data, hps)
 
     # Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")
     TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_length)
     DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_length)
-    TEST = TensorDataset(test_ids, test_seg_ids, test_mask, test_labels, test_length)
+    # TEST = TensorDataset(test_ids, test_seg_ids, test_mask, test_labels, test_length)
     train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-    test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+    # test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
 
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
@@ -166,17 +166,17 @@ def main():
                             torch.save(model, os.path.join(hps.save_dir, 'discriminate_'+hps.model_name + '_hyp'))
                         else:
                             torch.save(model, os.path.join(hps.save_dir, 'discriminate_'+hps.model_name))
-                        logger.info("[Test Evaluation] Strain Evaluation on Test Set")
-                        if hps.loss_func == 'CrossEntropy':
-                            te_soft_accu, te_exact_accu, te_loss = evaluation(hps, test_dataloader, model, loss_function)
-                            print('\n')
-                            logger.info("[Test Metrics] Test Soft Accuracy: \t{}".format(te_soft_accu))
-                            logger.info("[Test Metrics] Test Exact Accuracy: \t{}".format(te_exact_accu))
-                        else:
-                            te_accu, te_loss = evaluation(hps, test_dataloader, model, loss_function)
-                            print('\n')
-                            logger.info("[Test Metrics] Test Accuracy: \t{}".format(te_accu))
-                        logger.info("[Test Metrics] Test Loss: \t{}".format(te_loss))
+                        # logger.info("[Test Evaluation] Strain Evaluation on Test Set")
+                        # if hps.loss_func == 'CrossEntropy':
+                        #     te_soft_accu, te_exact_accu, te_loss = evaluation(hps, test_dataloader, model, loss_function)
+                        #     print('\n')
+                        #     logger.info("[Test Metrics] Test Soft Accuracy: \t{}".format(te_soft_accu))
+                        #     logger.info("[Test Metrics] Test Exact Accuracy: \t{}".format(te_exact_accu))
+                        # else:
+                        #     te_accu, te_loss = evaluation(hps, test_dataloader, model, loss_function)
+                        #     print('\n')
+                        #     logger.info("[Test Metrics] Test Accuracy: \t{}".format(te_accu))
+                        # logger.info("[Test Metrics] Test Loss: \t{}".format(te_loss))
                     else:
                         patient += 1
 
