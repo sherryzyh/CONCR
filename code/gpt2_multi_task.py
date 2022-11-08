@@ -3,7 +3,8 @@ from utils.utils import load_data, define_logger, tokenize_gen, evaluate_gpt2, g
 import random
 import numpy as np
 import torch
-from model.generatively_model import gpt2_generate, bart_generate
+# from model.generatively_model import gpt2_generate, bart_generate
+from model.generatively_model import gpt2_generate
 from transformers import AdamW, GPT2LMHeadModel, GPT2Tokenizer
 import sys
 import torch.nn as nn
@@ -459,22 +460,22 @@ def main():
     logger.info("[INFO] Mode:\t{}".format(hps.mode))
     train_data = load_data(os.path.join(hps.data_dir, hps.train))
     dev_data = load_data(os.path.join(hps.data_dir, hps.dev))
-    test_data = load_data(os.path.join(hps.data_dir, hps.test))
+    # test_data = load_data(os.path.join(hps.data_dir, hps.test))
 
     # Tokenization
     logger.info("[INFO] Tokenization and Padding for Data")
     train_ids, train_mask, train_pos, train_labels, train_loss_labels, _, _, _ = tokenization(train_data, hps)
     dev, dev_mask, dev_pos, dev_labels, dev_loss_labels, dev_premise_ids, dev_premise_mask, dev_truth = tokenization(dev_data, hps)
-    test, test_mask, test_pos, test_labels, test_loss_labels, test_premise_ids, test_premise_mask, test_truth = tokenization(test_data, hps)
+    # test, test_mask, test_pos, test_labels, test_loss_labels, test_premise_ids, test_premise_mask, test_truth = tokenization(test_data, hps)
 
     # Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")
     TRAIN = TensorDataset(train_ids, train_mask, train_pos, train_labels, train_loss_labels)
     DEV = TensorDataset(dev, dev_mask, dev_pos, dev_labels, dev_loss_labels, dev_premise_ids, dev_premise_mask, dev_truth)
-    TEST = TensorDataset(test, test_mask, test_pos, test_labels, test_loss_labels, test_premise_ids, test_premise_mask, test_truth)
+    # TEST = TensorDataset(test, test_mask, test_pos, test_labels, test_loss_labels, test_premise_ids, test_premise_mask, test_truth)
     train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-    test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+    # test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
 
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
@@ -577,24 +578,24 @@ def main():
                     patient = 0
                     best_accuracy = evaluate_output[0]
                     logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-                    # torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
+                    torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
                     logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
-                    test_output = evaluate(hps, model, test_dataloader, loss_function, loss_function2, optimizer)
-                    test_ppl = compute_ppl(hps, model, test_data)
-                    logger.info("[Test Metrics] Test Perplexity: \t{}".format(test_ppl))
+                    # test_output = evaluate(hps, model, test_dataloader, loss_function, loss_function2, optimizer)
+                    # test_ppl = compute_ppl(hps, model, test_data)
+                    # logger.info("[Test Metrics] Test Perplexity: \t{}".format(test_ppl))
 
-                    print('\n')
-                    logger.info("[Test Metrics] Test Accuracy: \t{}".format(test_output[0]))
-                    logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(test_output[-2]))
-                    logger.info("[Test Metrics] Test BLEU:\t({}, {}, {}, {})".format(test_output[1], test_output[2],
-                                                                                     test_output[3],
-                                                                                     test_output[4]))
-                    logger.info("[Test Metrics] Test Discriminate Loss: \t{}".format(test_output[-3]))
-                    logger.info("[Test Metrics] Test Discriminate Attack Loss: \t{}".format(test_output[-1]))
-                    logger.info(
-                        "[Test Metrics] Test Rouge Recall:\t({}, {}, {})".format(test_output[5], test_output[6],
-                                                                                 test_output[7]))
+                    # print('\n')
+                    # logger.info("[Test Metrics] Test Accuracy: \t{}".format(test_output[0]))
+                    # logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(test_output[-2]))
+                    # logger.info("[Test Metrics] Test BLEU:\t({}, {}, {}, {})".format(test_output[1], test_output[2],
+                    #                                                                  test_output[3],
+                    #                                                                  test_output[4]))
+                    # logger.info("[Test Metrics] Test Discriminate Loss: \t{}".format(test_output[-3]))
+                    # logger.info("[Test Metrics] Test Discriminate Attack Loss: \t{}".format(test_output[-1]))
+                    # logger.info(
+                    #     "[Test Metrics] Test Rouge Recall:\t({}, {}, {})".format(test_output[5], test_output[6],
+                    #                                                              test_output[7]))
                 else:
                     patient += 1
 
