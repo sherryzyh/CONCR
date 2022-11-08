@@ -477,13 +477,13 @@ def tokenize_gen(data, hps):
     for example in data:
         if hps.model_name == 'bart':
             seq1 = example['cause'] + example['effect']
-            seq2 = example['general_truth']
+            seq2 = example['conceptual_explanation']
             inputs.append(seq1)
             labels.append(seq2)
         elif hps.model_name == 'gpt2':
-            inputs.append([example['cause']+' '+example['effect'], example['general_truth']])
+            inputs.append([example['cause']+' '+example['effect'], example['conceptual_explanation']])
             premise.append(example['cause']+' '+example['effect'])
-            labels.append(example['general_truth'])
+            labels.append(example['conceptual_explanation'])
         else:
             return
 
