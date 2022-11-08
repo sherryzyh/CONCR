@@ -464,9 +464,9 @@ def define_logger():
 
 def tokenize_gen(data, hps):
     if hps.model_name == 'bart':
-        tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     elif hps.model_name == 'gpt2':
-        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
         tokenizer.pad_token = tokenizer.unk_token
     else:
         tokenizer = None

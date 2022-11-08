@@ -90,7 +90,7 @@ def main():
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
 
     # model = gpt2_generate(hps)
-    model = GPT2LMHeadModel.from_pretrained(hps.model_dir)
+    model = GPT2LMHeadModel.from_pretrained(hps.model_dir, pad_token_id=50256)
 
     optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
 
