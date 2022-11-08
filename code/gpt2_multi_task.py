@@ -133,12 +133,12 @@ def tokenization(data, hps):
 
     for example in data:
         if example['ask-for'] == 'cause':
-            inputs.append([example['alternative1'], example['premise']])
-            inputs.append([example['alternative2'], example['premise']])
+            inputs.append([example['hypothesis1'], example['premise']])
+            inputs.append([example['hypothesis2'], example['premise']])
         else:
-            inputs.append([example['premise'], example['alternative1']])
-            inputs.append([example['premise'], example['alternative2']])
-        truth += [example['general_truth']] * 2
+            inputs.append([example['premise'], example['hypothesis1']])
+            inputs.append([example['premise'], example['hypothesis2']])
+        truth += [example['conceptual_explanation']] * 2
         labels += [0, 1] if example['label'] == 1 else [1, 0]
 
     outputs = tokenizer(inputs, return_length=True)
