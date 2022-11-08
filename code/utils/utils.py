@@ -77,12 +77,12 @@ def tokenize_multi_choices(data, hps):
         tokenizer = OpenAIGPTTokenizer.from_pretrained(hps.model_dir, unk_token="<unk>")
         tokenizer.pad_token = tokenizer.unk_token
     elif hps.model_name == 'gpt2':
-        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
         tokenizer.pad_token = tokenizer.unk_token
     elif hps.model_name == 'bart':
         tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
     else:
-        tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir)
+        tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     
     instances = []
     labels = []
@@ -125,7 +125,7 @@ def quick_tokenize(data, hps):
         tokenizer = OpenAIGPTTokenizer.from_pretrained(hps.model_dir, unk_token="<unk>")
         tokenizer.pad_token = tokenizer.unk_token
     elif hps.model_name == 'gpt2':
-        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
         tokenizer.pad_token = tokenizer.unk_token
     elif hps.model_name == 'bart':
         tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
@@ -199,7 +199,7 @@ def tokenize_multi_task(hps, data):
 def compute_ppl(hps, model, data):
     # device = 'cuda'
     if hps.model_name == 'gpt2':
-        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
         lls = []
         total_length = 0
         for example in data:
@@ -464,7 +464,7 @@ def define_logger():
 
 def tokenize_gen(data, hps):
     if hps.model_name == 'bart':
-        tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
+        tokenizer = BartTokenizer.from_pretrained(hps.model_dir)
     elif hps.model_name == 'gpt2':
         tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
         tokenizer.pad_token = tokenizer.unk_token
@@ -546,7 +546,7 @@ def evaluation_bart(dataloader, model, hps):
 
 
 def evaluate_gpt2(dataloader, model, hps):
-    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
     score = 0
     for batch in dataloader:
         if hps.cuda:
@@ -655,7 +655,7 @@ def sample_sequence(model, length, start_token=None, batch_size=None, context=No
 
 
 def gpt2_evaluate(model, length, data_loader, hps):
-    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir)
+    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
 
     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
     rouge1p, rouge1r, rouge1f, rouge2p, rouge2r, rouge2f, rougelp, rougelr, rougelf = 0, 0, 0, 0, 0, 0, 0, 0, 0
