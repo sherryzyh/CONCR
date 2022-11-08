@@ -135,7 +135,7 @@ def quick_tokenize(data, hps):
     instances = []
     labels = []
     for example in data:
-        premise, a1, a2 = example['premise'], example['alternative1'], example['alternative2']
+        premise, a1, a2 = example['premise'], example['hypothesis1'], example['hypothesis2']
 
         if example['ask-for'] == 'cause':
             if not hps.hyp_only:
