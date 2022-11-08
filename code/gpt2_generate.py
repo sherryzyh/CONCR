@@ -68,22 +68,22 @@ def main():
     logger.info("[INFO] Loading Data")
     train_data = load_data(os.path.join(hps.data_dir, hps.train))
     dev_data = load_data(os.path.join(hps.data_dir, hps.dev))
-    test_data = load_data(os.path.join(hps.data_dir, hps.test))
+    # test_data = load_data(os.path.join(hps.data_dir, hps.test))
 
     # Tokenization
     logger.info("[INFO] Tokenization and Padding for Data")
     train_ids, train_mask, train_seg_ids, train_label_ids, train_label_mask, _, _, _, _ = tokenize_gen(train_data, hps)
     _, _, _, dev_label_ids, dev_label_mask, dev_label_seg_ids, dev_premise_ids, dev_premise_mask, dev_premise_seg_ids = tokenize_gen(dev_data, hps)
-    _, _, _, test_label_ids, test_label_mask, test_label_seg_ids, test_premise_ids, test_premise_mask, test_premise_seg_ids = tokenize_gen(test_data, hps)
+    # _, _, _, test_label_ids, test_label_mask, test_label_seg_ids, test_premise_ids, test_premise_mask, test_premise_seg_ids = tokenize_gen(test_data, hps)
 
     # Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")
     TRAIN = TensorDataset(train_ids, train_mask, train_seg_ids, train_label_ids, train_label_mask)
     DEV = TensorDataset(dev_label_ids, dev_label_mask, dev_label_seg_ids, dev_premise_ids, dev_premise_mask, dev_premise_seg_ids)
-    TEST = TensorDataset(test_label_ids, test_label_mask, test_label_seg_ids, test_premise_ids, test_premise_mask, test_premise_seg_ids)
+    # TEST = TensorDataset(test_label_ids, test_label_mask, test_label_seg_ids, test_premise_ids, test_premise_mask, test_premise_seg_ids)
     train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-    test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+    # test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
 
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
@@ -164,16 +164,16 @@ def main():
                         patient = 0
                         best_accuracy = dev_bleu1 + dev_rouge1
                         logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-                        # torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
-                        logger.info("[Test Evaluation] Start Evaluation on Test Set")
+                        torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
+                        # logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
-                        test_bleu1, test_bleu2, test_bleu3, test_bleu4, test_rouge1, test_rouge2, test_rougel = gpt2_evaluate(model, hps.length, test_dataloader, hps)
+                        # test_bleu1, test_bleu2, test_bleu3, test_bleu4, test_rouge1, test_rouge2, test_rougel = gpt2_evaluate(model, hps.length, test_dataloader, hps)
                         
-                        print('\n')
-                        logger.info("[TEST Metrics] Test BLEU: \t({}, {}, {}, {})".format(test_bleu1, test_bleu2, test_bleu3, test_bleu4))
-                        logger.info("[TEST Metrics] Test Rouge: \t({}, {}, {})".format(test_rouge1, test_rouge2, test_rougel))
-                        test_ppl = compute_ppl(hps, model, test_data)
-                        logger.info('[PPL] Model PerPlexity On Test Set is {}'.format(test_ppl))
+                        # print('\n')
+                        # logger.info("[TEST Metrics] Test BLEU: \t({}, {}, {}, {})".format(test_bleu1, test_bleu2, test_bleu3, test_bleu4))
+                        # logger.info("[TEST Metrics] Test Rouge: \t({}, {}, {})".format(test_rouge1, test_rouge2, test_rougel))
+                        # test_ppl = compute_ppl(hps, model, test_data)
+                        # logger.info('[PPL] Model PerPlexity On Test Set is {}'.format(test_ppl))
                     else:
                         patient += 1
 
