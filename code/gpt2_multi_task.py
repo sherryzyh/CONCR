@@ -374,10 +374,10 @@ def compute_ppl(hps, model, data):
     total_length = 0
     for example in data:
         if example['ask-for'] == 'cause':
-            input_text = (example['alternative1'] + ' ' + example['premise']) if example['label'] == 0 else (example['alternative2'] + ' ' + example['premise'])
+            input_text = (example['hypothesis1'] + ' ' + example['premise']) if example['label'] == 0 else (example['hypothesis2'] + ' ' + example['premise'])
         else:
-            input_text = (example['premise'] + ' ' + example['alternative1']) if example['label'] == 0 else (example['premise'] + ' ' + example['alternative2'])
-        truth = example['general_truth']
+            input_text = (example['premise'] + ' ' + example['hypothesis1']) if example['label'] == 0 else (example['premise'] + ' ' + example['hypothesis2'])
+        truth = example['conceptual_explanation']
         inputs = tokenizer(input_text)
         input_ids = torch.LongTensor(inputs['input_ids']+[50256]).unsqueeze(0).cuda()
         attention_mask = torch.LongTensor(inputs['attention_mask']+[1]).unsqueeze(0).cuda()
