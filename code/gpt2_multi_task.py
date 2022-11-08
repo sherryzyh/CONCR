@@ -19,6 +19,7 @@ from nltk import bleu
 import csv
 import copy
 import torch.nn.functional as F
+import tokenize
 
 
 class gpt2_multi_task(nn.Module):
@@ -52,7 +53,8 @@ class gpt2_multi_task(nn.Module):
                                               repetition_penalty=self.hps.repetition_penalty,
                                               output_hidden_states=True,
                                               return_dict_in_generate=True,
-                                              output_scores=True
+                                              output_scores=True,
+                                              pad_token_id=50256
                                               )
 
             if self.hps.mode == 'generate_discriminate':
