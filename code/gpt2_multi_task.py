@@ -262,18 +262,18 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
         with torch.no_grad():
             # pdb.set_trace()
             model.eval()
-            state_dict = attack_model.state_dict()
+            # state_dict = attack_model.state_dict()
             logits, gen_ids = model(input_ids, attention_mask=attention_mask, pos=pos, mode='test')
-            # embedding_grad = F.softmax(embedding_grad, 1)
-            attack_embedding = torch.sum(embedding_grad * embedding_grad, -1)
-            attack_embedding = attack_embedding.pow(0.5).unsqueeze(-1)
-            attack_embedding = attack_embedding.pow(-1) * embedding_grad
-            state_dict['model.transformer.wte.weight'] += hps.attack_rate * attack_embedding
-            attack_model.load_state_dict(state_dict)
-            attack_model.eval()
-            attack_logits, _ = attack_model(input_ids, attention_mask=attention_mask, pos=pos, mode='test')
+            # # embedding_grad = F.softmax(embedding_grad, 1)
+            # attack_embedding = torch.sum(embedding_grad * embedding_grad, -1)
+            # attack_embedding = attack_embedding.pow(0.5).unsqueeze(-1)
+            # attack_embedding = attack_embedding.pow(-1) * embedding_grad
+            # state_dict['model.transformer.wte.weight'] += hps.attack_rate * attack_embedding
+            # attack_model.load_state_dict(state_dict)
+            # attack_model.eval()
+            # attack_logits, _ = attack_model(input_ids, attention_mask=attention_mask, pos=pos, mode='test')
 
-            attack_loss += loss_function(attack_logits, tmp_labels.float()).item()
+            # attack_loss += loss_function(attack_logits, tmp_labels.float()).item()
             labels += tmp_labels.cpu().numpy().tolist()
 
         # generated = gen_ids[:, input_ids.shape[1]:]
@@ -284,12 +284,12 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
             predict_label = torch.argmax(a, 1)
             predict_labels += predict_label.cpu().tolist()
 
-            attack_tmp_predict = attack_logits.cpu().tolist()
-            a_t1 = torch.FloatTensor(attack_tmp_predict[::2]).unsqueeze(1)
-            a_t2 = torch.FloatTensor(attack_tmp_predict[1::2]).unsqueeze(1)
-            a_t = torch.cat((a_t1, a_t2), 1)
-            attack_predict_label = torch.argmax(a_t, 1)
-            attack_predict_labels += attack_predict_label.cpu().tolist()
+            # attack_tmp_predict = attack_logits.cpu().tolist()
+            # a_t1 = torch.FloatTensor(attack_tmp_predict[::2]).unsqueeze(1)
+            # a_t2 = torch.FloatTensor(attack_tmp_predict[1::2]).unsqueeze(1)
+            # a_t = torch.cat((a_t1, a_t2), 1)
+            # attack_predict_label = torch.argmax(a_t, 1)
+            # attack_predict_labels += attack_predict_label.cpu().tolist()
 
             g1 = gen_ids[::2].unsqueeze(1)
             g2 = gen_ids[1::2].unsqueeze(1)
@@ -340,13 +340,14 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
     count = 0
     attack_count = 0
     for i in range(len(predict_labels)):
-        if predict_labels[i] == true_labels[i] and attack_predict_labels[i] == true_labels[i]:
+        # if predict_labels[i] == true_labels[i] and attack_predict_labels[i] == true_labels[i]:
+        if predict_labels[i] == true_labels[i]:
             count += 1
             attack_count += 1
         elif predict_labels[i] == true_labels[i]:
             count += 1
-        elif attack_predict_labels[i] == true_labels[i]:
-            attack_count += 1
+        # elif attack_predict_labels[i] == true_labels[i]:
+        #     attack_count += 1
         else:
             continue
     # pdb.set_trace()
@@ -357,9 +358,12 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
 
     # num_instances = int(((len(data_loader)-1) * hps.batch_size + truth_ids.shape[0]) / 2)
 
+    # return count / len(true_labels), bleu1 / len(true_labels), bleu2 / len(true_labels), bleu3 / len(
+    #     true_labels), bleu4 / len(true_labels), rouge1r / len(true_labels), rouge2r / len(true_labels), rougelr / len(
+    #     true_labels), loss, attack_count / len(true_labels), attack_loss
     return count / len(true_labels), bleu1 / len(true_labels), bleu2 / len(true_labels), bleu3 / len(
         true_labels), bleu4 / len(true_labels), rouge1r / len(true_labels), rouge2r / len(true_labels), rougelr / len(
-        true_labels), loss, attack_count / len(true_labels), attack_loss
+        true_labels), loss
 
 
 def compute_ppl(hps, model, data):
@@ -564,12 +568,12 @@ def main():
                 logger.info("[Dev Metrics] Dev Perplexity: \t{}".format(dev_ppl))
                 print('\n')
                 logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(evaluate_output[0]))
-                logger.info("[DEV Metrics] Dev Attack Accuracy: \t{}".format(evaluate_output[-2]))
+                # logger.info("[DEV Metrics] Dev Attack Accuracy: \t{}".format(evaluate_output[-2]))
                 logger.info(
                     "[Dev Metrics] Dev BLEU:\t({}, {}, {}, {})".format(evaluate_output[1], evaluate_output[2],
                                                                        evaluate_output[3], evaluate_output[4]))
                 logger.info("[Dev Metrics] Dev Discriminate Loss: \t{}".format(evaluate_output[-3]))
-                logger.info("[Dev Metrics] Dev Discriminate Attack Loss: \t{}".format(evaluate_output[-1]))
+                # logger.info("[Dev Metrics] Dev Discriminate Attack Loss: \t{}".format(evaluate_output[-1]))
                 logger.info(
                     "[Dev Metrics] Dev Rouge Recall:\t({}, {}, {})".format(evaluate_output[5], evaluate_output[6],
                                                                            evaluate_output[7]))
@@ -579,7 +583,7 @@ def main():
                     best_accuracy = evaluate_output[0]
                     logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
                     torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
-                    logger.info("[Test Evaluation] Start Evaluation on Test Set")
+                    # logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
                     # test_output = evaluate(hps, model, test_dataloader, loss_function, loss_function2, optimizer)
                     # test_ppl = compute_ppl(hps, model, test_data)
