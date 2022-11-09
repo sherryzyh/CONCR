@@ -1,0 +1,217 @@
+2022-11-08 02:51:18,641 INFO    : [INFO] Loading Data
+2022-11-08 02:51:18,641 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 02:52:26,660 INFO    : [INFO] Loading Data
+2022-11-08 02:52:26,660 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 02:52:26,735 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 02:54:23,095 INFO    : [INFO] Loading Data
+2022-11-08 02:54:23,095 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 02:54:23,166 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 02:54:56,909 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-08 02:54:56,911 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-08 02:55:04,651 INFO    : [INFO] Start Training
+2022-11-08 02:55:04,651 INFO    : [Epoch] 0
+2022-11-08 02:55:36,933 INFO    : [INFO] Loading Data
+2022-11-08 02:55:36,933 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 02:55:37,003 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 02:56:11,116 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-08 02:56:11,116 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-08 02:56:14,413 INFO    : [INFO] Start Training
+2022-11-08 02:56:14,414 INFO    : [Epoch] 0
+2022-11-08 19:32:29,551 INFO    : [INFO] Loading Data
+2022-11-08 19:32:29,552 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 19:32:29,627 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 19:33:03,931 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-08 19:33:03,932 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-08 19:33:07,137 INFO    : [INFO] Start Training
+2022-11-08 19:33:07,137 INFO    : [Epoch] 0
+2022-11-08 20:00:09,082 INFO    : [INFO] Loading Data
+2022-11-08 20:00:09,082 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 20:00:09,154 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 20:00:43,540 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-08 20:00:43,540 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-08 20:00:46,775 INFO    : [INFO] Start Training
+2022-11-08 20:00:46,776 INFO    : [Epoch] 0
+2022-11-08 20:01:04,857 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 20:07:54,410 INFO    : [Dev Metrics] Dev Perplexity: 	24.626453399658203
+2022-11-08 20:07:54,411 INFO    : [Dev Metrics] Dev Accuracy: 	0.528746465598492
+2022-11-08 20:07:54,411 INFO    : [Dev Metrics] Dev BLEU:	(0.40087864892119446, 0.13821085390175256, 0.04208232033409011, 0.019311710585596612)
+2022-11-08 20:07:54,411 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.006776928364151847
+2022-11-08 20:07:54,411 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.08413433222263696, 0.006776928364151847, 0.08130820486395152)
+2022-11-08 20:07:54,411 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 20:07:58,253 INFO    : [Patient] 0
+2022-11-08 20:08:17,646 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 20:49:31,047 INFO    : [INFO] Loading Data
+2022-11-08 20:49:31,047 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 20:49:31,122 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 20:50:04,946 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-08 20:50:04,948 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-08 20:50:12,795 INFO    : [INFO] Start Training
+2022-11-08 20:50:12,796 INFO    : [Epoch] 0
+2022-11-08 20:52:36,877 INFO    : [INFO] Loading Data
+2022-11-08 20:52:36,877 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 20:52:36,948 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 20:53:10,736 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-08 20:53:10,737 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-08 20:53:13,952 INFO    : [INFO] Start Training
+2022-11-08 20:53:13,953 INFO    : [Epoch] 0
+2022-11-08 20:57:16,186 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 20:58:40,525 INFO    : [INFO] Loading Data
+2022-11-08 20:58:40,526 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-08 20:58:40,596 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-08 20:59:14,483 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-08 20:59:14,484 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-08 20:59:17,729 INFO    : [INFO] Start Training
+2022-11-08 20:59:17,729 INFO    : [Epoch] 0
+2022-11-08 21:11:21,830 INFO    : [Epoch] 1
+2022-11-08 21:11:23,048 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 21:18:01,525 INFO    : [Dev Metrics] Dev Perplexity: 	8.661359786987305
+2022-11-08 21:18:01,526 INFO    : [Dev Metrics] Dev Accuracy: 	0.6277097078228087
+2022-11-08 21:18:01,526 INFO    : [Dev Metrics] Dev BLEU:	(0.541110439140225, 0.3295010438810269, 0.229972613024768, 0.18786714023003592)
+2022-11-08 21:18:01,526 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.08283888013263738
+2022-11-08 21:18:01,526 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3016937048355104, 0.08283888013263738, 0.2919562746380534)
+2022-11-08 21:18:01,526 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 21:18:05,288 INFO    : [Patient] 0
+2022-11-08 21:30:10,487 INFO    : [Epoch] 2
+2022-11-08 21:30:11,700 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 21:36:47,654 INFO    : [Dev Metrics] Dev Perplexity: 	7.608591079711914
+2022-11-08 21:36:47,654 INFO    : [Dev Metrics] Dev Accuracy: 	0.6644674835061263
+2022-11-08 21:36:47,654 INFO    : [Dev Metrics] Dev BLEU:	(0.5499823731347008, 0.3426120285400554, 0.24501828751666632, 0.20273610279217297)
+2022-11-08 21:36:47,655 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.10529406069926946
+2022-11-08 21:36:47,655 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.331175102272014, 0.10529406069926946, 0.3215899859874743)
+2022-11-08 21:36:47,655 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 21:36:51,469 INFO    : [Patient] 0
+2022-11-08 21:48:56,355 INFO    : [Epoch] 3
+2022-11-08 21:48:57,573 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 21:55:34,047 INFO    : [Dev Metrics] Dev Perplexity: 	7.255488872528076
+2022-11-08 21:55:34,047 INFO    : [Dev Metrics] Dev Accuracy: 	0.6748350612629594
+2022-11-08 21:55:34,047 INFO    : [Dev Metrics] Dev BLEU:	(0.5539383589890539, 0.34737353709093244, 0.250981030744584, 0.2097153597102112)
+2022-11-08 21:55:34,047 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.1113053947678608
+2022-11-08 21:55:34,047 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.33913281820223135, 0.1113053947678608, 0.3311039172660428)
+2022-11-08 21:55:34,047 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 21:55:37,860 INFO    : [Patient] 0
+2022-11-08 22:07:28,400 INFO    : [Epoch] 4
+2022-11-08 22:07:29,582 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 22:14:02,265 INFO    : [Dev Metrics] Dev Perplexity: 	7.005765914916992
+2022-11-08 22:14:02,266 INFO    : [Dev Metrics] Dev Accuracy: 	0.6932139491046183
+2022-11-08 22:14:02,266 INFO    : [Dev Metrics] Dev BLEU:	(0.5590417214084092, 0.35395645902584494, 0.25680756371702723, 0.21413405498352395)
+2022-11-08 22:14:02,266 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11544638350474956
+2022-11-08 22:14:02,266 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3482491289457531, 0.11544638350474956, 0.33876330970533225)
+2022-11-08 22:14:02,266 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 22:14:06,094 INFO    : [Patient] 0
+2022-11-08 22:26:10,959 INFO    : [Epoch] 5
+2022-11-08 22:26:12,174 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 22:32:48,414 INFO    : [Dev Metrics] Dev Perplexity: 	6.8961992263793945
+2022-11-08 22:32:48,415 INFO    : [Dev Metrics] Dev Accuracy: 	0.6894439208294062
+2022-11-08 22:32:48,415 INFO    : [Dev Metrics] Dev BLEU:	(0.5550047633786983, 0.35011664312649177, 0.2543931667611293, 0.2129069712954846)
+2022-11-08 22:32:48,415 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11303546049381001
+2022-11-08 22:32:48,415 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.34729909362227723, 0.11303546049381001, 0.3378785793343378)
+2022-11-08 22:32:48,415 INFO    : [Patient] 1
+2022-11-08 22:44:53,287 INFO    : [Epoch] 6
+2022-11-08 22:44:54,500 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 22:51:30,726 INFO    : [Dev Metrics] Dev Perplexity: 	6.7763590812683105
+2022-11-08 22:51:30,727 INFO    : [Dev Metrics] Dev Accuracy: 	0.6950989632422243
+2022-11-08 22:51:30,727 INFO    : [Dev Metrics] Dev BLEU:	(0.5613221469945681, 0.3558814422139125, 0.2594277686760674, 0.2176971059681624)
+2022-11-08 22:51:30,727 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11670995956388483
+2022-11-08 22:51:30,727 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.34952096189587234, 0.11670995956388483, 0.34093648977290997)
+2022-11-08 22:51:30,727 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 22:51:34,547 INFO    : [Patient] 0
+2022-11-08 23:03:39,415 INFO    : [Epoch] 7
+2022-11-08 23:03:40,631 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 23:10:16,991 INFO    : [Dev Metrics] Dev Perplexity: 	6.731686115264893
+2022-11-08 23:10:16,991 INFO    : [Dev Metrics] Dev Accuracy: 	0.6983977379830348
+2022-11-08 23:10:16,991 INFO    : [Dev Metrics] Dev BLEU:	(0.5604783733075658, 0.35491843055328903, 0.2592027676567432, 0.2175472432897915)
+2022-11-08 23:10:16,991 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.1167166878340438
+2022-11-08 23:10:16,991 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3516670611087646, 0.1167166878340438, 0.34196048679748914)
+2022-11-08 23:10:16,991 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-08 23:10:20,813 INFO    : [Patient] 0
+2022-11-08 23:22:19,838 INFO    : [Epoch] 8
+2022-11-08 23:22:21,046 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 23:28:55,913 INFO    : [Dev Metrics] Dev Perplexity: 	6.72967004776001
+2022-11-08 23:28:55,913 INFO    : [Dev Metrics] Dev Accuracy: 	0.6927426955702167
+2022-11-08 23:28:55,914 INFO    : [Dev Metrics] Dev BLEU:	(0.5618397443202093, 0.35788930088549864, 0.2627540306215913, 0.22087187551230494)
+2022-11-08 23:28:55,914 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.12122466795707904
+2022-11-08 23:28:55,914 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.35118380672969873, 0.12122466795707904, 0.34177737303846195)
+2022-11-08 23:28:55,914 INFO    : [Patient] 1
+2022-11-08 23:40:53,167 INFO    : [Epoch] 9
+2022-11-08 23:40:54,363 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-08 23:47:28,990 INFO    : [Dev Metrics] Dev Perplexity: 	6.699222564697266
+2022-11-08 23:47:28,990 INFO    : [Dev Metrics] Dev Accuracy: 	0.6960414703110274
+2022-11-08 23:47:28,990 INFO    : [Dev Metrics] Dev BLEU:	(0.558745075396052, 0.35186389776120075, 0.2560535445229475, 0.21423455985454112)
+2022-11-08 23:47:28,990 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11387952388915687
+2022-11-08 23:47:28,990 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.34834869049746897, 0.11387952388915687, 0.3376780523059709)
+2022-11-08 23:47:28,990 INFO    : [Patient] 2
+2022-11-08 23:59:26,947 INFO    : [Epoch] 10
+2022-11-08 23:59:28,157 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 00:06:03,230 INFO    : [Dev Metrics] Dev Perplexity: 	6.671651363372803
+2022-11-09 00:06:03,231 INFO    : [Dev Metrics] Dev Accuracy: 	0.7097078228086711
+2022-11-09 00:06:03,231 INFO    : [Dev Metrics] Dev BLEU:	(0.5605275262884658, 0.3550971079909308, 0.2597724678776546, 0.2181221740536326)
+2022-11-09 00:06:03,231 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11308213018031721
+2022-11-09 00:06:03,231 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3471592004506995, 0.11308213018031721, 0.33648627327038444)
+2022-11-09 00:06:03,231 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-09 00:06:07,050 INFO    : [Patient] 0
+2022-11-09 00:18:06,939 INFO    : [Epoch] 11
+2022-11-09 00:18:08,132 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 00:24:43,343 INFO    : [Dev Metrics] Dev Perplexity: 	6.6751790046691895
+2022-11-09 00:24:43,344 INFO    : [Dev Metrics] Dev Accuracy: 	0.7007540056550424
+2022-11-09 00:24:43,344 INFO    : [Dev Metrics] Dev BLEU:	(0.5619401160891728, 0.35549531860548234, 0.2594582258543896, 0.217853739101665)
+2022-11-09 00:24:43,344 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.10986374120972447
+2022-11-09 00:24:43,344 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3428798435091057, 0.10986374120972447, 0.33277185955396055)
+2022-11-09 00:24:43,344 INFO    : [Patient] 1
+2022-11-09 00:36:41,599 INFO    : [Epoch] 12
+2022-11-09 00:36:42,811 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 00:43:18,715 INFO    : [Dev Metrics] Dev Perplexity: 	6.666261672973633
+2022-11-09 00:43:18,716 INFO    : [Dev Metrics] Dev Accuracy: 	0.7082940622054665
+2022-11-09 00:43:18,716 INFO    : [Dev Metrics] Dev BLEU:	(0.5623374979175895, 0.3561806356056245, 0.2595213167838224, 0.21790278691052514)
+2022-11-09 00:43:18,716 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11133000905170612
+2022-11-09 00:43:18,716 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3449892744765786, 0.11133000905170612, 0.33516075808620316)
+2022-11-09 00:43:18,716 INFO    : [Patient] 2
+2022-11-09 00:55:20,351 INFO    : [Epoch] 13
+2022-11-09 00:55:21,566 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 01:01:56,580 INFO    : [Dev Metrics] Dev Perplexity: 	6.629087448120117
+2022-11-09 01:01:56,581 INFO    : [Dev Metrics] Dev Accuracy: 	0.7097078228086711
+2022-11-09 01:01:56,581 INFO    : [Dev Metrics] Dev BLEU:	(0.5607232191299819, 0.35391572091972257, 0.25804734554518294, 0.2167314754742582)
+2022-11-09 01:01:56,581 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.10991585397563393
+2022-11-09 01:01:56,581 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3426418772131751, 0.10991585397563393, 0.3315382413552148)
+2022-11-09 01:01:56,581 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-09 01:02:00,405 INFO    : [Patient] 0
+2022-11-09 01:13:54,862 INFO    : [Epoch] 14
+2022-11-09 01:13:56,047 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 01:20:28,783 INFO    : [Dev Metrics] Dev Perplexity: 	6.637156963348389
+2022-11-09 01:20:28,784 INFO    : [Dev Metrics] Dev Accuracy: 	0.7045240339302544
+2022-11-09 01:20:28,784 INFO    : [Dev Metrics] Dev BLEU:	(0.5604334777319163, 0.35620249145251526, 0.261346304730391, 0.22025692925107337)
+2022-11-09 01:20:28,784 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.1131067170018354
+2022-11-09 01:20:28,784 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3474937681748689, 0.1131067170018354, 0.3375568350938428)
+2022-11-09 01:20:28,784 INFO    : [Patient] 1
+2022-11-09 01:32:22,385 INFO    : [Epoch] 15
+2022-11-09 01:32:23,578 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 01:38:56,503 INFO    : [Dev Metrics] Dev Perplexity: 	6.597592830657959
+2022-11-09 01:38:56,503 INFO    : [Dev Metrics] Dev Accuracy: 	0.7026390197926484
+2022-11-09 01:38:56,503 INFO    : [Dev Metrics] Dev BLEU:	(0.5611922718189952, 0.3583514667577843, 0.2625052704362908, 0.22095028793676927)
+2022-11-09 01:38:56,503 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11632367800834004
+2022-11-09 01:38:56,504 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3495929390784415, 0.11632367800834004, 0.3386077696228361)
+2022-11-09 01:38:56,504 INFO    : [Patient] 2
+2022-11-09 01:50:49,774 INFO    : [Epoch] 16
+2022-11-09 01:50:50,968 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 01:57:24,173 INFO    : [Dev Metrics] Dev Perplexity: 	6.6051836013793945
+2022-11-09 01:57:24,173 INFO    : [Dev Metrics] Dev Accuracy: 	0.705937794533459
+2022-11-09 01:57:24,173 INFO    : [Dev Metrics] Dev BLEU:	(0.564524489490896, 0.3603980680284546, 0.26486650221499125, 0.22340120388072685)
+2022-11-09 01:57:24,173 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11824497903425941
+2022-11-09 01:57:24,174 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3516902396975304, 0.11824497903425941, 0.34062614697524896)
+2022-11-09 01:57:24,174 INFO    : [Patient] 3
+2022-11-09 02:09:16,502 INFO    : [Epoch] 17
+2022-11-09 02:09:17,696 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 02:15:50,501 INFO    : [Dev Metrics] Dev Perplexity: 	6.647617340087891
+2022-11-09 02:15:50,501 INFO    : [Dev Metrics] Dev Accuracy: 	0.704995287464656
+2022-11-09 02:15:50,501 INFO    : [Dev Metrics] Dev BLEU:	(0.5586070272403708, 0.3524979586037078, 0.25649340478530347, 0.2155500073029795)
+2022-11-09 02:15:50,501 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11318577234922796
+2022-11-09 02:15:50,501 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.34682651874223397, 0.11318577234922796, 0.33576450446426065)
+2022-11-09 02:15:50,502 INFO    : [Patient] 4
+2022-11-09 02:27:43,788 INFO    : [Epoch] 18
+2022-11-09 02:27:44,981 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-09 02:34:18,084 INFO    : [Dev Metrics] Dev Perplexity: 	6.623485088348389
+2022-11-09 02:34:18,085 INFO    : [Dev Metrics] Dev Accuracy: 	0.700282752120641
+2022-11-09 02:34:18,085 INFO    : [Dev Metrics] Dev BLEU:	(0.5563944266089457, 0.35230062660069433, 0.25754040116238164, 0.21644745608111135)
+2022-11-09 02:34:18,085 INFO    : [Dev Metrics] Dev Discriminate Loss: 	0.11248331217457187
+2022-11-09 02:34:18,085 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3489244079551506, 0.11248331217457187, 0.3376580170767124)
+2022-11-09 02:34:18,085 INFO    : [Patient] 5
+2022-11-09 02:34:18,085 INFO    : [INFO] Stopping Training by Early Stopping
