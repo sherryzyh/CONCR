@@ -19,6 +19,8 @@ from nltk import bleu
 import csv
 import copy
 import torch.nn.functional as F
+from collections import defaultdict
+import json
 
 
 class gpt2_multi_task(nn.Module):
@@ -199,17 +201,17 @@ def tokenization(data, hps):
         labels), torch.LongTensor(loss_label), premise_ids, premise_mask, truth_ids
 
 
-def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
+def evaluate(hps, model, dataloader, cr_loss_function, eg_loss_function, optimizer, epoch):
     
     tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
     # predictions = []
     labels = []
     predict_labels, attack_predict_labels = [], []
-    loss = 0
+    val_total_loss, val_cr_loss, val_eg_loss = 0, 0, 0
     attack_loss = 0
 
     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
-    rouge1p, rouge1r, rouge1f, rouge2p, rouge2r, rouge2f, rougelp, rougelr, rougelf = 0, 0, 0, 0, 0, 0, 0, 0, 0
+    rouge1r, rouge2r, rougelr = 0, 0, 0
     rouge = Rouge()
     output_text = []
     
@@ -223,16 +225,15 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
         if hps.cuda:
             batch = tuple(term.cuda() for term in batch)
 
-        ids, mask, pos, tmp_labels, loss_label, input_ids, attention_mask, truth = batch
+        ids, mask, pos, dis_labels, loss_label, input_ids, attention_mask, truth = batch
         dis_logits, gen_logits = model(ids, attention_mask=mask, pos=pos, mode='train')
         
         # predictions += logits.cpu().tolist()
-        tmp_loss = loss_function(dis_logits, tmp_labels.float())
-        loss += tmp_loss.cpu().item()
+        loss_dis = cr_loss_function(dis_logits, dis_labels.float())
+        val_cr_loss += loss_dis.cpu().item()
 
-
-        t_1 = tmp_labels[::2].unsqueeze(1)
-        t_2 = tmp_labels[1::2].unsqueeze(1)
+        t_1 = dis_labels[::2].unsqueeze(1)
+        t_2 = dis_labels[1::2].unsqueeze(1)
         t_ = torch.cat((t_1, t_2), 1)
         t_index = t_.argmax(1)
 
@@ -252,9 +253,10 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
         shift_logits = g[..., :-1, :].contiguous()
         shift_labels = l[..., 1:].contiguous()
 
-        loss_gen = loss_function2(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
-        total_loss = hps.alpha * tmp_loss + (1 - hps.alpha) * loss_gen
-        total_loss.backward()
+        loss_gen = eg_loss_function(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+        val_eg_loss += loss_gen.cpu().item()
+        loss = hps.alpha * loss_dis + (1 - hps.alpha) * loss_gen
+        val_total_loss += loss.cpu().item()
         embedding_grad = optimizer.param_groups[0]['params'][0].grad
         # attack
         
@@ -274,8 +276,8 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
             # attack_model.eval()
             # attack_logits, _ = attack_model(input_ids, attention_mask=attention_mask, pos=pos, mode='test')
 
-            # attack_loss += loss_function(attack_logits, tmp_labels.float()).item()
-            labels += tmp_labels.cpu().numpy().tolist()
+            # attack_loss += cr_loss_function(attack_logits, tmp_labels.float()).item()
+            labels += dis_labels.cpu().numpy().tolist()
 
         # generated = gen_ids[:, input_ids.shape[1]:]
             tmp_predict = logits.cpu().tolist()
@@ -296,8 +298,8 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
             g2 = gen_ids[1::2].unsqueeze(1)
             g = torch.cat((g1, g2), 1)
 
-            t_1 = tmp_labels[::2].unsqueeze(1)
-            t_2 = tmp_labels[1::2].unsqueeze(1)
+            t_1 = dis_labels[::2].unsqueeze(1)
+            t_2 = dis_labels[1::2].unsqueeze(1)
             t = torch.cat((t_1, t_2), 1)
 
         # generated = g[range(g.shape[0]), predict_label]
@@ -317,20 +319,9 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
                 bleu4 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 0, 0, 1])
 
                 scores = rouge.get_scores(generated_text[i], gold_text[i])
-                rouge1 = scores[0]['rouge-1']
-                rouge1f += rouge1['f']
-                rougelp += rouge1['p']
-                rouge1r += rouge1['r']
-
-                rouge2 = scores[0]['rouge-2']
-                rouge2f += rouge2['f']
-                rouge1p += rouge2['p']
-                rouge2r += rouge2['r']
-
-                rougel = scores[0]['rouge-l']
-                rougelf += rougel['f']
-                rougelp += rougel['p']
-                rougelr += rougel['r']
+                rouge1r += scores[0]['rouge-1']['r']
+                rouge2r += scores[0]['rouge-2']['r']
+                rougelr += scores[0]['rouge-l']['r']
 
     # predict_labels = predict_labels.cpu().tolist()
     # pdb.set_trace()
@@ -339,32 +330,55 @@ def evaluate(hps, model, dataloader, loss_function, loss_function2, optimizer):
     t_a = torch.cat((t_a1, t_a2), dim=1)
     true_labels = torch.argmax(t_a, 1).tolist()
     count = 0
-    attack_count = 0
+    # attack_count = 0
     for i in range(len(predict_labels)):
         # if predict_labels[i] == true_labels[i] and attack_predict_labels[i] == true_labels[i]:
         if predict_labels[i] == true_labels[i]:
             count += 1
-            attack_count += 1
-        elif predict_labels[i] == true_labels[i]:
-            count += 1
+            # attack_count += 1
+        # elif predict_labels[i] == true_labels[i]:
+            # count += 1
         # elif attack_predict_labels[i] == true_labels[i]:
         #     attack_count += 1
-        else:
-            continue
+        # else:
+        #     continue
+    
+    with open(hps.output_dir + f'/gpt2_cr_eg_epoch_{epoch}_labels.csv', 'w', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerows(predict_labels)
+    
+    accuracy = count / len(true_labels)
     # pdb.set_trace()
-    nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    fo = open(hps.output_dir + '/gpt2_predict_' + nowtime + '.csv', 'w', encoding='utf-8')
-    writer = csv.writer(fo)
-    writer.writerows(output_text)
+    # nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    with open(hps.output_dir + f'/gpt2_cr_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerows(output_text)
 
     # num_instances = int(((len(data_loader)-1) * hps.batch_size + truth_ids.shape[0]) / 2)
 
     # return count / len(true_labels), bleu1 / len(true_labels), bleu2 / len(true_labels), bleu3 / len(
     #     true_labels), bleu4 / len(true_labels), rouge1r / len(true_labels), rouge2r / len(true_labels), rougelr / len(
     #     true_labels), loss, attack_count / len(true_labels), attack_loss
-    return count / len(true_labels), bleu1 / len(true_labels), bleu2 / len(true_labels), bleu3 / len(
-        true_labels), bleu4 / len(true_labels), rouge1r / len(true_labels), rouge2r / len(true_labels), rougelr / len(
-        true_labels), loss
+    
+    evaluate_output = dict(
+        val_total_loss=val_total_loss,
+        val_cr_loss=val_cr_loss,
+        val_eg_loss=val_eg_loss,
+        accuracy=accuracy,
+        bleu1=bleu1,
+        bleu2=bleu2,
+        bleu3=bleu3,
+        bleu4=bleu4,
+        avg_bleu=sum([bleu1, bleu2, bleu3, bleu4]) / 4,
+        rouge1=rouge1r,
+        rouge2=rouge2r,
+        rougel=rougelr
+    )
+    for metric in ['bleu1', 'bleu2', 'bleu3', 'bleu4', 'avg_bleu', 'rouge1', 'rouge2', 'rougel']:
+        evaluate_output[metric] /= len(true_labels)
+    
+    return evaluate_output
 
 
 def compute_ppl(hps, model, data):
@@ -488,8 +502,8 @@ def main():
     model = gpt2_multi_task(hps)
 
     optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
-    loss_function = nn.BCEWithLogitsLoss(reduction='mean')
-    loss_function2 = nn.CrossEntropyLoss(reduction='mean', ignore_index=-100)
+    cr_loss_function = nn.BCEWithLogitsLoss(reduction='mean')
+    eg_loss_function = nn.CrossEntropyLoss(reduction='mean', ignore_index=-100)
 
     # Multi-Gpu training
     if hps.cuda:
@@ -500,19 +514,19 @@ def main():
 
     # training
     logger.info("[INFO] Start Training")
-    step = 0
     patient = 0
     best_accuracy = 0
     stop_train = False
+    metric_log = defaultdict(dict)
 
     for epoch in range(hps.epochs):
+        model.train()
         logger.info('[Epoch] {}'.format(epoch))
         t = trange(len(train_dataloader))
         epoch_step = 0
-        total_loss = 0
+        train_total_loss, train_cr_loss, train_eg_loss = 0, 0, 0
         for i, batch in zip(t, train_dataloader):
             optimizer.zero_grad()
-            model.train()
             if hps.cuda:
                 batch = tuple(term.cuda() for term in batch)
 
@@ -520,7 +534,7 @@ def main():
 
             dis_logits, gen_logits = model(input_ids, attention_mask=input_mask, pos=pos)
             # pdb.set_trace()
-            loss_dis = loss_function(dis_logits, label.float())
+            loss_dis = cr_loss_function(dis_logits, label.float())
 
             # a1 = dis_logits[::2].unsqueeze(1)
             # a2 = dis_logits[1::2].unsqueeze(1)
@@ -548,69 +562,76 @@ def main():
             shift_logits = g[..., :-1, :].contiguous()
             shift_labels = l[..., 1:].contiguous()
 
-            loss_gen = loss_function2(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+            loss_gen = eg_loss_function(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
             loss = hps.alpha * loss_dis + (1 - hps.alpha) * loss_gen
 
-            total_loss += loss.item()
-            t.set_postfix(avg_loss='{}'.format(total_loss / (epoch_step + 1)))
+            train_total_loss += loss.item()
+            train_cr_loss += loss_dis.item()
+            train_eg_loss += loss_gen.item()
+            t.set_postfix(avg_loss='{}'.format(train_total_loss / (epoch_step + 1)))
             epoch_step += 1
 
             loss.backward()
             optimizer.step()
+        metric_log[f'epoch_{epoch}']['train_total_loss'] = train_total_loss
+        metric_log[f'epoch_{epoch}']['train_cr_loss'] = train_cr_loss
+        metric_log[f'epoch_{epoch}']['train_eg_loss'] = train_eg_loss
 
-            if step % hps.evaluation_step == 0 and step != 0:
-                model.eval()
+        model.eval()
 
-                # with torch.no_grad():
-                print('\n')
-                logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
-                evaluate_output = evaluate(hps, model, dev_dataloader, loss_function, loss_function2, optimizer)
-                dev_ppl = compute_ppl(hps, model, dev_data)
-                logger.info("[Dev Metrics] Dev Perplexity: \t{}".format(dev_ppl))
-                print('\n')
-                logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(evaluate_output[0]))
-                # logger.info("[DEV Metrics] Dev Attack Accuracy: \t{}".format(evaluate_output[-2]))
-                logger.info(
-                    "[Dev Metrics] Dev BLEU:\t({}, {}, {}, {})".format(evaluate_output[1], evaluate_output[2],
-                                                                       evaluate_output[3], evaluate_output[4]))
-                logger.info("[Dev Metrics] Dev Discriminate Loss: \t{}".format(evaluate_output[-3]))
-                # logger.info("[Dev Metrics] Dev Discriminate Attack Loss: \t{}".format(evaluate_output[-1]))
-                logger.info(
-                    "[Dev Metrics] Dev Rouge Recall:\t({}, {}, {})".format(evaluate_output[5], evaluate_output[6],
-                                                                           evaluate_output[7]))
+        # with torch.no_grad():
+        print('\n')
+        logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
+        evaluate_output = evaluate(hps, model, dev_dataloader, cr_loss_function, eg_loss_function, optimizer, epoch)
+        dev_ppl = compute_ppl(hps, model, dev_data)
+        metric_log[f'epoch_{epoch}'].update(evaluate_output)
+        metric_log[f'epoch_{epoch}']['perplexity'] = dev_ppl
+        logger.info("[Train Metrics] Total Loss, CR Loss, EG Loss: \t{}, {}, {}".format(
+            train_total_loss, train_cr_loss, train_eg_loss))
+        logger.info("[Dev Metrics] Total Loss, CR Loss, EG Loss: \t{}, {}, {}".format(
+            evaluate_output['val_total_loss'], evaluate_output['val_cr_loss'], evaluate_output['val_eg_loss']))
+        logger.info("[Dev CR Metrics] Accuracy: \t{}".format(evaluate_output['accuracy']))
+        # logger.info("[DEV Metrics] Dev Attack Accuracy: \t{}".format(evaluate_output[-2]))
+        logger.info("[Dev EG Metrics] Average BLEU:\t{}".format(evaluate_output['avg_bleu']))
+        # logger.info("[Dev Metrics] Dev Discriminate Attack Loss: \t{}".format(evaluate_output[-1]))
+        logger.info("[Dev EG Metrics] Rouge:\t({}, {}, {})".format(
+            evaluate_output['rouge1'], evaluate_output['rouge2'], evaluate_output['rougel']))
+        logger.info("[Dev EG Metrics] Perplexity: \t{}".format(dev_ppl))
 
-                if evaluate_output[0] >= best_accuracy:
-                    patient = 0
-                    best_accuracy = evaluate_output[0]
-                    logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-                    torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
-                    # logger.info("[Test Evaluation] Start Evaluation on Test Set")
+        with open(hps.output_dir + '/gpt2_cr_eg_metric_log.json', 'w', encoding='utf-8') as fp:
+            json.dump(metric_log, fp)
 
-                    # test_output = evaluate(hps, model, test_dataloader, loss_function, loss_function2, optimizer)
-                    # test_ppl = compute_ppl(hps, model, test_data)
-                    # logger.info("[Test Metrics] Test Perplexity: \t{}".format(test_ppl))
+        if evaluate_output[0] >= best_accuracy:
+            patient = 0
+            best_accuracy = evaluate_output[0]
+            logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
+            torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
+            # logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
-                    # print('\n')
-                    # logger.info("[Test Metrics] Test Accuracy: \t{}".format(test_output[0]))
-                    # logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(test_output[-2]))
-                    # logger.info("[Test Metrics] Test BLEU:\t({}, {}, {}, {})".format(test_output[1], test_output[2],
-                    #                                                                  test_output[3],
-                    #                                                                  test_output[4]))
-                    # logger.info("[Test Metrics] Test Discriminate Loss: \t{}".format(test_output[-3]))
-                    # logger.info("[Test Metrics] Test Discriminate Attack Loss: \t{}".format(test_output[-1]))
-                    # logger.info(
-                    #     "[Test Metrics] Test Rouge Recall:\t({}, {}, {})".format(test_output[5], test_output[6],
-                    #                                                              test_output[7]))
-                else:
-                    patient += 1
+            # test_output = evaluate(hps, model, test_dataloader, cr_loss_function, eg_loss_function, optimizer)
+            # test_ppl = compute_ppl(hps, model, test_data)
+            # logger.info("[Test Metrics] Test Perplexity: \t{}".format(test_ppl))
 
-                logger.info("[Patient] {}".format(patient))
+            # print('\n')
+            # logger.info("[Test Metrics] Test Accuracy: \t{}".format(test_output[0]))
+            # logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(test_output[-2]))
+            # logger.info("[Test Metrics] Test BLEU:\t({}, {}, {}, {})".format(test_output[1], test_output[2],
+            #                                                                  test_output[3],
+            #                                                                  test_output[4]))
+            # logger.info("[Test Metrics] Test Discriminate Loss: \t{}".format(test_output[-3]))
+            # logger.info("[Test Metrics] Test Discriminate Attack Loss: \t{}".format(test_output[-1]))
+            # logger.info(
+            #     "[Test Metrics] Test Rouge Recall:\t({}, {}, {})".format(test_output[5], test_output[6],
+            #                                                              test_output[7]))
+        else:
+            patient += 1
 
-                if patient >= hps.patient:
-                    logger.info("[INFO] Stopping Training by Early Stopping")
-                    stop_train = True
-                    break
-            step += 1
+        logger.info("[Patient] {}".format(patient))
+
+        if patient >= hps.patient:
+            logger.info("[INFO] Stopping Training by Early Stopping")
+            stop_train = True
+            break
 
         if stop_train:
             break

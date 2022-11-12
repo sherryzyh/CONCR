@@ -653,12 +653,12 @@ def sample_sequence(model, length, start_token=None, batch_size=None, context=No
             attention_mask = torch.cat((attention_mask, torch.ones(prev.shape).long().cuda()), -1)
     return output if input_type == 'ids' else output_id
 
-
+# called in gpt2_generate.py
 def gpt2_evaluate(model, length, data_loader, hps):
     tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
 
     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
-    rouge1p, rouge1r, rouge1f, rouge2p, rouge2r, rouge2f, rougelp, rougelr, rougelf = 0, 0, 0, 0, 0, 0, 0, 0, 0
+    rouge1r, rouge2r, rougelr = 0, 0, 0
     rouge = Rouge()
     output_text = []
     nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -704,20 +704,9 @@ def gpt2_evaluate(model, length, data_loader, hps):
 
             try:
                 scores = rouge.get_scores(generated_text[i], gold_text[i])
-                rouge1 = scores[0]['rouge-1']
-                rouge1f += rouge1['f']
-                rougelp += rouge1['p']
-                rouge1r += rouge1['r']
-
-                rouge2 = scores[0]['rouge-2']
-                rouge2f += rouge2['f']
-                rouge1p += rouge2['p']
-                rouge2r += rouge2['r']
-
-                rougel = scores[0]['rouge-l']
-                rougelf += rougel['f']
-                rougelp += rougel['p']
-                rougelr += rougel['r']
+                rouge1r += scores[0]['rouge-1']['r']
+                rouge2r += scores[0]['rouge-2']['r']
+                rougelr += scores[0]['rouge-l']['r']
             except:
                 continue
 
@@ -796,12 +785,12 @@ def bart_evaluate(model, data_loader, hps):
                 ]
             rouge1 = scores[0]['rouge-1']
             rouge1f += rouge1['f']
-            rougelp += rouge1['p']
+            rouge1p += rouge1['p']
             rouge1r += rouge1['r']
 
             rouge2 = scores[0]['rouge-2']
             rouge2f += rouge2['f']
-            rouge1p += rouge2['p']
+            rouge2p += rouge2['p']
             rouge2r += rouge2['r']
 
             rougel = scores[0]['rouge-l']

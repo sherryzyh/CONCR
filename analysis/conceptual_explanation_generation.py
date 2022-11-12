@@ -28,7 +28,7 @@ def evaluation_bleu(golds, predictions):
 
 
 def evaluation_rouge(golds, predictions):
-    rouge_l = 0
+    rouge_1, rouge_2, rouge_l = 0, 0, 0
     rouge = Rouge()
 
     for key in predictions:
@@ -40,12 +40,16 @@ def evaluation_rouge(golds, predictions):
 
         try:
             scores = rouge.get_scores(prediction, gold)
+            rouge_1 += scores[0]['rouge-1']['r']
+            rouge_2 += scores[0]['rouge-2']['r']
             rouge_l += scores[0]['rouge-l']['r']
         except:
             continue
-
+    
+    avg_rouge1 = rouge_1 / len(golds)
+    avg_rouge2 = rouge_2 / len(golds)
     avg_rougel = rouge_l / len(golds)
-    return avg_rougel
+    return avg_rouge1, avg_rouge2, avg_rougel
 
 
 def main():
@@ -56,15 +60,17 @@ def main():
     predictions = json.load(open(prediction_path, 'r'))
     gold_labels = read_gold_data(gold_path)
 
-    bleu_score = evaluation_bleu(gold_labels, predictions)
-    rouge_l = evaluation_rouge(gold_labels, predictions)
+    avg_bleu = evaluation_bleu(gold_labels, predictions)
+    rouge_1, rouge_2, rouge_l = evaluation_rouge(gold_labels, predictions)
 
     output_file = "_".join(prediction_file.split("_")[:-1] + ["evaluation.json"])
     output_path = os.path.join('evaluation_result', output_file)
     fo = open(output_path, 'w')
 
-    json.dump({"bleu": bleu_score, "rouge-l": rouge_l}, fo)
-    print("[Average BLEU]: {}".format(bleu_score))
+    json.dump({"bleu": avg_bleu, "rouge-1": rouge_1, "rouge-2": rouge_2, "rouge-l": rouge_l}, fo)
+    print("[Average BLEU]: {}".format(avg_bleu))
+    print("[Rouge-1]: {}".format(rouge_1))
+    print("[Rouge-2]: {}".format(rouge_2))
     print("[Rouge-l]: {}".format(rouge_l))
 
 
