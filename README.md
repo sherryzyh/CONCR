@@ -15,7 +15,7 @@ python3 gpt2_discriminate.py \
   --gpu "0" \
   --batch_size 64 \
   --epochs 10 \
-  --evaluation_step 72 \
+  --evaluation_step 467 \
   --lr 1e-5 \
   --set_seed True \
   --seed 338 \
