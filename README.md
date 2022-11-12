@@ -59,7 +59,7 @@ python3 train_discriminate.py \
   --gpu '0' \
   --batch_size 32 \
   --epochs 10 \
-  --evaluation_step 80 \
+  --evaluation_step 467 \
   --lr 1e-5 \
   --seed 1024 \
   --patient 10 \
