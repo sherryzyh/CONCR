@@ -311,7 +311,7 @@ def evaluate(hps, model, dataloader, cr_loss_function, eg_loss_function, optimiz
             gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
                          truth[::2].cpu().tolist()]
             # input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in input_ids]
-            output_text += [[gold_text[i], generated_text[i].split('.')[0] + '.'] for i in range(len(gold_text))]
+            output_text += [[generated_text[i].split('.')[0] + '.'] for i in range(len(gold_text))]
             for i in range(generated.shape[0]):
                 bleu1 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [1, 0, 0, 0])
                 bleu2 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 1, 0, 0])
@@ -345,9 +345,8 @@ def evaluate(hps, model, dataloader, cr_loss_function, eg_loss_function, optimiz
     
     with open(hps.output_dir + f'/gpt2_cr_eg_epoch_{epoch}_labels.csv', 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerows(predict_labels)
+        writer.writerows([[l] for l in predict_labels])
     
-    accuracy = count / len(true_labels)
     # pdb.set_trace()
     # nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 
@@ -362,10 +361,10 @@ def evaluate(hps, model, dataloader, cr_loss_function, eg_loss_function, optimiz
     #     true_labels), loss, attack_count / len(true_labels), attack_loss
     
     evaluation_output = dict(
-        val_total_loss=val_total_loss,
-        val_cr_loss=val_cr_loss,
-        val_eg_loss=val_eg_loss,
-        accuracy=accuracy,
+        val_total_loss=val_total_loss * 100,
+        val_cr_loss=val_cr_loss * 100,
+        val_eg_loss=val_eg_loss * 100,
+        accuracy=count,
         bleu1=bleu1,
         bleu2=bleu2,
         bleu3=bleu3,
@@ -375,7 +374,7 @@ def evaluate(hps, model, dataloader, cr_loss_function, eg_loss_function, optimiz
         rouge2=rouge2r,
         rougel=rougelr
     )
-    for metric in ['bleu1', 'bleu2', 'bleu3', 'bleu4', 'avg_bleu', 'rouge1', 'rouge2', 'rougel']:
+    for metric in evaluation_output.keys():
         evaluation_output[metric] /= len(true_labels)
     
     return evaluation_output
@@ -444,7 +443,7 @@ def main():
     parser.add_argument('--seed', type=int, default=1024, help='fix the random seed for reproducible')
     parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
     parser.add_argument('--length', type=int, default=20, help='the max length of generated text')
-    parser.add_argument('--output_dir', type=str, default='./output/output_examples')
+    parser.add_argument('--output_dir', type=str, default='../analysis/raw_output')
     parser.add_argument('--hyp_only', type=bool, default=False)
     parser.add_argument('--alpha', type=float, default=0)
     parser.add_argument('--mode', type=str, default='discriminate_generate')
@@ -568,11 +567,15 @@ def main():
             train_total_loss += loss.item()
             train_cr_loss += loss_dis.item()
             train_eg_loss += loss_gen.item()
-            t.set_postfix(avg_loss='{}'.format(train_total_loss / (epoch_step + 1)))
+            t.set_postfix(avg_loss='{}'.format(train_total_loss / (epoch_step * hps.batch_size) * 100))
             epoch_step += 1
 
             loss.backward()
             optimizer.step()
+        
+        train_total_loss = train_total_loss / (epoch_step * hps.batch_size) * 100
+        train_cr_loss = train_cr_loss / (epoch_step * hps.batch_size) * 100
+        train_eg_loss = train_eg_loss / (epoch_step * hps.batch_size) * 100
         metric_log[f'epoch_{epoch}']['train_total_loss'] = train_total_loss
         metric_log[f'epoch_{epoch}']['train_cr_loss'] = train_cr_loss
         metric_log[f'epoch_{epoch}']['train_eg_loss'] = train_eg_loss

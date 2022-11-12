@@ -12,14 +12,14 @@ python3 gpt2_discriminate.py \
   --dev "dev.jsonl" \
   --model_name "gpt2" \
   --cuda True \
-  --gpu "0 1 2 3" \
-  --batch_size 420 \
-  --epochs 100 \
+  --gpu "0" \
+  --batch_size 64 \
+  --epochs 10 \
   --evaluation_step 72 \
   --lr 1e-5 \
   --set_seed True \
   --seed 338 \
-  --patient 3 
+  --patient 10 
 ```
 
 2. fine-tuning with XLNet-base
@@ -40,7 +40,7 @@ python3 train_discriminate.py \
  --lr 1e-5 \
  --set_seed True \
  --seed 338 \
- --patient 3 \
+ --patient 10 \
  --loss_func "BCE"
  ```
  
@@ -56,13 +56,13 @@ python3 train_discriminate.py \
   --dev 'dev.jsonl' \
   --model_name 'gpt2' \
   --cuda True \
-  --gpu '0 1 2 3' \
-  --batch_size 128 \
-  --epochs 100 \
+  --gpu '0' \
+  --batch_size 32 \
+  --epochs 10 \
   --evaluation_step 80 \
   --lr 1e-5 \
   --seed 1024 \
-  --patient 5 \
+  --patient 10 \
   --length 22
   ```
   
@@ -76,15 +76,15 @@ python3 train_discriminate.py \
   --train "train_full.jsonl" \
   --dev "dev_full.jsonl" \
   --model_name "gpt2" \
-  --gpu "0 1 2 3" \
-  --batch_size 420 \
+  --gpu "0" \
+  --batch_size 32 \
   --cuda True\
-  --epochs 100 \
+  --epochs 10 \
   --evaluation_step 72 \
   --lr 1e-5 \
   --set_seed True \
   --seed 338 \
-  --patient 5 \
+  --patient 10 \
   --length 22 \
   --alpha 0.9 \
   --beam_size 5 \

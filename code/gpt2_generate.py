@@ -47,7 +47,7 @@ def main():
     parser.add_argument('--seed', type=int, default=1024, help='fix the random seed for reproducible')
     parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
     parser.add_argument('--length', type=int, default=22, help='the max length of generated text')
-    parser.add_argument('--output_dir', type=str, default='./output/output_examples')
+    parser.add_argument('--output_dir', type=str, default='../analysis/raw_output')
 
     # parsing the hyper-parameters from command line and define logger
     hps = parser.parse_args()
@@ -142,18 +142,19 @@ def main():
             loss = output[0]
 
             train_loss += loss.item()
-            t.set_postfix(avg_loss='{}'.format(train_loss/(epoch_step+1)))
             epoch_step += 1
+            t.set_postfix(avg_loss='{}'.format(train_loss / (epoch_step * hps.batch_size) * 100))
 
             loss.backward()
             optimizer.step()
+        train_loss = train_loss / (epoch_step * hps.batch_size) * 100
         metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
         model.eval()
 
         # with torch.no_grad():
         print('\n')
         logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
-        evaluation_output = gpt2_evaluate(model, hps.length, dev_dataloader, hps)
+        evaluation_output = gpt2_evaluate(model, hps.length, dev_dataloader, hps, epoch)
         dev_ppl = compute_ppl(hps, model, dev_data)
         metric_log[f'epoch_{epoch}'].update(evaluation_output)
         metric_log[f'epoch_{epoch}']['perplexity'] = dev_ppl

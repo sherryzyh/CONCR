@@ -701,7 +701,7 @@ def gpt2_evaluate(model, length, data_loader, hps, epoch):
         generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in generated.cpu().tolist()]
         gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in gen_ids.cpu().tolist()]
         input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in premise_ids]
-        output_text += [[input_text[i], gold_text[i], generated_text[i].split('.')[0]+'.'] for i in range(len(input_text))]
+        output_text += [[generated_text[i].split('.')[0]+'.'] for i in range(len(input_text))]
 
         for i in range(generated.shape[0]):
             # predict_tokens = tokenizer.convert_ids_to_tokens(generated[i])
@@ -727,7 +727,7 @@ def gpt2_evaluate(model, length, data_loader, hps, epoch):
     num_instances = (len(data_loader)-1) * hps.batch_size + gen_ids.shape[0]
 
     evaluation_output = dict(
-        val_loss=val_loss,
+        val_loss=val_loss * 100,
         bleu1=bleu1,
         bleu2=bleu2,
         bleu3=bleu3,
@@ -737,7 +737,7 @@ def gpt2_evaluate(model, length, data_loader, hps, epoch):
         rouge2=rouge2r,
         rougel=rougelr
     )
-    for metric in ['bleu1', 'bleu2', 'bleu3', 'bleu4', 'avg_bleu', 'rouge1', 'rouge2', 'rougel']:
+    for metric in evaluation_output.keys():
         evaluation_output[metric] /= num_instances
     
     with open(hps.output_dir + f'/gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:

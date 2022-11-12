@@ -88,19 +88,19 @@ def evaluate(hps, model, dataloader, loss_function, optimizer, epoch):
         input_ids, attention_mask, pos, tmp_labels = batch
         logits = model(input_ids, attention_mask=attention_mask, pos=pos)
 
-        # predictions += logits.cpu().tolist()
+        predictions += logits.cpu().tolist()
         tmp_loss = loss_function(logits, tmp_labels.float())
         val_loss += tmp_loss.item()
-        # labels += tmp_labels.cpu().numpy().tolist()
+        labels += tmp_labels.cpu().numpy().tolist()
 
-        embedding_grad = optimizer.param_groups[0]['params'][0].grad
-        with torch.no_grad():
-            model.eval()
-            logits = model(input_ids, attention_mask=attention_mask, pos=pos)
-            predictions += logits.cpu().tolist()
-            tmp_loss = loss_function(logits, tmp_labels.float())
-            loss += tmp_loss.item()
-            labels += tmp_labels.cpu().numpy().tolist()
+        # embedding_grad = optimizer.param_groups[0]['params'][0].grad
+        # with torch.no_grad():
+        #     model.eval()
+        #     logits = model(input_ids, attention_mask=attention_mask, pos=pos)
+        #     predictions += logits.cpu().tolist()
+        #     tmp_loss = loss_function(logits, tmp_labels.float())
+        #     loss += tmp_loss.item()
+        #     labels += tmp_labels.cpu().numpy().tolist()
             
             # # attack_model.eval()
             # state_dict = attack_model.state_dict()
@@ -116,7 +116,6 @@ def evaluate(hps, model, dataloader, loss_function, optimizer, epoch):
             # attack_logits = attack_model(input_ids, attention_mask=attention_mask, pos=pos)
             # attack_predictions += attack_logits.cpu().tolist()
             # attack_loss += loss_function(attack_logits, tmp_labels.float()).item()
-
 
     a1 = torch.FloatTensor(predictions[::2]).unsqueeze(1)
     a2 = torch.FloatTensor(predictions[1::2]).unsqueeze(1)
@@ -148,13 +147,11 @@ def evaluate(hps, model, dataloader, loss_function, optimizer, epoch):
     
     with open(hps.output_dir + f'/gpt2_cr_epoch_{epoch}_labels.csv', 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerows(predict_labels)
-    
-    accuracy = count / len(true_labels)
+        writer.writerows([[l] for l in predict_labels])
     
     evaluation_output = dict(
-        val_loss=val_loss,
-        accuracy=accuracy
+        val_loss=val_loss / len(true_labels) * 100,
+        accuracy=count / len(true_labels)
     )
 
     # return count/len(true_labels), loss, attack_count/len(true_labels), attack_loss
@@ -193,7 +190,7 @@ def main():
     parser.add_argument('--seed', type=int, default=1024, help='fix the random seed for reproducible')
     parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
     parser.add_argument('--length', type=int, default=20, help='the max length of generated text')
-    parser.add_argument('--output_dir', type=str, default='./output/output_examples')
+    parser.add_argument('--output_dir', type=str, default='../analysis/raw_output')
     parser.add_argument('--hyp_only', type=bool, default=False)
     parser.add_argument('--attack_rate', type=float, default=0.015)
 
@@ -245,7 +242,7 @@ def main():
     model = gpt2_discriminate(hps)
 
     optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
-    
+    loss_function = nn.BCEWithLogitsLoss(reduction='mean')
 
     # Multi-Gpu training
     if hps.cuda:
@@ -284,11 +281,12 @@ def main():
             loss = loss_function(logits, label.float())
             
             train_loss += loss.item()
-            t.set_postfix(avg_loss='{}'.format(train_loss / (epoch_step + 1)))
             epoch_step += 1
+            t.set_postfix(avg_loss='{}'.format(train_loss / (epoch_step * hps.batch_size) * 100))
 
             loss.backward()
             optimizer.step()
+        train_loss = train_loss / (epoch_step * hps.batch_size) * 100
         metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
 
         model.eval()
