@@ -35,7 +35,7 @@ python3 train_discriminate.py \
  --cuda True \
  --gpu "0" \
  --batch_size 64 \
- --epochs 100 \
+ --epochs 10 \
  --evaluation_step 200 \
  --lr 1e-5 \
  --set_seed True \
