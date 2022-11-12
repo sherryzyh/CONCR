@@ -68,7 +68,7 @@ python3 train_discriminate.py \
   
   ## Running Multi-task Training (discriminate-generate)
   ```
-  python gpt2_multi_task.py \
+  python3 gpt2_multi_task.py \
   --data_dir "../data/" \
   --model_dir "gpt2" \
   --save_dir "./output/saved_model" \
@@ -80,7 +80,7 @@ python3 train_discriminate.py \
   --batch_size 32 \
   --cuda True\
   --epochs 10 \
-  --evaluation_step 72 \
+  --evaluation_step 933 \
   --lr 1e-5 \
   --set_seed True \
   --seed 338 \
