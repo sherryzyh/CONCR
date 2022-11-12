@@ -567,8 +567,8 @@ def main():
             train_total_loss += loss.item()
             train_cr_loss += loss_dis.item()
             train_eg_loss += loss_gen.item()
-            t.set_postfix(avg_loss='{}'.format(train_total_loss / (epoch_step * hps.batch_size) * 100))
             epoch_step += 1
+            t.set_postfix(avg_loss='{}'.format(train_total_loss / (epoch_step * hps.batch_size) * 100))
 
             loss.backward()
             optimizer.step()
