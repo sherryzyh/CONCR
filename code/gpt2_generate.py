@@ -14,7 +14,8 @@ from tqdm import trange
 import datetime
 import logging
 import pdb
-
+from collections import defaultdict
+import json
 
 def main():
     parser = argparse.ArgumentParser(description='xCAR')
@@ -74,13 +75,13 @@ def main():
     # Tokenization
     logger.info("[INFO] Tokenization and Padding for Data")
     train_ids, train_mask, train_seg_ids, train_label_ids, train_label_mask, _, _, _, _ = tokenize_gen(train_data, hps)
-    _, _, _, dev_label_ids, dev_label_mask, dev_label_seg_ids, dev_premise_ids, dev_premise_mask, dev_premise_seg_ids = tokenize_gen(dev_data, hps)
+    dev_ids, dev_mask, dev_seg_ids, dev_label_ids, dev_label_mask, dev_label_seg_ids, dev_premise_ids, dev_premise_mask, dev_premise_seg_ids = tokenize_gen(dev_data, hps)
     # _, _, _, test_label_ids, test_label_mask, test_label_seg_ids, test_premise_ids, test_premise_mask, test_premise_seg_ids = tokenize_gen(test_data, hps)
 
     # Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")
     TRAIN = TensorDataset(train_ids, train_mask, train_seg_ids, train_label_ids, train_label_mask)
-    DEV = TensorDataset(dev_label_ids, dev_label_mask, dev_label_seg_ids, dev_premise_ids, dev_premise_mask, dev_premise_seg_ids)
+    DEV = TensorDataset(dev_ids, dev_mask, dev_seg_ids, dev_label_ids, dev_label_mask, dev_label_seg_ids, dev_premise_ids, dev_premise_mask, dev_premise_seg_ids)
     # TEST = TensorDataset(test_label_ids, test_label_mask, test_label_seg_ids, test_premise_ids, test_premise_mask, test_premise_seg_ids)
     train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
@@ -103,16 +104,16 @@ def main():
 
     # training
     logger.info("[INFO] Start Training")
-    step = 0
     patient = 0
-    best_accuracy = 0
+    best_loss = 0
     stop_train = False
+    metric_log = defaultdict(dict)
 
     for epoch in range(hps.epochs):
         logger.info('[Epoch] {}'.format(epoch))
         t = trange(len(train_dataloader))
         epoch_step = 0
-        total_loss = 0
+        train_loss = 0
         for i, batch in zip(t, train_dataloader):
             optimizer.zero_grad()
             model.train()
@@ -140,54 +141,55 @@ def main():
             output = model(input_ids=input_ids, attention_mask=input_mask, token_type_ids=input_seg_ids, labels=true_labels)
             loss = output[0]
 
-            total_loss += loss.item()
-            t.set_postfix(avg_loss='{}'.format(total_loss/(epoch_step+1)))
+            train_loss += loss.item()
+            t.set_postfix(avg_loss='{}'.format(train_loss/(epoch_step+1)))
             epoch_step += 1
 
             loss.backward()
             optimizer.step()
+        metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
+        model.eval()
 
-            if step % hps.evaluation_step == 0 and step != 0:
-                model.eval()
+        # with torch.no_grad():
+        print('\n')
+        logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
+        evaluation_output = gpt2_evaluate(model, hps.length, dev_dataloader, hps)
+        dev_ppl = compute_ppl(hps, model, dev_data)
+        metric_log[f'epoch_{epoch}'].update(evaluation_output)
+        metric_log[f'epoch_{epoch}']['perplexity'] = dev_ppl
+        logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
+        logger.info("[Dev Metrics] Dev Loss: \t{}".format(evaluation_output['val_loss']))
+        logger.info("[Dev Metrics] Average BLEU:\t{}".format(evaluation_output['avg_bleu']))
+        logger.info("[Dev Metrics] Rouge:\t({}, {}, {})".format(
+            evaluation_output['rouge1'], evaluation_output['rouge2'], evaluation_output['rougel']))
+        logger.info("[Dev Metrics] Perplexity: \t{}".format(dev_ppl))
 
-                with torch.no_grad():
-                    print('\n')
-                    logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
-                    dev_bleu1, dev_bleu2, dev_bleu3, dev_bleu4, dev_rouge1, dev_rouge2, dev_rougel = gpt2_evaluate(model, hps.length, dev_dataloader, hps)
-                    print('\n')
-                    logger.info("[Dev Metrics] Dev BLEU: \t({}, {}, {}, {})".format(dev_bleu1, dev_bleu2, dev_bleu3, dev_bleu4))
-                    logger.info("[Dev Metrics] Dev Rouge: \t({}, {}, {})".format(dev_rouge1, dev_rouge2, dev_rougel))
+        with open(hps.output_dir + '/gpt2_eg_metric_log.json', 'w', encoding='utf-8') as fp:
+            json.dump(metric_log, fp)
 
-                    dev_ppl = compute_ppl(hps, model, dev_data)
-                    logger.info('[PPL] Model PerPlexity On Dev Set is {}'.format(dev_ppl))
+        if epoch == 0 or evaluation_output['val_loss'] < best_loss:
+            best_loss = evaluation_output['val_loss']
+            logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
+            torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
+            # logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
-                    if dev_bleu1 + dev_rouge1 >= best_accuracy:
-                        patient = 0
-                        best_accuracy = dev_bleu1 + dev_rouge1
-                        logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-                        torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
-                        # logger.info("[Test Evaluation] Start Evaluation on Test Set")
+            # test_bleu1, test_bleu2, test_bleu3, test_bleu4, test_rouge1, test_rouge2, test_rougel = gpt2_evaluate(model, hps.length, test_dataloader, hps)
+            
+            # print('\n')
+            # logger.info("[TEST Metrics] Test BLEU: \t({}, {}, {}, {})".format(test_bleu1, test_bleu2, test_bleu3, test_bleu4))
+            # logger.info("[TEST Metrics] Test Rouge: \t({}, {}, {})".format(test_rouge1, test_rouge2, test_rougel))
+            # test_ppl = compute_ppl(hps, model, test_data)
+            # logger.info('[PPL] Model PerPlexity On Test Set is {}'.format(test_ppl))
 
-                        # test_bleu1, test_bleu2, test_bleu3, test_bleu4, test_rouge1, test_rouge2, test_rougel = gpt2_evaluate(model, hps.length, test_dataloader, hps)
-                        
-                        # print('\n')
-                        # logger.info("[TEST Metrics] Test BLEU: \t({}, {}, {}, {})".format(test_bleu1, test_bleu2, test_bleu3, test_bleu4))
-                        # logger.info("[TEST Metrics] Test Rouge: \t({}, {}, {})".format(test_rouge1, test_rouge2, test_rougel))
-                        # test_ppl = compute_ppl(hps, model, test_data)
-                        # logger.info('[PPL] Model PerPlexity On Test Set is {}'.format(test_ppl))
-                    else:
-                        patient += 1
+            # logger.info("[Patient] {}".format(patient))
 
-                    logger.info("[Patient] {}".format(patient))
+        # if patient >= hps.patient:
+        #     logger.info("[INFO] Stopping Training by Early Stopping")
+        #     stop_train = True
+        #     break
 
-                    if patient >= hps.patient:
-                        logger.info("[INFO] Stopping Training by Early Stopping")
-                        stop_train = True
-                        break
-            step += 1
-
-        if stop_train:
-            break
+        # if stop_train:
+        #     break
 
 
 if __name__ == '__main__':

@@ -361,7 +361,7 @@ def evaluate(hps, model, dataloader, cr_loss_function, eg_loss_function, optimiz
     #     true_labels), bleu4 / len(true_labels), rouge1r / len(true_labels), rouge2r / len(true_labels), rougelr / len(
     #     true_labels), loss, attack_count / len(true_labels), attack_loss
     
-    evaluate_output = dict(
+    evaluation_output = dict(
         val_total_loss=val_total_loss,
         val_cr_loss=val_cr_loss,
         val_eg_loss=val_eg_loss,
@@ -376,9 +376,9 @@ def evaluate(hps, model, dataloader, cr_loss_function, eg_loss_function, optimiz
         rougel=rougelr
     )
     for metric in ['bleu1', 'bleu2', 'bleu3', 'bleu4', 'avg_bleu', 'rouge1', 'rouge2', 'rougel']:
-        evaluate_output[metric] /= len(true_labels)
+        evaluation_output[metric] /= len(true_labels)
     
-    return evaluate_output
+    return evaluation_output
 
 
 def compute_ppl(hps, model, data):
@@ -582,28 +582,27 @@ def main():
         # with torch.no_grad():
         print('\n')
         logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
-        evaluate_output = evaluate(hps, model, dev_dataloader, cr_loss_function, eg_loss_function, optimizer, epoch)
+        evaluation_output = evaluate(hps, model, dev_dataloader, cr_loss_function, eg_loss_function, optimizer, epoch)
         dev_ppl = compute_ppl(hps, model, dev_data)
-        metric_log[f'epoch_{epoch}'].update(evaluate_output)
+        metric_log[f'epoch_{epoch}'].update(evaluation_output)
         metric_log[f'epoch_{epoch}']['perplexity'] = dev_ppl
         logger.info("[Train Metrics] Total Loss, CR Loss, EG Loss: \t{}, {}, {}".format(
             train_total_loss, train_cr_loss, train_eg_loss))
         logger.info("[Dev Metrics] Total Loss, CR Loss, EG Loss: \t{}, {}, {}".format(
-            evaluate_output['val_total_loss'], evaluate_output['val_cr_loss'], evaluate_output['val_eg_loss']))
-        logger.info("[Dev CR Metrics] Accuracy: \t{}".format(evaluate_output['accuracy']))
-        # logger.info("[DEV Metrics] Dev Attack Accuracy: \t{}".format(evaluate_output[-2]))
-        logger.info("[Dev EG Metrics] Average BLEU:\t{}".format(evaluate_output['avg_bleu']))
-        # logger.info("[Dev Metrics] Dev Discriminate Attack Loss: \t{}".format(evaluate_output[-1]))
+            evaluation_output['val_total_loss'], evaluation_output['val_cr_loss'], evaluation_output['val_eg_loss']))
+        logger.info("[Dev CR Metrics] Accuracy: \t{}".format(evaluation_output['accuracy']))
+        # logger.info("[DEV Metrics] Dev Attack Accuracy: \t{}".format(evaluation_output[-2]))
+        logger.info("[Dev EG Metrics] Average BLEU:\t{}".format(evaluation_output['avg_bleu']))
+        # logger.info("[Dev Metrics] Dev Discriminate Attack Loss: \t{}".format(evaluation_output[-1]))
         logger.info("[Dev EG Metrics] Rouge:\t({}, {}, {})".format(
-            evaluate_output['rouge1'], evaluate_output['rouge2'], evaluate_output['rougel']))
+            evaluation_output['rouge1'], evaluation_output['rouge2'], evaluation_output['rougel']))
         logger.info("[Dev EG Metrics] Perplexity: \t{}".format(dev_ppl))
 
         with open(hps.output_dir + '/gpt2_cr_eg_metric_log.json', 'w', encoding='utf-8') as fp:
             json.dump(metric_log, fp)
 
-        if evaluate_output[0] >= best_accuracy:
-            patient = 0
-            best_accuracy = evaluate_output[0]
+        if epoch == 0 or evaluation_output['val_total_loss'] < best_loss:
+            best_loss = evaluation_output['val_total_loss']
             logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
             torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
             # logger.info("[Test Evaluation] Start Evaluation on Test Set")
@@ -623,18 +622,18 @@ def main():
             # logger.info(
             #     "[Test Metrics] Test Rouge Recall:\t({}, {}, {})".format(test_output[5], test_output[6],
             #                                                              test_output[7]))
-        else:
-            patient += 1
+        # else:
+        #     patient += 1
 
-        logger.info("[Patient] {}".format(patient))
+        # logger.info("[Patient] {}".format(patient))
 
-        if patient >= hps.patient:
-            logger.info("[INFO] Stopping Training by Early Stopping")
-            stop_train = True
-            break
+        # if patient >= hps.patient:
+        #     logger.info("[INFO] Stopping Training by Early Stopping")
+        #     stop_train = True
+        #     break
 
-        if stop_train:
-            break
+        # if stop_train:
+        #     break
 
 
 if __name__ == '__main__':

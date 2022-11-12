@@ -16,7 +16,9 @@ import logging
 import pdb
 import copy
 import torch.nn.functional as F
-
+from collections import defaultdict
+import json
+import csv
 
 
 class gpt2_discriminate(nn.Module):
@@ -69,10 +71,10 @@ def tokenization(data, hps):
 
 
 
-def evaluate(hps, model, dataloader, loss_function, optimizer):
+def evaluate(hps, model, dataloader, loss_function, optimizer, epoch):
     predictions, attack_predictions = [], []
     labels = []
-    loss = 0
+    val_loss = 0
     attack_loss = 0
     
     # model.eval()
@@ -88,10 +90,9 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
 
         # predictions += logits.cpu().tolist()
         tmp_loss = loss_function(logits, tmp_labels.float())
-        loss += tmp_loss.item()
+        val_loss += tmp_loss.item()
         # labels += tmp_labels.cpu().numpy().tolist()
 
-        tmp_loss.backward()
         embedding_grad = optimizer.param_groups[0]['params'][0].grad
         with torch.no_grad():
             model.eval()
@@ -137,15 +138,27 @@ def evaluate(hps, model, dataloader, loss_function, optimizer):
         # if predict_labels[i] == true_labels[i] and attack_predict_labels[i] == true_labels[i]:
         if predict_labels[i] == true_labels[i]:
             count += 1
-            attack_count += 1
-        elif predict_labels[i] == true_labels[i]:
-            count += 1
-        # elif attack_predict_labels[i] == true_labels[i]:
         #     attack_count += 1
-        else:
-            continue
+        # elif predict_labels[i] == true_labels[i]:
+        #     count += 1
+        # # elif attack_predict_labels[i] == true_labels[i]:
+        # #     attack_count += 1
+        # else:
+        #     continue
+    
+    with open(hps.output_dir + f'/gpt2_cr_epoch_{epoch}_labels.csv', 'w', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerows(predict_labels)
+    
+    accuracy = count / len(true_labels)
+    
+    evaluation_output = dict(
+        val_loss=val_loss,
+        accuracy=accuracy
+    )
+
     # return count/len(true_labels), loss, attack_count/len(true_labels), attack_loss
-    return count/len(true_labels), loss
+    return evaluation_output
 
 
 
@@ -232,7 +245,7 @@ def main():
     model = gpt2_discriminate(hps)
 
     optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
-    loss_function = nn.BCEWithLogitsLoss(reduction='mean')
+    
 
     # Multi-Gpu training
     if hps.cuda:
@@ -248,16 +261,16 @@ def main():
 
     # training
     logger.info("[INFO] Start Training")
-    step = 0
     patient = 0
     best_accuracy = 0
     stop_train = False
+    metric_log = defaultdict(dict)
 
     for epoch in range(hps.epochs):
         logger.info('[Epoch] {}'.format(epoch))
         t = trange(len(train_dataloader))
         epoch_step = 0
-        total_loss = 0
+        train_loss = 0
         for i, batch in zip(t, train_dataloader):
             optimizer.zero_grad()
             model.train()
@@ -270,43 +283,45 @@ def main():
             # pdb.set_trace()
             loss = loss_function(logits, label.float())
             
-            total_loss += loss.item()
-            t.set_postfix(avg_loss='{}'.format(total_loss / (epoch_step + 1)))
+            train_loss += loss.item()
+            t.set_postfix(avg_loss='{}'.format(train_loss / (epoch_step + 1)))
             epoch_step += 1
 
             loss.backward()
             optimizer.step()
+        metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
 
-            if step % hps.evaluation_step == 0 and step != 0:
-                model.eval()
+        model.eval()
 
-                # with torch.no_grad():
-                    # print('\n')
-                logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
-                evaluation_output  = evaluate(hps, model, dev_dataloader, loss_function, optimizer)
-                # print('\n')
-                logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(evaluation_output[0]))
-                # logger.info("[Dev Metrics] Dev Attack Accuracy: \t{}".format(evaluation_output[2]))
-                logger.info("[Dev Metrics] Dev Loss: \t{}".format(evaluation_output[1]))
-                # logger.info("[Dev Metrics] Dev Attack Loss: \t{}".format(evaluation_output[3]))
+        # with torch.no_grad():
+        print('\n')
+        logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
+        evaluation_output  = evaluate(hps, model, dev_dataloader, loss_function, optimizer, epoch)
+        metric_log[f'epoch_{epoch}'].update(evaluation_output)
+        logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
+        logger.info("[Dev Metrics] Dev Loss: \t{}".format(evaluation_output['val_loss']))
+        logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(evaluation_output['accuracy']))
+        # logger.info("[Dev Metrics] Dev Attack Accuracy: \t{}".format(evaluation_output[2]))
+        # logger.info("[Dev Metrics] Dev Attack Loss: \t{}".format(evaluation_output[3]))
 
+        with open(hps.output_dir + '/gpt2_cr_metric_log.json', 'w', encoding='utf-8') as fp:
+            json.dump(metric_log, fp)
 
-                if evaluation_output[0] >= best_accuracy:
-                    patient = 0
-                    best_accuracy = evaluation_output[0]
-                    logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-                    torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
-                #     logger.info("[Test Evaluation] Start Evaluation on Test Set")
+        if epoch == 0 or evaluation_output['val_loss'] < best_loss:
+            best_loss = evaluation_output['val_loss']
+            logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
+            torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
+        #     logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
-                #     evaluation_output = evaluate(hps, model, test_dataloader, loss_function, optimizer)
+        #     evaluation_output = evaluate(hps, model, test_dataloader, loss_function, optimizer)
 
-                #     print('\n')
-                #     logger.info("[Test Metrics] Test Accuracy: \t{}".format(evaluation_output[0]))
-                #     logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(evaluation_output[2]))
-                #     logger.info("[Test Metrics] Test Loss: \t{}".format(evaluation_output[1]))
-                #     logger.info("[Test Metrics] Test Attack Loss: \t{}".format(evaluation_output[3]))
-                else:
-                    patient += 1
+        #     print('\n')
+        #     logger.info("[Test Metrics] Test Accuracy: \t{}".format(evaluation_output[0]))
+        #     logger.info("[Test Metrics] Test Attack Accuracy: \t{}".format(evaluation_output[2]))
+        #     logger.info("[Test Metrics] Test Loss: \t{}".format(evaluation_output[1]))
+        #     logger.info("[Test Metrics] Test Attack Loss: \t{}".format(evaluation_output[3]))
+        # else:
+        #     patient += 1
 
                 # logger.info("[Patient] {}".format(patient))
 
@@ -314,10 +329,10 @@ def main():
                 #     logger.info("[INFO] Stopping Training by Early Stopping")
                 #     stop_train = True
                 #     break
-            step += 1
+            
 
-        if stop_train:
-            break
+        # if stop_train:
+        #     break
 
 
 if __name__ == '__main__':

@@ -653,10 +653,11 @@ def sample_sequence(model, length, start_token=None, batch_size=None, context=No
             attention_mask = torch.cat((attention_mask, torch.ones(prev.shape).long().cuda()), -1)
     return output if input_type == 'ids' else output_id
 
-# called in gpt2_generate.py
-def gpt2_evaluate(model, length, data_loader, hps):
-    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
 
+# called in gpt2_generate.py
+def gpt2_evaluate(model, length, data_loader, hps, epoch):
+    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
+    val_loss = 0
     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
     rouge1r, rouge2r, rougelr = 0, 0, 0
     rouge = Rouge()
@@ -666,7 +667,21 @@ def gpt2_evaluate(model, length, data_loader, hps):
     for batch in data_loader:
         if hps.cuda:
             batch = tuple(term.cuda() for term in batch)
-        gen_ids, gen_mask, _, premise_ids, premise_mask, premise_token_type_ids = batch
+        input_ids, input_mask, input_seg_ids, gen_ids, gen_mask, _, premise_ids, premise_mask, premise_token_type_ids = batch #dev
+        tmp = torch.ones(gen_mask.shape).long()
+        count_mask_length = torch.sum(tmp==gen_mask.cpu(), 1).squeeze().tolist()
+        true_labels = None
+        for j in range(input_ids.shape[0]):
+            if true_labels is None:
+                # true_labels = torch.cat((torch.ones(count_mask_length[j]).long(), input_ids[j, count_mask_length[j]:].cpu())).unsqueeze(0)
+                true_labels = torch.cat((input_ids[j, :-count_mask_length[j]]*0-100, input_ids[j, -count_mask_length[j]:])).unsqueeze(0)
+            else:
+                # true_labels = torch.cat((true_labels, torch.cat((torch.ones(count_mask_length[j]).long(), input_ids[j, count_mask_length[j]:].cpu())).unsqueeze(0)), 0)
+                true_labels = torch.cat((true_labels, torch.cat((input_ids[j, :-count_mask_length[j]]*0-100, input_ids[j, -count_mask_length[j]:])).unsqueeze(0)),0)
+
+        output = model(input_ids=input_ids, attention_mask=input_mask, token_type_ids=input_seg_ids, labels=true_labels)
+        loss = output[0]
+        val_loss += loss.item()
 
         # output = sample_sequence(model, length, device='cuda', context=premise_ids, batch_size=hps.batch_size, attention_mask=premise_mask, input_type='ids')
         generated = model.generate(input_ids=premise_ids, 
@@ -687,7 +702,6 @@ def gpt2_evaluate(model, length, data_loader, hps):
         gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in gen_ids.cpu().tolist()]
         input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in premise_ids]
         output_text += [[input_text[i], gold_text[i], generated_text[i].split('.')[0]+'.'] for i in range(len(input_text))]
-
 
         for i in range(generated.shape[0]):
             # predict_tokens = tokenizer.convert_ids_to_tokens(generated[i])
@@ -712,11 +726,25 @@ def gpt2_evaluate(model, length, data_loader, hps):
 
     num_instances = (len(data_loader)-1) * hps.batch_size + gen_ids.shape[0]
 
-    fo = open(hps.output_dir+'/gpt2_predict_'+nowtime+'.csv', 'w', encoding='utf-8')
-    writer = csv.writer(fo)
-    writer.writerows(output_text)
-
-    return bleu1/num_instances, bleu2/num_instances, bleu3/num_instances, bleu4/num_instances, rouge1r/num_instances, rouge2r/num_instances, rougelr/num_instances
+    evaluation_output = dict(
+        val_loss=val_loss,
+        bleu1=bleu1,
+        bleu2=bleu2,
+        bleu3=bleu3,
+        bleu4=bleu4,
+        avg_bleu=sum([bleu1, bleu2, bleu3, bleu4]) / 4,
+        rouge1=rouge1r,
+        rouge2=rouge2r,
+        rougel=rougelr
+    )
+    for metric in ['bleu1', 'bleu2', 'bleu3', 'bleu4', 'avg_bleu', 'rouge1', 'rouge2', 'rougel']:
+        evaluation_output[metric] /= num_instances
+    
+    with open(hps.output_dir + f'/gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerows(output_text)
+    
+    return evaluation_output
 
 
 
