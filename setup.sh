@@ -6,3 +6,4 @@ pip install nltk
 pip install rouge
 pip install sentencepiece
 pip install ipykernel
+pip install -U sentence-transformers
