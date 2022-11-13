@@ -215,3 +215,131 @@
 2022-11-09 02:34:18,085 INFO    : [Dev Metrics] Dev Rouge Recall:	(0.3489244079551506, 0.11248331217457187, 0.3376580170767124)
 2022-11-09 02:34:18,085 INFO    : [Patient] 5
 2022-11-09 02:34:18,085 INFO    : [INFO] Stopping Training by Early Stopping
+2022-11-12 05:24:35,637 INFO    : [INFO] Loading Data
+2022-11-12 05:24:35,638 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-12 05:24:35,712 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-12 05:25:09,537 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-12 05:25:09,538 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-12 05:25:12,803 INFO    : [INFO] Start Training
+2022-11-12 05:25:12,803 INFO    : [Epoch] 0
+2022-11-12 05:35:45,904 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 05:41:27,036 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	834.2717021107674, 660.509540438652, 2398.1312314271927
+2022-11-12 05:41:27,037 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	107.80664849281311, 88.64747440814972, 280.23922872543335
+2022-11-12 05:41:27,037 INFO    : [Dev CR Metrics] Accuracy: 	0.648444863336475
+2022-11-12 05:41:27,037 INFO    : [Dev EG Metrics] Average BLEU:	0.3266658009370474
+2022-11-12 05:41:27,037 INFO    : [Dev EG Metrics] Rouge:	(0.3117813002435583, 0.09120323151065513, 0.30277109797054913)
+2022-11-12 05:41:27,037 INFO    : [Dev EG Metrics] Perplexity: 	8.251206398010254
+2022-11-12 05:41:27,037 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-12 05:41:30,912 INFO    : [Epoch] 1
+2022-11-12 15:01:04,615 INFO    : [INFO] Loading Data
+2022-11-12 15:01:04,616 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-12 15:01:04,691 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-12 15:01:38,498 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-12 15:01:38,500 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-12 15:01:46,144 INFO    : [INFO] Start Training
+2022-11-12 15:01:46,145 INFO    : [Epoch] 0
+2022-11-12 18:06:38,116 INFO    : [INFO] Loading Data
+2022-11-12 18:06:38,117 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-12 18:06:38,187 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-12 18:07:12,132 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-12 18:07:12,133 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-12 18:07:15,358 INFO    : [INFO] Start Training
+2022-11-12 18:07:15,358 INFO    : [Epoch] 0
+2022-11-12 18:37:53,411 INFO    : [INFO] Loading Data
+2022-11-12 18:37:53,411 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-12 18:37:53,480 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-12 18:38:27,448 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-12 18:38:27,448 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-12 18:38:30,665 INFO    : [INFO] Start Training
+2022-11-12 18:38:30,666 INFO    : [Epoch] 0
+2022-11-12 18:44:27,378 INFO    : [INFO] Loading Data
+2022-11-12 18:44:27,378 INFO    : [INFO] Mode:	discriminate_generate
+2022-11-12 18:44:27,448 INFO    : [INFO] Tokenization and Padding for Data
+2022-11-12 18:45:01,353 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-11-12 18:45:01,354 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-11-12 18:45:04,603 INFO    : [INFO] Start Training
+2022-11-12 18:45:04,603 INFO    : [Epoch] 0
+2022-11-12 18:55:59,269 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 19:01:37,561 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	2.7943184020323133, 2.2123175925731915, 8.032325935916376
+2022-11-12 19:01:37,561 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	5.080426413421918, 4.1775435630607785, 13.206372701481309
+2022-11-12 19:01:37,561 INFO    : [Dev CR Metrics] Accuracy: 	0.648444863336475
+2022-11-12 19:01:37,561 INFO    : [Dev EG Metrics] Average BLEU:	0.3266658009370474
+2022-11-12 19:01:37,561 INFO    : [Dev EG Metrics] Rouge:	(0.3117813002435583, 0.09120323151065513, 0.30277109797054913)
+2022-11-12 19:01:37,562 INFO    : [Dev EG Metrics] Perplexity: 	8.251206398010254
+2022-11-12 19:01:37,562 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-12 19:01:41,406 INFO    : [Epoch] 1
+2022-11-12 19:12:46,468 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 19:18:24,967 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	2.55337757420789, 2.0828267060308083, 6.788335595627307
+2022-11-12 19:18:24,967 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	4.932070045286928, 4.085227349925783, 12.55365474172407
+2022-11-12 19:18:24,967 INFO    : [Dev CR Metrics] Accuracy: 	0.6644674835061263
+2022-11-12 19:18:24,967 INFO    : [Dev EG Metrics] Average BLEU:	0.3387806122401309
+2022-11-12 19:18:24,967 INFO    : [Dev EG Metrics] Rouge:	(0.3331272598379794, 0.10462861993396456, 0.323585012707719)
+2022-11-12 19:18:24,968 INFO    : [Dev EG Metrics] Perplexity: 	7.414321422576904
+2022-11-12 19:18:24,968 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-12 19:18:28,803 INFO    : [Epoch] 2
+2022-11-12 19:29:35,546 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 19:35:13,733 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	2.442778598832611, 2.0036275699207637, 6.395138130949498
+2022-11-12 19:35:13,733 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	4.854888310980729, 4.038369298880107, 12.203559540668598
+2022-11-12 19:35:13,733 INFO    : [Dev CR Metrics] Accuracy: 	0.6828463713477851
+2022-11-12 19:35:13,733 INFO    : [Dev EG Metrics] Average BLEU:	0.34340555968003134
+2022-11-12 19:35:13,733 INFO    : [Dev EG Metrics] Rouge:	(0.34536394223703654, 0.11410503321193834, 0.335446752607658)
+2022-11-12 19:35:13,733 INFO    : [Dev EG Metrics] Perplexity: 	7.0052924156188965
+2022-11-12 19:35:13,734 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-12 19:35:17,563 INFO    : [Epoch] 3
+2022-11-12 19:46:25,145 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 19:52:00,655 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	2.3460292615723124, 1.9218816881098995, 6.163357719299878
+2022-11-12 19:52:00,655 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	4.807467198282002, 4.002081499585108, 12.055938840474193
+2022-11-12 19:52:00,655 INFO    : [Dev CR Metrics] Accuracy: 	0.6979264844486334
+2022-11-12 19:52:00,655 INFO    : [Dev EG Metrics] Average BLEU:	0.34575686288822227
+2022-11-12 19:52:00,655 INFO    : [Dev EG Metrics] Rouge:	(0.34620104593250156, 0.11470454123750116, 0.33653958549381907)
+2022-11-12 19:52:00,655 INFO    : [Dev EG Metrics] Perplexity: 	6.849966526031494
+2022-11-12 19:52:00,656 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-12 19:52:04,487 INFO    : [Epoch] 4
+2022-11-12 20:03:02,808 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 20:08:41,851 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	2.24081388208516, 1.8229743378937628, 6.001370024467077
+2022-11-12 20:08:41,851 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	4.805128892899458, 4.00525179817135, 12.004023217345948
+2022-11-12 20:08:41,851 INFO    : [Dev CR Metrics] Accuracy: 	0.6993402450518379
+2022-11-12 20:08:41,851 INFO    : [Dev EG Metrics] Average BLEU:	0.3469213444456762
+2022-11-12 20:08:41,851 INFO    : [Dev EG Metrics] Rouge:	(0.3443884383744124, 0.11654123344884001, 0.33495320820229396)
+2022-11-12 20:08:41,851 INFO    : [Dev EG Metrics] Perplexity: 	6.79328727722168
+2022-11-12 20:08:41,852 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-11-12 20:08:45,687 INFO    : [Epoch] 5
+2022-11-12 20:19:51,429 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 20:25:29,722 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	2.144695236871672, 1.7295922206600953, 5.880622630829086
+2022-11-12 20:25:29,723 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	4.883975296173311, 4.101620548519742, 11.925168862104641
+2022-11-12 20:25:29,723 INFO    : [Dev CR Metrics] Accuracy: 	0.7016965127238455
+2022-11-12 20:25:29,723 INFO    : [Dev EG Metrics] Average BLEU:	0.3467020602475707
+2022-11-12 20:25:29,723 INFO    : [Dev EG Metrics] Rouge:	(0.3452634841211109, 0.11561160228829462, 0.33540245841245264)
+2022-11-12 20:25:29,723 INFO    : [Dev EG Metrics] Perplexity: 	6.699371814727783
+2022-11-12 20:25:29,724 INFO    : [Epoch] 6
+2022-11-12 20:36:33,968 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 20:42:12,242 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	2.0421759051740938, 1.6273038429861924, 5.776024733980497
+2022-11-12 20:42:12,242 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	4.945300470310826, 4.1740685771592485, 11.886388226346403
+2022-11-12 20:42:12,242 INFO    : [Dev CR Metrics] Accuracy: 	0.7092365692742696
+2022-11-12 20:42:12,242 INFO    : [Dev EG Metrics] Average BLEU:	0.34698729807475276
+2022-11-12 20:42:12,243 INFO    : [Dev EG Metrics] Rouge:	(0.3547121831415927, 0.11580873256526072, 0.3448281768883178)
+2022-11-12 20:42:12,243 INFO    : [Dev EG Metrics] Perplexity: 	6.6580400466918945
+2022-11-12 20:42:12,243 INFO    : [Epoch] 7
+2022-11-12 20:53:17,564 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 20:58:55,670 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	1.9354393835491943, 1.5175988788877206, 5.696004179145618
+2022-11-12 20:58:55,671 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	5.078709788416828, 4.321245280332323, 11.895890987559829
+2022-11-12 20:58:55,671 INFO    : [Dev CR Metrics] Accuracy: 	0.7139491046182846
+2022-11-12 20:58:55,671 INFO    : [Dev EG Metrics] Average BLEU:	0.3483632250146806
+2022-11-12 20:58:55,671 INFO    : [Dev EG Metrics] Rouge:	(0.3446355159704807, 0.11675295499102116, 0.3351942486634375)
+2022-11-12 20:58:55,671 INFO    : [Dev EG Metrics] Perplexity: 	6.6635918617248535
+2022-11-12 20:58:55,672 INFO    : [Epoch] 8
+2022-11-12 21:10:01,835 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 21:15:41,232 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	1.8103833076726779, 1.3862930266196578, 5.627196096482768
+2022-11-12 21:15:41,233 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	5.341133986521621, 4.609960372385048, 11.92169716962658
+2022-11-12 21:15:41,233 INFO    : [Dev CR Metrics] Accuracy: 	0.7148916116870877
+2022-11-12 21:15:41,233 INFO    : [Dev EG Metrics] Average BLEU:	0.3452797077429446
+2022-11-12 21:15:41,233 INFO    : [Dev EG Metrics] Rouge:	(0.34621903252599906, 0.11316301000318572, 0.33572298588723193)
+2022-11-12 21:15:41,233 INFO    : [Dev EG Metrics] Perplexity: 	6.6797943115234375
+2022-11-12 21:15:41,234 INFO    : [Epoch] 9
+2022-11-12 21:26:46,207 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-11-12 21:32:25,144 INFO    : [Train Metrics] Total Loss, CR Loss, EG Loss: 	1.7216668855538642, 1.295867046522973, 5.553865638368894
+2022-11-12 21:32:25,144 INFO    : [Dev Metrics] Total Loss, CR Loss, EG Loss: 	5.523642279650106, 4.816097174187408, 11.891549117828067
+2022-11-12 21:32:25,144 INFO    : [Dev CR Metrics] Accuracy: 	0.7082940622054665
+2022-11-12 21:32:25,144 INFO    : [Dev EG Metrics] Average BLEU:	0.35147128084117957
+2022-11-12 21:32:25,144 INFO    : [Dev EG Metrics] Rouge:	(0.3516230079974051, 0.11426868906598077, 0.3411882683886068)
+2022-11-12 21:32:25,144 INFO    : [Dev EG Metrics] Perplexity: 	6.643177509307861
