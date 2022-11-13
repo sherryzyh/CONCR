@@ -1,20 +1,26 @@
 import jsonlines
 import sys
+import csv
 import pickle
 from sentence_transformers import SentenceTransformer, util
 
 if __name__ == '__main__':
-    with jsonlines.open('../dev_full.jsonl', 'r') as f:
+    with jsonlines.open('../data/dev_full.jsonl', 'r') as f:
         hypotheses1 = [line['hypothesis1'] for line in f]
+    with jsonlines.open('../data/dev_full.jsonl', 'r') as f:
         hypotheses2 = [line['hypothesis2'] for line in f]
+    with jsonlines.open('../data/dev_full.jsonl', 'r') as f:
         explanations = [line['conceptual_explanation'] for line in f]
+    with jsonlines.open('../data/dev_full.jsonl', 'r') as f:
         dev_full = [line for line in f]
+    assert len(hypotheses1) == len(hypotheses2)
     print("Dev dataset loaded")
     
     model = SentenceTransformer('all-MiniLM-L6-v2')
 
     hypothesis1_embeddings = model.encode(hypotheses1)
-    hypothesis2_embeddings = model.encode(hypotheses1)
+    hypothesis2_embeddings = model.encode(hypotheses2)
+    assert len(hypothesis1_embeddings) == len(hypothesis2_embeddings)
     print("Hypothesis embeddings generated")
 
     # Store sentences & embeddings on disc
@@ -32,15 +38,11 @@ if __name__ == '__main__':
         pickle.dump({'explanations': explanations, 'embeddings': explanation_embeddings}, fOut, protocol=pickle.HIGHEST_PROTOCOL)
     print("Explanation embeddings saved")
 
-    similarities = []
     for i in range(len(hypothesis1_embeddings)):
         cos_sim = util.cos_sim(hypothesis1_embeddings[i], hypothesis2_embeddings[i])
-        similarities.append(cos_sim)
+        dev_full[i]['hypotheses_cosine_sim'] = cos_sim.item()
     print("Hypothesis embedding similarities generated")
-
-    for i, line in enumerate(dev_full):
-        line['hypotheses_cosine_sim'] = cos_sim[i]
     
-    with jsonlines.open('../dev_full_augmented.jsonl', 'w') as f:
+    with jsonlines.open('../data/dev_full_augmented.jsonl', 'w') as f:
         f.write_all(dev_full)
     print("Hypothesis embedding similarities saved")
