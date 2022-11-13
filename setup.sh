@@ -5,3 +5,4 @@ pip install OpenNMT-py
 pip install nltk
 pip install rouge
 pip install sentencepiece
+pip install ipykernel
