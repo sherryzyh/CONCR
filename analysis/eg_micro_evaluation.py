@@ -13,7 +13,7 @@ def read_gold_data(path):
 
 
 def micro_evaluation_bleu(gold, prediction):
-    avg_bleu = bleu(gold, prediction)
+    avg_bleu = bleu([gold], prediction)
     return avg_bleu
 
 
@@ -52,7 +52,7 @@ def main():
             rouge1=rouge1, rouge2=rouge2, rougel=rougel, avg_rouge=avg_rouge, 
             cos_sim=float(similarities[i])))
 
-    output_file = "_".join(prediction_file.split("_")[:-1] + ["micro", "evaluation.json"])
+    output_file = "_".join(prediction_file.split("_")[:-1] + ["micro", "EG.json"])
     output_path = os.path.join('micro_evaluation', output_file)
     fo = open(output_path, 'w')
     json.dump(output_dict_list, fo)
