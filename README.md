@@ -3,8 +3,8 @@
 ## Running Causal Reasoning Task
 1. fine-tuning with GPT-2
 ```
-python3 gpt2_discriminate.py \
-  --data_dir "../data/Causal_Reasoning/" \
+python3 code/gpt2_discriminate.py \
+  --data_dir "./data/Causal_Reasoning/" \
   --model_dir "gpt2" \
   --save_dir "./output/saved_model" \
   --log_dir "./output/log" \
@@ -24,8 +24,8 @@ python3 gpt2_discriminate.py \
 
 2. fine-tuning with XLNet-base
 ```
-python3 train_discriminate.py \
- --data_dir "../data/Causal_Reasoning/" \
+python3 code/train_discriminate.py \
+ --data_dir "./data/Causal_Reasoning/" \
  --model_dir "xlnet-base-cased" \
  --save_dir "./output/saved_model" \
  --log_dir "./output/log" \
@@ -47,8 +47,8 @@ python3 train_discriminate.py \
  ## Running Explanation Generation Task
  1. fine-tuning with GPT-2
  ```
- python3 gpt2_generate.py \
-  --data_dir '../data/Explanation_Generation/' \
+ python3 code/gpt2_generate.py \
+  --data_dir './data/Explanation_Generation/' \
   --model_dir 'gpt2' \
   --save_dir './output/saved_model' \
   --log_dir './output/log' \
@@ -69,7 +69,7 @@ python3 train_discriminate.py \
   ## Running Multi-task Training (discriminate-generate)
   ```
   python3 gpt2_multi_task.py \
-  --data_dir "../data/" \
+  --data_dir "./data/" \
   --model_dir "gpt2" \
   --save_dir "./output/saved_model" \
   --log_dir "./output/log" \
