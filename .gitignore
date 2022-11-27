@@ -2,3 +2,8 @@
 */.DS_Store
 ./code/output/saved_model/
 ecr
+**/__pycache__/**
+
+try.sh
+output/saved_model/
+output/log/test_*

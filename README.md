@@ -1,6 +1,11 @@
 # Explainable-Causal-Reasoning
  
 ## Running Causal Reasoning Task
+### Parameters
+**model_dir**: If use pre-trained model, use the name in Huggingface hub, e.g., "bert-base-cased".
+**model_name**: Options include only "bert", "roberta", "albert", "gpt", "gpt2", "bart", or by default "xlnet".
+
+### Baselines
 1. fine-tuning with GPT-2
 ```
 python3 code/gpt2_discriminate.py \
