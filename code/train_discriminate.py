@@ -49,6 +49,7 @@ def parse_hps():
     parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
     parser.add_argument('--loss_func', type=str, default='BCE', help="loss function of output")
     parser.add_argument('--hyp_only', type=bool, default=False, help="If set True, Only send hypothesis into model")
+    parser.add_argument('--prompt', type=str, default=None, help="prompt template")
     # parser.add_argument('--warmup_proportion', type=float, default=0.1, help='warmup settings')
 
     # parsing the hyper-parameters from command line and define logger
@@ -139,6 +140,12 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             if stop_train:
                 return
 
+def load_loss_function(hps):
+    if hps.loss_func == "CrossEntropy":
+        loss_function = nn.CrossEntropyLoss(reduction='mean')
+    elif hps.loss_func == "BCE":
+        loss_function = nn.BCEWithLogitsLoss(reduction='mean')
+    return loss_function
 
 def main():
     # parse hyper parameters
@@ -169,18 +176,24 @@ def main():
 
 
     # load data
-    logger.info("[MODEL] {}".format(hps.model_name))
-    logger.info("[INFO] Loading Data")
-    logger.info("[INFO] Hypothesis Only: {}".format(hps.hyp_only))
+    logger.info("[DATA] Loading Data")
+    logger.info("[DATA] Hypothesis Only: {}".format(hps.hyp_only))
     train_data = load_data(os.path.join(hps.data_dir, hps.train))
     dev_data = load_data(os.path.join(hps.data_dir, hps.dev))
     # test_data = load_data(os.path.join(hps.data_dir, hps.test))
+    print("loaded data:", dev_data[0])
 
-    # Tokenization
-    logger.info("[INFO] Tokenization and Padding for Data")
+    # tokenization
+    logger.info("[DATA] Tokenization and Padding for Data")
     train_ids, train_mask, train_seg_ids, train_labels, train_length = quick_tokenize(train_data, hps)
     dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = quick_tokenize(dev_data, hps)
     # test_ids, test_mask, test_seg_ids, test_labels, test_length = quick_tokenize(test_data, hps)
+    print("tokenzied data:")
+    print("\tdev_ids:", dev_ids[0])
+    print("\tdev_mask:", dev_mask[0])
+    print("\tdev_seg_ids:", dev_seg_ids[0])
+    print("\tdev_labels:", dev_labels[0])
+    print("\tdev_length:", dev_length[0])
 
     # Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")
@@ -193,16 +206,14 @@ def main():
 
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
+    logger.info("[MODEL] {}".format(hps.model_name))
     model = pretrained_model(hps)
     logger.info(f"=== model architecture ===\n{model}")
     optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
-    if hps.loss_func == "CrossEntropy":
-        loss_function = nn.CrossEntropyLoss(reduction='mean')
-    else:
-        loss_function = nn.BCEWithLogitsLoss(reduction='mean')
+    loss_function = load_loss_function(hps)
 
 
-    # Multi-Gpu training
+    # multi-Gpu training
     if hps.cuda:
         gpu_ids = [int(x) for x in hps.gpu.split(',')]
         model = model.cuda()
@@ -212,14 +223,6 @@ def main():
 
     # training
     train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps)
-        
-    # out_dir = os.path.join(hps.save_dir, exp_name)
-    # if not os.path.exists(hps.save_dir):
-    #     os.mkdir(hps.save_dir)
-    # if not os.path.exists(out_dir):
-    #     os.mkdir(out_dir)
-    # with open(os.path.join(out_dir, "config.txt"), "w") as f:
-    #     f.write(str(hps))
 
 if __name__ == '__main__':
     main()

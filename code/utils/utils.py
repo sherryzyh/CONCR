@@ -113,7 +113,7 @@ def tokenize_multi_choices(data, hps):
            torch.LongTensor(token_type_ids), torch.LongTensor(labels), torch.LongTensor(length)-1
 
 
-def quick_tokenize(data, hps):
+def load_pretrained_tokenizer(hps):
     # load pretrained tokenizer
     if hps.model_name == 'bert':
         tokenizer = BertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
@@ -132,6 +132,12 @@ def quick_tokenize(data, hps):
     else:
         tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir, padding_side='left')
 
+    return tokenizer
+
+# def compose_instance(example, hps):
+def quick_tokenize(data, hps):
+    tokenizer = load_pretrained_tokenizer(hps)
+    
     instances = []
     labels = []
     for example in data:
