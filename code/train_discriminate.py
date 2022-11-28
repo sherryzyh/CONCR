@@ -119,7 +119,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
 
             if hps.loss_func == 'CrossEntropy':
                 loss = loss_function(probs, labels)
-            else:
+            elif hps.loss_func == "BCE":
                 loss = loss_function(probs.squeeze(1), labels.float())
 
             total_loss += loss.item()
@@ -188,12 +188,6 @@ def main():
     train_ids, train_mask, train_seg_ids, train_labels, train_length = quick_tokenize(train_data, hps)
     dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = quick_tokenize(dev_data, hps)
     # test_ids, test_mask, test_seg_ids, test_labels, test_length = quick_tokenize(test_data, hps)
-    print("tokenzied data:")
-    print("\tdev_ids:", dev_ids[0])
-    print("\tdev_mask:", dev_mask[0])
-    print("\tdev_seg_ids:", dev_seg_ids[0])
-    print("\tdev_labels:", dev_labels[0])
-    print("\tdev_length:", dev_length[0])
 
     # Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")
@@ -211,7 +205,6 @@ def main():
     logger.info(f"=== model architecture ===\n{model}")
     optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
     loss_function = load_loss_function(hps)
-
 
     # multi-Gpu training
     if hps.cuda:

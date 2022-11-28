@@ -1,4 +1,5 @@
 import pickle
+import numpy as np
 from transformers import BertTokenizer, RobertaTokenizer, AlbertTokenizer, OpenAIGPTTokenizer, XLNetTokenizer
 from transformers import GPT2Tokenizer, BartTokenizer
 import torch
@@ -134,7 +135,50 @@ def load_pretrained_tokenizer(hps):
 
     return tokenizer
 
-# def compose_instance(example, hps):
+def contrastive_tokenize(data, hps):
+    tokenizer = load_pretrained_tokenizer(hps)
+    
+    instances = []
+    labels = []
+    input_ids = []
+    attention_mask = []
+    token_type_ids = []
+    length = []
+    for i, example in enumerate(data):
+        premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
+        if example['label'] == 0:
+            instance = [premise, hyp0, hyp1]
+        else:
+            instance = [premise, hyp1, hyp0]
+        instances += instance
+        # labels: [['0' for 'ask-for-cause'/'1' for 'ask-for-effect',
+        #           1 for correct hypothesis
+        #           0 for wrong hypothesis] x n samples]
+        labels += [0, 1, 0] if example['ask-for'] == 'cause' else [1, 1, 0]
+
+    
+    tokenized_inputs = tokenizer(text=instances, padding=True, return_token_type_ids=True, return_length=True)
+    input_ids = tokenized_inputs['input_ids']
+    attention_mask = tokenized_inputs['attention_mask']
+    token_type_ids = tokenized_inputs['token_type_ids']
+    length = tokenized_inputs['length']
+
+    data_size = len(data)
+    max_len = max(length)
+    # print(f"dataset size: {data_size} | max seq len: {max_len}")
+    input_ids_tensor = torch.LongTensor(input_ids).view((data_size, 3, max_len))
+    # print(f"input_ids_tensor: {input_ids_tensor.size()}")
+    attention_mask_tensor = torch.LongTensor(attention_mask).view((data_size, 3, max_len))
+    # print(f"attention_mask_tensor: {attention_mask_tensor.size()}")
+    token_type_ids_tensor = torch.LongTensor(token_type_ids).view((data_size, 3, max_len))
+    # print(f"token_type_ids_tensor: {token_type_ids_tensor.size()}")
+    labels_tensor = torch.LongTensor(labels).view((data_size, 3))
+    # print(f"labels: {labels_tensor.size()}")
+    length_tensor = torch.LongTensor(length).view((data_size, 3))-1
+    # print(f"length: {length_tensor.size()}")
+
+    return input_ids_tensor, attention_mask_tensor, token_type_ids_tensor, labels_tensor, length_tensor
+
 def quick_tokenize(data, hps):
     tokenizer = load_pretrained_tokenizer(hps)
     
