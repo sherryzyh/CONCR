@@ -10,8 +10,8 @@ import json
 
 ALPHA = 0.66
 LAMBDA = 1
-EG_filename = './data_CEQ/gpt2_eg_epoch_6_explanations.csv'
-OUT_filename = './data_CEQ/CEQ.csv'
+EG_filename = './data_CEQ/gpt2_cr_eg_epoch_8_explanations.csv'
+OUT_filename = './data_CEQ/creg_CEQ.csv'
 
 def tokenize(sent):
     sent = sent.lower()
