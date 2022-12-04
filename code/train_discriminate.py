@@ -25,7 +25,7 @@ def parse_hps():
     parser.add_argument('--save_dir', type=str, default='./output/saved_model', help='The model saving directory')
     parser.add_argument('--log_dir', type=str, default='./output/log', help='The training log directory')
     parser.add_argument('--apex_dir', type=str, default='./output/log', help='The apex directory')
-    parser.add_argument('--output_dir', type=str, default='./')
+    parser.add_argument('--output_dir', type=str, default='.')
 
     # Data names
     parser.add_argument('--train', type=str, default='train.pkl', help='The train data directory')
