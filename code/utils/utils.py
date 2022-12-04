@@ -349,7 +349,7 @@ def load_data(path):
     return data
 
 
-def evaluation(hps, dataloader, model, loss_function, mode='train'):
+def evaluation(hps, dataloader, model, loss_function, mode='train', epoch = 0):
     predictions = []
     labels = []
     loss = 0
@@ -453,6 +453,11 @@ def evaluation(hps, dataloader, model, loss_function, mode='train'):
             count += 1
         else:
             continue
+
+    with open(hps.output_dir + f'/bert_cr_epoch_{epoch}_labels.csv', 'w', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerows([[l] for l in predict_labels])
+
     return count/len(true_labels), loss
 
 
