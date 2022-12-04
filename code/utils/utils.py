@@ -362,7 +362,7 @@ def evaluation(hps, dataloader, model, loss_function, mode='train', epoch = 0):
             sent, seg_id, atten_mask, tmp_labels, tmp_length = batch
             probs = model(sent, atten_mask, seg_ids=seg_id, length=tmp_length).squeeze()
         else:
-            sent, atten_mask, tmp_labels = batch
+            sent, atten_mask, tmp_labels, _ = batch
             _, probs = model(sent, atten_mask)
         # sent, seg_id, atten_mask, tmp_labels, tmp_length = batch
         # probs = model(sent, atten_mask, seg_ids=seg_id, length=tmp_length)
