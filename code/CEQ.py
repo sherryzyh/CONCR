@@ -4,10 +4,14 @@ import pickle
 import nltk.stem as ns
 import pdb
 from tqdm import trange
+import os
+import csv
+import json
 
 ALPHA = 0.66
 LAMBDA = 1
-
+EG_filename = './data_CEQ/gpt2_eg_epoch_6_explanations.csv'
+OUT_filename = './data_CEQ/CEQ.csv'
 
 def tokenize(sent):
     sent = sent.lower()
@@ -92,6 +96,12 @@ def inf(data):
 
     # Causal_Strength(Cause, Truth + Effect)
     cs_3 = list()
+    
+    # CEQ result
+    cs = list()
+
+    cnt = 0
+    r = 0
 
     for ith in trange(L):
 
@@ -107,24 +117,47 @@ def inf(data):
         cs_1.append(cs_tmp_1)
         cs_2.append(cs_tmp_2)
         cs_3.append(cs_tmp_3)
+        cs.append(max(cs_tmp_2, cs_tmp_3) - cs_tmp_1)
+        cnt += 1
+        r += max(cs_tmp_2, cs_tmp_3) - cs_tmp_1
         
     res = data.copy()
     res['Cause:Effect'] = cs_1
     res['Cause+Truth:Effect'] = cs_2
     res['Cause:Truth+Effect'] = cs_3
+    res['CEQ'] = cs
     
-    res.to_csv('CEQ.csv')
+    res.to_csv(OUT_filename)
+    print("Average CEQ is ", (r / cnt))
     return res
 
 
 if __name__ == '__main__':
-    data = pd.read_csv('./data/eval.csv')
+    dev_data = [json.loads(line) for line in open('./data/Explanation_Generation/dev.jsonl', 'r')]
+    headerList = ['cause', 'effect', 'explanation']
+    with open('./data_CEQ/ceq_data1.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        spamwriter = csv.writer(csvfile)
+        for d in dev_data:
+            c = d['cause']
+            e = d['effect']
+            spamwriter.writerow([c, e])
+    
+    with open('./data_CEQ/ceq_data1.csv') as in_1, open(EG_filename) as in_2, open('./data_CEQ/ceq_data.csv', 'w') as out:
+        reader1 = csv.reader(in_1)
+        reader2 = csv.reader(in_2)
+        writer = csv.writer(out)
+        writer.writerow(headerList)
+        for row1, row2 in zip(reader1, reader2):
+            if row1[0] and row2[0]:
+                writer.writerow([row1[0], row1[1], row2[0]])
 
-    f = open("causes.pkl", 'rb')
+    data = pd.read_csv('./data_CEQ/ceq_data.csv')
+
+    f = open("./data_CEQ/causes.pkl", 'rb')
     causes = pickle.load(f)
     f.close()
 
-    f = open("effects.pkl", 'rb')
+    f = open("./data_CEQ/effects.pkl", 'rb')
     effects = pickle.load(f)
     f.close()
 
