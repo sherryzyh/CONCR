@@ -349,7 +349,7 @@ def load_data(path):
     return data
 
 
-def evaluation(hps, dataloader, model, loss_function, mode='train', epoch = 0):
+def evaluation(hps, dataloader, model, loss_function, epoch, mode='train'):
     predictions = []
     labels = []
     loss = 0
