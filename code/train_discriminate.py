@@ -68,15 +68,16 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
         logger.info("[Dev Evaluation] Strain Evaluation on Dev Set")
         if hps.loss_func == 'CrossEntropy':
             dev_accu, dev_exact_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch)
-            evaluation_output = evaluation(hps, dev_dataloader, model, loss_function, epoch)
-            metric_log[f'epoch_{epoch}'].update(evaluation_output)
+            metric_log[f'epoch_{epoch}']['dev_accuarcy'] = dev_accu
+            metric_log[f'epoch_{epoch}']['dev_exact_accuracy'] = dev_exact_accu
+            metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
             print('\n')
             logger.info("[Dev Metrics] Dev Soft Accuracy: \t{}".format(dev_accu))
             logger.info("[Dev Metrics] Dev Exact Accuracy: \t{}".format(dev_exact_accu))
         else:
             dev_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch)
-            evaluation_output = evaluation(hps, dev_dataloader, model, loss_function, epoch)
-            metric_log[f'epoch_{epoch}'].update(evaluation_output)
+            metric_log[f'epoch_{epoch}']['dev_accuarcy'] = dev_accu
+            metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
             print('\n')
             logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
         logger.info("[Dev Metrics] Dev Loss: \t{}".format(dev_loss))
