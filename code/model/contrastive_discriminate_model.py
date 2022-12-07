@@ -9,6 +9,7 @@ from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertMode
 from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOutputWithPoolingAndCrossAttentions
 from .discriminate_model import pretrained_model
 
+
 class MLPLayer(nn.Module):
     """
     Head for getting sentence representations over RoBERTa/BERT's CLS representation.
@@ -31,9 +32,10 @@ class MLPLayer(nn.Module):
 
         return x
 
+
 class Similarity(nn.Module):
     """
-    Dot product or cosine similarity -> In our project, the causal score
+    Dot product or cosine similarity
     """
 
     def __init__(self, temp=0.05):
@@ -43,6 +45,30 @@ class Similarity(nn.Module):
 
     def forward(self, x, y):
         return self.cos(x, y) / self.temp
+
+
+class Scorer(nn.Module):
+    """
+    Causal Scorer
+    """
+
+    def __init__(self, config, temp=0.05):
+        super().__init__()
+        self.temp = temp
+        self.score_mlp = nn.Sequential(
+            nn.Linear(config.hidden_size * 2, config.hidden_size),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(config.hidden_size, config.hidden_size // 2),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(config.hidden_size // 2, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x, y):
+        return self.score_mlp(x, y) / self.temp
+
 
 class contrastive_reasoning_model(nn.Module):
     def __init__(self, hps):
@@ -55,7 +81,7 @@ class contrastive_reasoning_model(nn.Module):
         if hps.model_name == 'bert':
             self.sentence_encoder = BertModel.from_pretrained(hps.model_dir)
             self.config = BertConfig(hps.model_dir)
-        
+
         self.cause_emb = MLPLayer(self.config)
         self.effect_emb = MLPLayer(self.config)
 
@@ -65,7 +91,8 @@ class contrastive_reasoning_model(nn.Module):
         self.sim = Similarity()
 
         # by default, the loss func is "BCE"
-        self.score_cls = nn.Linear(self.config.hidden_size * 2, 1)
+        # self.score_cls = nn.Linear(self.config.hidden_size * 2, 1)
+        self.score_cls = Scorer(self.config)
         self.contrastive_loss = nn.CrossEntropyLoss()
 
     # compose causal pairs
@@ -83,16 +110,16 @@ class contrastive_reasoning_model(nn.Module):
         # print("compose pair, batch_size:", batch_size)
         # print("compose pair, labels.size:", labels.size())
         for i in range(batch_size):
-            if labels[i, 0] == 0: # 'ask-for cause'
+            if labels[i, 0] == 0:  # 'ask-for cause'
                 # causal_pairs[i] = torch.concat([hypothesis[i], premise[i]], dim=-1)
                 causes[i] = hypothesis[i]
                 effects[i] = premise[i]
-            else: # 'ask-for effect'
+            else:  # 'ask-for effect'
                 # causal_pairs[i] = torch.concat([premise[i], hypothesis[i]], dim=-1)
                 causes[i] = premise[i]
                 effects[i] = hypothesis[i]
         return causes, effects
-    
+
     def forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None, mode='train'):
         if mode == 'train':
             return self.cl_forward(input_ids, attention_mask, labels, seg_ids, length)
@@ -105,8 +132,8 @@ class contrastive_reasoning_model(nn.Module):
         num_sent = input_ids.size(1)
 
         # Flatten input for encoding
-        input_ids = input_ids.view((-1, input_ids.size(-1))) # (bs * num_sent, len)
-        attention_mask = attention_mask.view((-1, attention_mask.size(-1))) # (bs * num_sent len)
+        input_ids = input_ids.view((-1, input_ids.size(-1)))  # (bs * num_sent, len)
+        attention_mask = attention_mask.view((-1, attention_mask.size(-1)))  # (bs * num_sent len)
         if seg_ids is not None:
             seg_ids = seg_ids.view((-1, seg_ids.size(-1)))
         if length is not None:
@@ -126,10 +153,10 @@ class contrastive_reasoning_model(nn.Module):
         # by default, use the "cls" embedding as the sentence representation
         pooler_output = sent_embs.pooler_output
         # print("pooler_output.size:", pooler_output.size())
-        pooler_output = pooler_output.view((batch_size, num_sent, pooler_output.size(-1))) # (bs, num_sent, hidden)
+        pooler_output = pooler_output.view((batch_size, num_sent, pooler_output.size(-1)))  # (bs, num_sent, hidden)
 
         # Separate representation
-        premise, hypothesis_0 = pooler_output[:,0], pooler_output[:,1]
+        premise, hypothesis_0 = pooler_output[:, 0], pooler_output[:, 1]
         # print("premise.size:", premise.size())
         # print("hypothesis.size:", hypothesis_0.size())
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
@@ -153,12 +180,14 @@ class contrastive_reasoning_model(nn.Module):
             # hardneg_causal_score = self.score_cls(torch.cat([causes_1, effects_1], dim=1))
             # Calculate loss with hard negatives
             # Note that weights are actually logits of weights
-            
+
             # TODO: what is hard negative weight
-            # hard_neg_weight = self.hps.model_args.hard_negative_weight 
+            # hard_neg_weight = self.hps.model_args.hard_negative_weight
             hard_neg_weight = 0.1
             weights = torch.tensor(
-                [[0.0] * (contrastive_causal_score.size(-1) - hardneg_causal_score.size(-1)) + [0.0] * i + [hard_neg_weight] + [0.0] * (hardneg_causal_score.size(-1) - i - 1) for i in range(hardneg_causal_score.size(-1))]
+                [[0.0] * (contrastive_causal_score.size(-1) - hardneg_causal_score.size(-1)) + [0.0] * i + [
+                    hard_neg_weight] + [0.0] * (hardneg_causal_score.size(-1) - i - 1) for i in
+                 range(hardneg_causal_score.size(-1))]
             ).to(input_ids.device)
             # print("hard neg sample score:", weights)
             contrastive_causal_score = contrastive_causal_score + weights
@@ -178,8 +207,8 @@ class contrastive_reasoning_model(nn.Module):
         loss = self.contrastive_loss(contrastive_causal_score, labels)
 
         return SequenceClassifierOutput(
-                loss=loss,
-                logits=contrastive_causal_score
+            loss=loss,
+            logits=contrastive_causal_score
         )
 
     def eval_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
@@ -188,8 +217,8 @@ class contrastive_reasoning_model(nn.Module):
         num_sent = input_ids.size(1)
 
         # Flatten input for encoding
-        input_ids = input_ids.view((-1, input_ids.size(-1))) # (bs * num_sent, len)
-        attention_mask = attention_mask.view((-1, attention_mask.size(-1))) # (bs * num_sent len)
+        input_ids = input_ids.view((-1, input_ids.size(-1)))  # (bs * num_sent, len)
+        attention_mask = attention_mask.view((-1, attention_mask.size(-1)))  # (bs * num_sent len)
         if seg_ids is not None:
             seg_ids = seg_ids.view((-1, seg_ids.size(-1)))
         if length is not None:
@@ -200,10 +229,10 @@ class contrastive_reasoning_model(nn.Module):
         # Pooling
         # by default, use the "cls" embedding as the sentence representation
         pooler_output = sent_embs.pooler_output
-        pooler_output = pooler_output.view((batch_size, num_sent, pooler_output.size(-1))) # (bs, num_sent, hidden)
+        pooler_output = pooler_output.view((batch_size, num_sent, pooler_output.size(-1)))  # (bs, num_sent, hidden)
 
         # Separate representation
-        premise, hypothesis_0, hypothesis_1 = pooler_output[:,0], pooler_output[:,1], pooler_output[:,2]
+        premise, hypothesis_0, hypothesis_1 = pooler_output[:, 0], pooler_output[:, 1], pooler_output[:, 2]
 
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
         causes_0 = causes_0.to(input_ids.device)
@@ -218,7 +247,7 @@ class contrastive_reasoning_model(nn.Module):
         causes_1 = self.cause_emb(causes_1)
         effects_1 = self.effect_emb(effects_1)
         score_1 = self.sim(causes_1, effects_1)
-        
+
         # print("score_0:", score_0)
         # print("score_1:", score_1)
         return score_0, score_1

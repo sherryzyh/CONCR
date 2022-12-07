@@ -239,7 +239,11 @@ def main():
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
 
+    # logging all the hyper parameters
+    logger.info(f"=== hps ===\n{hps}")
+
     model = gpt2_discriminate(hps)
+    logger.info(f"=== model architecture ===\n{model}")
 
     optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
     loss_function = nn.BCEWithLogitsLoss(reduction='mean')
