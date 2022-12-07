@@ -10,6 +10,29 @@ from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOut
 from .discriminate_model import pretrained_model
 
 
+class MLPLayer(nn.Module):
+    """
+    Head for getting sentence representations over RoBERTa/BERT's CLS representation.
+    """
+
+    def __init__(self, config):
+        super().__init__()
+        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+        self.activation = nn.Tanh()
+        self.init_weights()
+
+    def init_weights(self):
+        # TODO: initialize weights
+        nn.init.xavier_uniform_(self.dense.weight)
+        self.dense.bias.data.fill_(0.01)
+
+    def forward(self, features, **kwargs):
+        x = self.dense(features)
+        x = self.activation(x)
+
+        return x
+
+
 class CosSimilarity(nn.Module):
     """
     Dot product or cosine similarity
@@ -47,7 +70,7 @@ class Scorer(nn.Module):
         pair = torch.cat([x, y], dim=-1)
         score = self.score_mlp(pair).squeeze()
         return score / self.temp
-    
+
     def init_weights(self):
         for m in self.score_mlp.modules():
             if isinstance(m, nn.Linear):
@@ -67,8 +90,8 @@ class contrastive_reasoning_model(nn.Module):
             self.sentence_encoder = BertModel.from_pretrained(hps.model_dir)
             self.config = BertConfig(hps.model_dir)
 
-        self.cause_emb = MLPLayer(self.config)
-        self.effect_emb = MLPLayer(self.config)
+        # self.cause_emb = MLPLayer(self.config)
+        # self.effect_emb = MLPLayer(self.config)
 
         # embedding of the causal-effect pair
         # init mlp weights
@@ -148,8 +171,8 @@ class contrastive_reasoning_model(nn.Module):
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
         causes_0 = causes_0.to(input_ids.device)
         effects_0 = effects_0.to(input_ids.device)
-        causes_0 = self.cause_emb(causes_0)
-        effects_0 = self.effect_emb(effects_0)
+        # causes_0 = self.cause_emb(causes_0)
+        # effects_0 = self.effect_emb(effects_0)
         contrastive_causal_score = self.sim(causes_0, effects_0)
         # print("contrastive score:", contrastive_causal_score.size())
 
@@ -159,8 +182,8 @@ class contrastive_reasoning_model(nn.Module):
             causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
             causes_1 = causes_1.to(input_ids.device)
             effects_1 = effects_1.to(input_ids.device)
-            causes_1 = self.cause_emb(causes_1)
-            effects_1 = self.effect_emb(effects_1)
+            # causes_1 = self.cause_emb(causes_1)
+            # effects_1 = self.effect_emb(effects_1)
             hardneg_causal_score = self.sim(causes_1, effects_1)
 
             # Calculate loss with hard negatives
@@ -221,15 +244,15 @@ class contrastive_reasoning_model(nn.Module):
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
         causes_0 = causes_0.to(input_ids.device)
         effects_0 = effects_0.to(input_ids.device)
-        causes_0 = self.cause_emb(causes_0)
-        effects_0 = self.effect_emb(effects_0)
+        # causes_0 = self.cause_emb(causes_0)
+        # effects_0 = self.effect_emb(effects_0)
         score_0 = self.sim(causes_0, effects_0)
 
         causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
         causes_1 = causes_1.to(input_ids.device)
         effects_1 = effects_1.to(input_ids.device)
-        causes_1 = self.cause_emb(causes_1)
-        effects_1 = self.effect_emb(effects_1)
+        # causes_1 = self.cause_emb(causes_1)
+        # effects_1 = self.effect_emb(effects_1)
         score_1 = self.sim(causes_1, effects_1)
 
         # print("score_0:", score_0)
