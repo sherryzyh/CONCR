@@ -52,6 +52,9 @@ def parse_hps():
     parser.add_argument('--hyp_only', type=bool, default=False, help="If set True, Only send hypothesis into model")
     parser.add_argument('--prompt', type=str, default=None, help="prompt template")
     # parser.add_argument('--warmup_proportion', type=float, default=0.1, help='warmup settings')
+    parser.add_argument('--score', type=str, default="cossim", help="scorer type")
+    parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
+
 
     # parsing the hyper-parameters from command line and define logger
     hps = parser.parse_args()
@@ -125,6 +128,9 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
             #     print("BCE loss target:", labels.float())
 
             total_loss += loss.item()
+            if i == 0:
+                init_loss = loss.item() / len(batch)
+            last_loss = loss.item() / len(batch)
             t.set_postfix(avg_loss='{}'.format(total_loss/(epoch_step+1)))
             epoch_step += 1
 
@@ -137,6 +143,7 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
                     return
             step += 1
         
+        print(f"In Epoch {epoch} training, individual loss {init_loss:.4f} -> {last_loss:.4f}")
         if hps.evaluation_strategy == "epoch":
             patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps)
             if stop_train:

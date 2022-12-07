@@ -10,30 +10,7 @@ from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOut
 from .discriminate_model import pretrained_model
 
 
-class MLPLayer(nn.Module):
-    """
-    Head for getting sentence representations over RoBERTa/BERT's CLS representation.
-    """
-
-    def __init__(self, config):
-        super().__init__()
-        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
-        self.activation = nn.Tanh()
-        self.init_weights()
-
-    def init_weights(self):
-        # TODO: initialize weights
-        nn.init.xavier_uniform_(self.dense.weight)
-        self.dense.bias.data.fill_(0.01)
-
-    def forward(self, features, **kwargs):
-        x = self.dense(features)
-        x = self.activation(x)
-
-        return x
-
-
-class Similarity(nn.Module):
+class CosSimilarity(nn.Module):
     """
     Dot product or cosine similarity
     """
@@ -52,22 +29,30 @@ class Scorer(nn.Module):
     Causal Scorer
     """
 
-    def __init__(self, config, temp=0.05):
+    def __init__(self, config, temp=0.05, dropout=0.3):
         super().__init__()
         self.temp = temp
         self.score_mlp = nn.Sequential(
             nn.Linear(config.hidden_size * 2, config.hidden_size),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(dropout),
             nn.Linear(config.hidden_size, config.hidden_size // 2),
             nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(config.hidden_size // 2, 1),
-            nn.Sigmoid()
+            nn.Dropout(dropout),
+            nn.Linear(config.hidden_size // 2, 1)
         )
+        self.init_weights()
 
     def forward(self, x, y):
-        return self.score_mlp(x, y) / self.temp
+        pair = torch.cat([x, y], dim=-1)
+        score = self.score_mlp(pair).squeeze()
+        return score / self.temp
+    
+    def init_weights(self):
+        for m in self.score_mlp.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                m.bias.data.fill_(0.01)
 
 
 class contrastive_reasoning_model(nn.Module):
@@ -88,11 +73,12 @@ class contrastive_reasoning_model(nn.Module):
         # embedding of the causal-effect pair
         # init mlp weights
         # self.causal_mlp = nn.Linear(self.config.hidden_size * 2, self.config.hidden_size)
-        self.sim = Similarity()
+        if hps.score == "cossim":
+            self.sim = CosSimilarity()
+        elif hps.score == "causalscore":
+            self.sim = Scorer(self.config)
 
         # by default, the loss func is "BCE"
-        # self.score_cls = nn.Linear(self.config.hidden_size * 2, 1)
-        self.score_cls = Scorer(self.config)
         self.contrastive_loss = nn.CrossEntropyLoss()
 
     # compose causal pairs
@@ -165,7 +151,6 @@ class contrastive_reasoning_model(nn.Module):
         causes_0 = self.cause_emb(causes_0)
         effects_0 = self.effect_emb(effects_0)
         contrastive_causal_score = self.sim(causes_0, effects_0)
-        # contrastive_causal_score = self.score_cls(torch.cat([causes_0, effects_0], dim=1))
         # print("contrastive score:", contrastive_causal_score.size())
 
         # Hard negative
@@ -177,13 +162,12 @@ class contrastive_reasoning_model(nn.Module):
             causes_1 = self.cause_emb(causes_1)
             effects_1 = self.effect_emb(effects_1)
             hardneg_causal_score = self.sim(causes_1, effects_1)
-            # hardneg_causal_score = self.score_cls(torch.cat([causes_1, effects_1], dim=1))
+
             # Calculate loss with hard negatives
             # Note that weights are actually logits of weights
 
             # TODO: what is hard negative weight
-            # hard_neg_weight = self.hps.model_args.hard_negative_weight
-            hard_neg_weight = 0.1
+            hard_neg_weight = self.hps.hard_negative_weight
             weights = torch.tensor(
                 [[0.0] * (contrastive_causal_score.size(-1) - hardneg_causal_score.size(-1)) + [0.0] * i + [
                     hard_neg_weight] + [0.0] * (hardneg_causal_score.size(-1) - i - 1) for i in
