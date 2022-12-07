@@ -3,6 +3,8 @@
 ./code/output/saved_model/
 ecr
 **/__pycache__/**
+./data_CEQ/
+data_CEQ
 
 try.sh
 output/saved_model/

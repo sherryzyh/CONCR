@@ -12,7 +12,8 @@ from torch.utils.data import TensorDataset, DataLoader
 from tqdm import trange
 import datetime
 import logging
-
+from collections import defaultdict
+import json
 
 def parse_hps():
     parser = argparse.ArgumentParser(description='xCAR')
@@ -24,6 +25,7 @@ def parse_hps():
     parser.add_argument('--save_dir', type=str, default='./output/saved_model', help='The model saving directory')
     parser.add_argument('--log_dir', type=str, default='./output/log', help='The training log directory')
     parser.add_argument('--apex_dir', type=str, default='./output/log', help='The apex directory')
+    parser.add_argument('--output_dir', type=str, default='.')
 
     # Data names
     parser.add_argument('--train', type=str, default='train.pkl', help='The train data directory')
@@ -57,7 +59,7 @@ def parse_hps():
     hps.nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     return hps
 
-def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps):
+def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log):
     model.eval()
     stop_train = False
 
@@ -65,15 +67,23 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
         print('\n')
         logger.info("[Dev Evaluation] Strain Evaluation on Dev Set")
         if hps.loss_func == 'CrossEntropy':
-            dev_accu, dev_exact_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function)
+            dev_accu, dev_exact_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch)
+            metric_log[f'epoch_{epoch}']['dev_accuarcy'] = dev_accu
+            metric_log[f'epoch_{epoch}']['dev_exact_accuracy'] = dev_exact_accu
+            metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
             print('\n')
             logger.info("[Dev Metrics] Dev Soft Accuracy: \t{}".format(dev_accu))
             logger.info("[Dev Metrics] Dev Exact Accuracy: \t{}".format(dev_exact_accu))
         else:
-            dev_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function)
+            dev_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch)
+            metric_log[f'epoch_{epoch}']['dev_accuarcy'] = dev_accu
+            metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
             print('\n')
             logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
         logger.info("[Dev Metrics] Dev Loss: \t{}".format(dev_loss))
+
+        with open(hps.output_dir + '/bert_cr_metric_log.json', 'w', encoding='utf-8') as fp:
+            json.dump(metric_log, fp)
 
         if dev_accu >= best_accuracy:
             patient = 0
@@ -102,6 +112,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
     patient = 0
     best_accuracy = 0
     stop_train = False
+    metric_log = defaultdict(dict)
 
     for epoch in range(hps.epochs):
         logger.info('[Epoch] {}'.format(epoch))
@@ -130,13 +141,16 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             optimizer.step()
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
-                patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps)
+                patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log)
                 if stop_train:
                     return
             step += 1
         
+        train_loss = total_loss / (epoch_step * hps.batch_size) * 100
+        metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
+             
         if hps.evaluation_strategy == "epoch":
-            patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps)
+            patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log)
             if stop_train:
                 return
 
