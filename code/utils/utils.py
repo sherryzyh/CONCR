@@ -401,7 +401,6 @@ def load_data(path):
     return data
 
 
-<<<<<<< HEAD
 def cl_evaluation(hps, dataloader, model, loss_function, mode='train'):
     predictions = []
     labels = []
@@ -436,11 +435,7 @@ def cl_evaluation(hps, dataloader, model, loss_function, mode='train'):
 
     return acc, loss
 
-
-def evaluation(hps, dataloader, model, loss_function, mode='train'):
-=======
 def evaluation(hps, dataloader, model, loss_function, epoch, mode='train'):
->>>>>>> 625412dcce64c9acafac403035e0707a06a1ae69
     predictions = []
     labels = []
     loss = 0

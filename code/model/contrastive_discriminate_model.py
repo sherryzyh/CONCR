@@ -18,6 +18,12 @@ class MLPLayer(nn.Module):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.activation = nn.Tanh()
+        self.init_weights()
+
+    def init_weights(self):
+        # TODO: initialize weights
+        nn.init.xavier_uniform_(self.dense.weight)
+        self.dense.bias.data.fill_(0.01)
 
     def forward(self, features, **kwargs):
         x = self.dense(features)
@@ -133,7 +139,7 @@ class contrastive_reasoning_model(nn.Module):
         effects_0 = self.effect_emb(effects_0)
         contrastive_causal_score = self.sim(causes_0, effects_0)
         # contrastive_causal_score = self.score_cls(torch.cat([causes_0, effects_0], dim=1))
-
+        # print("contrastive score:", contrastive_causal_score.size())
 
         # Hard negative
         if num_sent == 3:
@@ -154,17 +160,18 @@ class contrastive_reasoning_model(nn.Module):
             weights = torch.tensor(
                 [[0.0] * (contrastive_causal_score.size(-1) - hardneg_causal_score.size(-1)) + [0.0] * i + [hard_neg_weight] + [0.0] * (hardneg_causal_score.size(-1) - i - 1) for i in range(hardneg_causal_score.size(-1))]
             ).to(input_ids.device)
+            # print("hard neg sample score:", weights)
             contrastive_causal_score = contrastive_causal_score + weights
 
         # Hypothesis 0 is always the correct one (positive samples)
         # Hypothesis 1 is always the wrong one (negative samples)
         labels = torch.arange(contrastive_causal_score.size(0)).long().to(input_ids.device)
-        print("for loss, contrastive_causal_score:", contrastive_causal_score.size())
-        print("for loss, labels:", labels.size())
-        for i in range(batch_size):
-            print(f"=== data {i} ===")
-            print("score:", contrastive_causal_score[i])
-            print("label:", labels[i])
+        # print("for loss, contrastive_causal_score:", contrastive_causal_score.size())
+        # print("for loss, labels:", labels.size())
+        # for i in range(batch_size):
+        #     print(f"=== data {i} ===")
+        #     print("score:", contrastive_causal_score[i])
+        #     print("label:", labels[i])
 
         # Arg: contrastive_causal_score [batch_size, batch_size]
         # Arg: labels [batch_size]
