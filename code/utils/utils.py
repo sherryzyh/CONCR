@@ -135,7 +135,7 @@ def load_pretrained_tokenizer(hps):
 
     return tokenizer
 
-def contrastive_tokenize(data, hps):
+def contrastive_tokenize(data, hps, loading_mode="train"):
     tokenizer = load_pretrained_tokenizer(hps)
     
     instances = []
@@ -145,16 +145,24 @@ def contrastive_tokenize(data, hps):
     token_type_ids = []
     length = []
     for i, example in enumerate(data):
-        premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
-        if example['label'] == 0:
-            instance = [premise, hyp0, hyp1]
-        else:
-            instance = [premise, hyp1, hyp0]
-        instances += instance
-        # labels: [['0' for 'ask-for-cause'/'1' for 'ask-for-effect',
-        #           1 for correct hypothesis
-        #           0 for wrong hypothesis] x n samples]
-        labels += [0, 1, 0] if example['ask-for'] == 'cause' else [1, 1, 0]
+        if loading_mode == "train":
+            premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
+            if example['label'] == 0:
+                instance = [premise, hyp0, hyp1]
+            else:
+                instance = [premise, hyp1, hyp0]
+            instances += instance
+            # labels: [['0' for 'ask-for-cause'/'1' for 'ask-for-effect',
+            #           1 for correct hypothesis
+            #           0 for wrong hypothesis] x n samples]
+            labels += [0, 1, 0] if example['ask-for'] == 'cause' else [1, 1, 0]
+        elif loading_mode == "dev":
+            premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
+            instances += [premise, hyp0, hyp1]
+            label = [0, 0, 0]
+            label[example['label']] = 1
+            label[0] = 0 if example['ask-for'] == 'cause' else 1
+            labels += label
 
     
     tokenized_inputs = tokenizer(text=instances, padding=True, return_token_type_ids=True, return_length=True)
@@ -391,6 +399,41 @@ def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
 def load_data(path):
     data = [json.loads(line) for line in open(path, 'r')]
     return data
+
+
+def cl_evaluation(hps, dataloader, model, loss_function, mode='train'):
+    predictions = []
+    labels = []
+    loss = 0
+    model.eval()
+    for batch in dataloader:
+        if hps.cuda:
+            batch = tuple(term.cuda() for term in batch)
+
+        if mode == 'train':
+            sent, seg_id, atten_mask, tmp_label, tmp_length = batch
+            probs_hypothesis_0, probs_hypothesis_1 = model(sent, atten_mask, tmp_label, seg_ids=seg_id, length=tmp_length, mode='eval')
+
+        probs = torch.cat([probs_hypothesis_0.unsqueeze(dim=1), probs_hypothesis_1.unsqueeze(dim=1)], dim=-1)
+        reasoning_labels = tmp_label[:, 1:].reshape(-1)
+        loss += loss_function(probs.view(-1), reasoning_labels.float()).item()
+        # print("reasoning_labels.size:", reasoning_labels.size())
+        # print("probs:", probs)
+        predictions += torch.argmax(probs, dim=1).cpu().tolist()
+        labels += torch.argmax(tmp_label[:, 1:], dim=1).cpu().tolist()
+        # print("predictions:", predictions)
+        # print("labels:", labels)
+        
+    count = 0
+    for i in range(len(predictions)):
+        if predictions[i] == labels[i]:
+            count += 1
+        else:
+            continue
+    acc = count / len(predictions)
+    print("Acc:", acc)
+
+    return acc, loss
 
 
 def evaluation(hps, dataloader, model, loss_function, mode='train'):

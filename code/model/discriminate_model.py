@@ -12,6 +12,7 @@ class pretrained_model(nn.Module):
     def __init__(self, hps):
         super(pretrained_model, self).__init__()
         self.model_name = hps.model_name
+        self.model_type = "pretrained"
         self.hps = hps
         if hps.model_name == 'bert':
             self.model = BertModel.from_pretrained(hps.model_dir)
@@ -28,6 +29,7 @@ class pretrained_model(nn.Module):
         elif hps.model_name == 'bart':
             self.config = BartConfig.from_pretrained(hps.model_dir)
             self.model = BartForSequenceClassification.from_pretrained(hps.model_dir)
+            self.linear = nn.Linear(3, 1)
         else:
             self.config = XLNetConfig.from_pretrained(hps.model_dir)
             self.model = XLNetModel.from_pretrained(hps.model_dir, mem_len=1024)
@@ -37,7 +39,6 @@ class pretrained_model(nn.Module):
         else:
             self.classification = nn.Linear(self.config.hidden_size, 1)
 
-        self.linear = nn.Linear(3, 1)
 
     def forward(self, input_ids, attention_mask, seg_ids=None, length=None):
 
@@ -45,13 +46,13 @@ class pretrained_model(nn.Module):
         if self.model_name in ['bert', 'albert', 'gpt']:
             output = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=seg_ids)
 
-        # model list: Roberta, XLNet
+        # model list: Roberta, XLNet, bart
         else:
             output = self.model(input_ids=input_ids, attention_mask=attention_mask)
 
         # get the cls token for classification
         if self.model_name in ['bert', 'roberta', 'albert']:
-            cls_token = output[1]   # Bert, Roberta, ALBERT
+            cls_token = output.pooler_output   # Bert, Roberta, ALBERT
         elif self.model_name == 'gpt':
             cls_token = output[0][range(output[0].shape[0]), length.cpu().tolist(), :]   # GPT
         elif self.model_name == 'xlnet':

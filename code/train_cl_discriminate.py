@@ -1,9 +1,10 @@
 import argparse
-from utils.utils import load_data, quick_tokenize, evaluation, define_logger
+from utils.utils import load_data, quick_tokenize, contrastive_tokenize, evaluation, cl_evaluation, define_logger
 import random
 import numpy as np
 import torch
 from model.discriminate_model import pretrained_model
+from model.contrastive_discriminate_model import contrastive_reasoning_model
 # from transformers import AdamW
 import sys
 import torch.nn as nn
@@ -65,12 +66,12 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
         print('\n')
         logger.info("[Dev Evaluation] Strain Evaluation on Dev Set")
         if hps.loss_func == 'CrossEntropy':
-            dev_accu, dev_exact_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function)
+            dev_accu, dev_exact_accu, dev_loss = cl_evaluation(hps, dev_dataloader, model, loss_function)
             print('\n')
             logger.info("[Dev Metrics] Dev Soft Accuracy: \t{}".format(dev_accu))
             logger.info("[Dev Metrics] Dev Exact Accuracy: \t{}".format(dev_exact_accu))
         else:
-            dev_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function)
+            dev_accu, dev_loss = cl_evaluation(hps, dev_dataloader, model, loss_function)
             print('\n')
             logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
         logger.info("[Dev Metrics] Dev Loss: \t{}".format(dev_loss))
@@ -96,13 +97,12 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             stop_train = True
     return patient, stop_train
 
-def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps):
+def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps):
     logger.info("[INFO] Start Training")
     step = 0
     patient = 0
     best_accuracy = 0
     stop_train = False
-
     for epoch in range(hps.epochs):
         logger.info('[Epoch] {}'.format(epoch))
         t = trange(len(train_dataloader))
@@ -115,12 +115,14 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
                 batch = tuple(term.cuda() for term in batch)
 
             sent, seg_id, atten_mask, labels, length = batch
-            probs = model(sent, atten_mask, seg_ids=seg_id, length=length)
-
-            if hps.loss_func == 'CrossEntropy':
-                loss = loss_function(probs, labels)
-            elif hps.loss_func == "BCE":
-                loss = loss_function(probs.squeeze(1), labels.float())
+            output = model.forward(sent, atten_mask, labels, seg_ids=seg_id, length=length, mode='train')
+            loss = output.loss
+            # if hps.loss_func == 'CrossEntropy':
+            #     loss = loss_function(probs, labels)
+            # elif hps.loss_func == "BCE":
+            #     loss = loss_function(probs.squeeze(1), labels.float())
+            #     print("BCE loss output:", probs.squeeze(1))
+            #     print("BCE loss target:", labels.float())
 
             total_loss += loss.item()
             t.set_postfix(avg_loss='{}'.format(total_loss/(epoch_step+1)))
@@ -139,6 +141,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps)
             if stop_train:
                 return
+
 
 def load_loss_function(hps):
     if hps.loss_func == "CrossEntropy":
@@ -174,7 +177,6 @@ def main():
     # logging all the hyper parameters
     logger.info(f"=== hps ===\n{hps}")
 
-
     # load data
     logger.info("[DATA] Loading Data")
     logger.info("[DATA] Hypothesis Only: {}".format(hps.hyp_only))
@@ -183,11 +185,10 @@ def main():
     # test_data = load_data(os.path.join(hps.data_dir, hps.test))
     print("loaded data:", dev_data[0])
 
-    # tokenization
+    # contrastive Tokenization
     logger.info("[DATA] Tokenization and Padding for Data")
-    train_ids, train_mask, train_seg_ids, train_labels, train_length = quick_tokenize(train_data, hps)
-    dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = quick_tokenize(dev_data, hps)
-    # test_ids, test_mask, test_seg_ids, test_labels, test_length = quick_tokenize(test_data, hps)
+    train_ids, train_mask, train_seg_ids, train_labels, train_length = contrastive_tokenize(train_data, hps, loading_mode="train")
+    dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = contrastive_tokenize(dev_data, hps, loading_mode="dev")
     # print("tokenzied data:", len(dev_ids))
     # print("\tdev_ids:", dev_ids[0])
     # print("\tdev_mask:", dev_mask[0])
@@ -195,7 +196,7 @@ def main():
     # print("\tdev_labels:", dev_labels[0])
     # print("\tdev_length:", dev_length[0])
 
-    # Dataset and DataLoader
+    # contrastive Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")
     TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_length)
     DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_length)
@@ -207,7 +208,8 @@ def main():
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
     logger.info("[MODEL] {}".format(hps.model_name))
-    model = pretrained_model(hps)
+    model = contrastive_reasoning_model(hps)
+
     # logger.info(f"=== model architecture ===\n{model}")
     optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
     loss_function = load_loss_function(hps)
@@ -220,8 +222,8 @@ def main():
             model = nn.DataParallel(model, device_ids=gpu_ids)
             # model = nn.parallel.DistributedDataParallel(model, device_ids=gpu_ids)
 
-    # training
-    train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps)
+    # contrastive training
+    CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps)
 
 if __name__ == '__main__':
     main()
