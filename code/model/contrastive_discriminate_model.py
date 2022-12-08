@@ -22,7 +22,6 @@ class MLPLayer(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        # TODO: initialize weights
         nn.init.xavier_uniform_(self.dense.weight)
         self.dense.bias.data.fill_(0.01)
 
@@ -86,12 +85,15 @@ class Scorer(nn.Module):
         idx_0 = torch.arange(batch_size)
         idx_1 = torch.arange(batch_size)
         idx_0, idx_1 = torch.meshgrid(idx_0, idx_1)
-        # idx_0 = [[0, 0], [1, 1]]
-        # idx_1 = [[0, 1], [0, 1]]
-        idx_0 = idx_0.view(-1)
-        idx_1 = idx_1.view(-1)
+        # after meshgrid
+        # idx_0 is [[0, 0], [1, 1]]
+        # idx_1 is [[0, 1], [0, 1]]
+
+        idx_0 = idx_0.reshape(-1)
+        idx_1 = idx_1.reshape(-1)
         xypair = torch.cat([x[idx_0],y[idx_1]], dim=1) # [batch_size * batch_size, hidden_size * 2]
         xypair = xypair.view(batch_size, batch_size, -1) # [batch_size, batch_size, hidden_size * 2]
+        # print("xypair.size:", xypair.size())
         return xypair
 
 
@@ -178,6 +180,7 @@ class contrastive_reasoning_model(nn.Module):
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
         causes_0 = causes_0.to(input_ids.device)
         effects_0 = effects_0.to(input_ids.device)
+
         contrastive_causal_score = self.sim(causes_0, effects_0)
         # print("contrastive score:", contrastive_causal_score.size())
         # print(contrastive_causal_score)
@@ -250,19 +253,14 @@ class contrastive_reasoning_model(nn.Module):
         causes_0 = causes_0.to(input_ids.device)
         effects_0 = effects_0.to(input_ids.device)
 
-        premise_0_score_matrix = self.sim(causes_0.unsqueeze(1), effects_0.unsqueeze(0))
-        score_0 = torch.diagonal(premise_0_score_matrix, offset=0)
-        # print("score 0.size:", score_0)
+        premise_0_score_matrix = self.sim(causes_0, effects_0)
+        score_0 = torch.diagonal(premise_0_score_matrix, offset=0).unsqueeze(1)
 
         causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
         causes_1 = causes_1.to(input_ids.device)
         effects_1 = effects_1.to(input_ids.device)
-        premise_1_score_matrix = self.sim(causes_1.unsqueeze(1), effects_1.unsqueeze(0))
-        score_1 = torch.diagonal(premise_1_score_matrix, offset=0)
-        # print("score 1.size:", score_1)
+        premise_1_score_matrix = self.sim(causes_1, effects_1)
+        score_1 = torch.diagonal(premise_1_score_matrix, offset=0).unsqueeze(1)
 
-        score = torch.cat([score_0, score_1], dim=1)
-        # print("score size:", score.size())
-        # print(torch.argmax(score, dim=1))
-
+        # score = torch.cat([score_0, score_1], dim=1)
         return score_0, score_1

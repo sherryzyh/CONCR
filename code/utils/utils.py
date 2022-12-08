@@ -942,27 +942,3 @@ def bart_evaluate(model, data_loader, hps):
     writer.writerows(output_text)
 
     return bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances, rouge1r / num_instances, rouge2r / num_instances, rougelr / num_instances
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
