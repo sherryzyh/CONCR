@@ -29,6 +29,7 @@ def parse_hps():
     # Data names
     parser.add_argument('--train', type=str, default='train.pkl', help='The train data directory')
     parser.add_argument('--dev', type=str, default='dev.pkl', help='The dev data directory')
+    parser.add_argument('--devload', type=str, default='train', help='loading mode for dev dataset')
     parser.add_argument('--test', type=str, default='test.pkl', help='The test data directory')
 
     # Model Settings
@@ -61,13 +62,13 @@ def parse_hps():
     return hps
 
 
-def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, exp_name):
+def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, exp_name, mode="dev"):
     model.eval()
     stop_train = False
 
     with torch.no_grad():
         print('\n')
-        logger.info("[Dev Evaluation] Strain Evaluation on Dev Set")
+        logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
         if hps.loss_func == 'CrossEntropy':
             dev_accu, dev_exact_accu, dev_loss = cl_evaluation(hps, dev_dataloader, model, loss_function)
             print('\n')
@@ -117,12 +118,6 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
             sent, seg_id, atten_mask, labels, length = batch
             output = model.forward(sent, atten_mask, labels, seg_ids=seg_id, length=length, mode='train')
             loss = output.loss
-            # if hps.loss_func == 'CrossEntropy':
-            #     loss = loss_function(probs, labels)
-            # elif hps.loss_func == "BCE":
-            #     loss = loss_function(probs.squeeze(1), labels.float())
-            #     print("BCE loss output:", probs.squeeze(1))
-            #     print("BCE loss target:", labels.float())
 
             total_loss += loss.item()
             if i == 0:
@@ -141,11 +136,16 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
                     return
             step += 1
 
+        if hps.loss_func == 'BCE':
+            train_accu, train_loss = cl_evaluation(hps, train_dataloader, model, loss_function)
+        logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
+        logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
+
         if hps.evaluation_strategy == "epoch":
             patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
                                            exp_name)
-            if stop_train:
-                return
+        if stop_train:
+            return
 
 
 def load_loss_function(hps):
@@ -195,13 +195,8 @@ def main():
     logger.info("[DATA] Tokenization and Padding for Data")
     train_ids, train_mask, train_seg_ids, train_labels, train_length = contrastive_tokenize(train_data, hps,
                                                                                             loading_mode="train")
-    dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = contrastive_tokenize(dev_data, hps, loading_mode="train")
-    # print("tokenzied data:", len(dev_ids))
-    # print("\tdev_ids:", dev_ids[0])
-    # print("\tdev_mask:", dev_mask[0])
-    # print("\tdev_seg_ids:", dev_seg_ids[0])
-    # print("\tdev_labels:", dev_labels[0])
-    # print("\tdev_length:", dev_length[0])
+    dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = contrastive_tokenize(dev_data, hps,
+                                                                                  loading_mode=hps.devload)
 
     # contrastive Dataset and DataLoader
     logger.info("[INFO] Creating Dataset and splitting batch for data")

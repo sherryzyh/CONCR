@@ -162,7 +162,7 @@ def contrastive_tokenize(data, hps, loading_mode="train"):
             premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
             instances += [premise, hyp0, hyp1]
             label = [0, 0, 0]
-            label[example['label']] = 1
+            label[example['label'] + 1] = 1
             label[0] = 0 if example['ask-for'] == 'cause' else 1
             labels += label
 
@@ -405,7 +405,7 @@ def load_data(path):
     return data
 
 
-def cl_evaluation(hps, dataloader, model, loss_function, mode='train'):
+def cl_evaluation(hps, dataloader, model, loss_function, mode='train', verbose=False):
     predictions = []
     labels = []
     loss = 0
@@ -427,6 +427,9 @@ def cl_evaluation(hps, dataloader, model, loss_function, mode='train'):
         pred = torch.argmax(probs, dim=1).cpu()
         predictions += pred.tolist()
         labels += label
+        if verbose:
+            print("label:", label)
+            print("pres:", pred)
 
     count = 0
     for i in range(len(predictions)):
