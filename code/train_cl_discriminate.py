@@ -55,11 +55,11 @@ def parse_hps():
     parser.add_argument('--score', type=str, default="cossim", help="scorer type")
     parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
 
-
     # parsing the hyper-parameters from command line and define logger
     hps = parser.parse_args()
     hps.nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     return hps
+
 
 def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps):
     model.eval()
@@ -85,12 +85,12 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             if not os.path.exists(hps.save_dir):
                 os.mkdir(hps.save_dir)
             logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-            if hps.hyp_only:
-                torch.save(model, os.path.join(hps.save_dir, 'discriminate_'+ hps.model_name + '_hyp'))
-            else:
-                torch.save(model, os.path.join(hps.save_dir, 'discriminate_'+ hps.model_name))
-            # torch.save(model, os.path.join(hps.save_dir, exp_name))
-                
+            # if hps.hyp_only:
+            #     torch.save(model, os.path.join(hps.save_dir, exp_name + '_hyp'))
+            # else:
+            #     torch.save(model, os.path.join(hps.save_dir, exp_name))
+            torch.save(model, os.path.join(hps.save_dir, exp_name))
+
         else:
             patient += 1
 
@@ -99,6 +99,7 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             logger.info("[INFO] Stopping Training by Early Stopping")
             stop_train = True
     return patient, stop_train
+
 
 def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps):
     logger.info("[INFO] Start Training")
@@ -131,18 +132,19 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
             if i == 0:
                 init_loss = loss.item() / len(batch)
             last_loss = loss.item() / len(batch)
-            t.set_postfix(avg_loss='{}'.format(total_loss/(epoch_step+1)))
+            t.set_postfix(avg_loss='{}'.format(total_loss / (epoch_step + 1)))
             epoch_step += 1
 
             loss.backward()
             optimizer.step()
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
-                patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps)
+                patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
+                                               hps)
                 if stop_train:
                     return
             step += 1
-        
+
         print(f"In Epoch {epoch} training, individual loss {init_loss:.4f} -> {last_loss:.4f}")
         if hps.evaluation_strategy == "epoch":
             patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps)
@@ -157,10 +159,11 @@ def load_loss_function(hps):
         loss_function = nn.BCEWithLogitsLoss(reduction='mean')
     return loss_function
 
+
 def main():
     # parse hyper parameters
     hps = parse_hps()
-    exp_name = "discriminate_" + hps.model_name
+    exp_name = "discriminate_" + hps.model_dir
     if hps.save_name is not None:
         exp_name = hps.save_name + "_" + exp_name
     if hps.hyp_only:
@@ -194,8 +197,9 @@ def main():
 
     # contrastive Tokenization
     logger.info("[DATA] Tokenization and Padding for Data")
-    train_ids, train_mask, train_seg_ids, train_labels, train_length = contrastive_tokenize(train_data, hps, loading_mode="train")
-    dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = contrastive_tokenize(dev_data, hps, loading_mode="dev")
+    train_ids, train_mask, train_seg_ids, train_labels, train_length = contrastive_tokenize(train_data, hps,
+                                                                                            loading_mode="train")
+    dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = contrastive_tokenize(dev_data, hps, loading_mode="train")
     # print("tokenzied data:", len(dev_ids))
     # print("\tdev_ids:", dev_ids[0])
     # print("\tdev_mask:", dev_mask[0])
@@ -232,10 +236,6 @@ def main():
     # contrastive training
     CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps)
 
+
 if __name__ == '__main__':
     main()
-
-
-
-
-

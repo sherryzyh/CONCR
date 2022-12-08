@@ -44,6 +44,8 @@ class CosSimilarity(nn.Module):
         self.cos = nn.CosineSimilarity(dim=-1)
 
     def forward(self, x, y):
+        x = x.unsqueeze(1)
+        y = y.unsqueeze(0)
         return self.cos(x, y) / self.temp
 
 
@@ -67,7 +69,8 @@ class Scorer(nn.Module):
         self.init_weights()
 
     def forward(self, x, y):
-        pair = torch.cat([x, y], dim=-1)
+        # x, y [batch_size, hidden_size]
+        pair = self.pairxy(x, y)
         score = self.score_mlp(pair).squeeze()
         return score / self.temp
 
@@ -76,6 +79,20 @@ class Scorer(nn.Module):
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform_(m.weight)
                 m.bias.data.fill_(0.01)
+
+    def pairxy(self, x, y):
+        batch_size = x.size(0)
+        hidden_size = x.size(1)
+        idx_0 = torch.arange(batch_size)
+        idx_1 = torch.arange(batch_size)
+        idx_0, idx_1 = torch.meshgrid(idx_0, idx_1)
+        # idx_0 = [[0, 0], [1, 1]]
+        # idx_1 = [[0, 1], [0, 1]]
+        idx_0 = idx_0.view(-1)
+        idx_1 = idx_1.view(-1)
+        xypair = torch.cat([x[idx_0],y[idx_1]], dim=1) # [batch_size * batch_size, hidden_size * 2]
+        xypair = xypair.view(batch_size, batch_size, -1) # [batch_size, batch_size, hidden_size * 2]
+        return xypair
 
 
 class contrastive_reasoning_model(nn.Module):
@@ -161,7 +178,7 @@ class contrastive_reasoning_model(nn.Module):
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
         causes_0 = causes_0.to(input_ids.device)
         effects_0 = effects_0.to(input_ids.device)
-        contrastive_causal_score = self.sim(causes_0.unsqueeze(1), effects_0.unsqueeze(0))
+        contrastive_causal_score = self.sim(causes_0, effects_0)
         # print("contrastive score:", contrastive_causal_score.size())
         # print(contrastive_causal_score)
 
@@ -171,7 +188,7 @@ class contrastive_reasoning_model(nn.Module):
             causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
             causes_1 = causes_1.to(input_ids.device)
             effects_1 = effects_1.to(input_ids.device)
-            hardneg_causal_score = self.sim(causes_1.unsqueeze(1), effects_1.unsqueeze(0))
+            hardneg_causal_score = self.sim(causes_1, effects_1)
 
             # print("contrastive score:", contrastive_causal_score.size())
             # print("hardneg_causal_score:", hardneg_causal_score.size())
@@ -235,13 +252,17 @@ class contrastive_reasoning_model(nn.Module):
 
         premise_0_score_matrix = self.sim(causes_0.unsqueeze(1), effects_0.unsqueeze(0))
         score_0 = torch.diagonal(premise_0_score_matrix, offset=0)
-        print("score 0.size:", score_0)
+        # print("score 0.size:", score_0)
 
         causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
         causes_1 = causes_1.to(input_ids.device)
         effects_1 = effects_1.to(input_ids.device)
         premise_1_score_matrix = self.sim(causes_1.unsqueeze(1), effects_1.unsqueeze(0))
         score_1 = torch.diagonal(premise_1_score_matrix, offset=0)
-        print("score 1.size:", score_1)
+        # print("score 1.size:", score_1)
+
+        score = torch.cat([score_0, score_1], dim=1)
+        # print("score size:", score.size())
+        # print(torch.argmax(score, dim=1))
 
         return score_0, score_1

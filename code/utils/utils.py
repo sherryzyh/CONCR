@@ -63,7 +63,8 @@ def tokenize_data(data, model_path, model_name):
     attention_mask = [[1] * len(instance) + [0] * (max_length - len(instance)) for instance in instances]
     instances = [instance + [pad_id] * (max_length - len(instance)) for instance in instances]
 
-    return torch.LongTensor(instances), torch.LongTensor(attention_mask), torch.LongTensor(segments), torch.LongTensor(labels)
+    return torch.LongTensor(instances), torch.LongTensor(attention_mask), torch.LongTensor(segments), torch.LongTensor(
+        labels)
 
 
 def tokenize_multi_choices(data, hps):
@@ -84,7 +85,7 @@ def tokenize_multi_choices(data, hps):
         tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
     else:
         tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir, padding_side='left')
-    
+
     instances = []
     labels = []
 
@@ -103,7 +104,7 @@ def tokenize_multi_choices(data, hps):
             tmp_labels[label] = 1
             labels += tmp_labels
             instances += tmp_instances
-    
+
     outputs = tokenizer(instances, padding=True, return_token_type_ids=True, return_length=True)
     input_ids = outputs['input_ids']
     attention_mask = outputs['attention_mask']
@@ -111,7 +112,7 @@ def tokenize_multi_choices(data, hps):
     length = outputs['length']
 
     return torch.LongTensor(input_ids), torch.LongTensor(attention_mask), \
-           torch.LongTensor(token_type_ids), torch.LongTensor(labels), torch.LongTensor(length)-1
+           torch.LongTensor(token_type_ids), torch.LongTensor(labels), torch.LongTensor(length) - 1
 
 
 def load_pretrained_tokenizer(hps):
@@ -135,9 +136,10 @@ def load_pretrained_tokenizer(hps):
 
     return tokenizer
 
+
 def contrastive_tokenize(data, hps, loading_mode="train"):
     tokenizer = load_pretrained_tokenizer(hps)
-    
+
     instances = []
     labels = []
     input_ids = []
@@ -164,7 +166,6 @@ def contrastive_tokenize(data, hps, loading_mode="train"):
             label[0] = 0 if example['ask-for'] == 'cause' else 1
             labels += label
 
-    
     tokenized_inputs = tokenizer(text=instances, padding=True, return_token_type_ids=True, return_length=True)
     input_ids = tokenized_inputs['input_ids']
     attention_mask = tokenized_inputs['attention_mask']
@@ -182,14 +183,15 @@ def contrastive_tokenize(data, hps, loading_mode="train"):
     # print(f"token_type_ids_tensor: {token_type_ids_tensor.size()}")
     labels_tensor = torch.LongTensor(labels).view((data_size, 3))
     # print(f"labels: {labels_tensor.size()}")
-    length_tensor = torch.LongTensor(length).view((data_size, 3))-1
+    length_tensor = torch.LongTensor(length).view((data_size, 3)) - 1
     # print(f"length: {length_tensor.size()}")
 
     return input_ids_tensor, attention_mask_tensor, token_type_ids_tensor, labels_tensor, length_tensor
 
+
 def quick_tokenize(data, hps):
     tokenizer = load_pretrained_tokenizer(hps)
-    
+
     instances = []
     labels = []
     for example in data:
@@ -219,7 +221,7 @@ def quick_tokenize(data, hps):
     length = outputs['length']
 
     return torch.LongTensor(input_ids), torch.LongTensor(attention_mask), \
-           torch.LongTensor(token_type_ids), torch.LongTensor(labels), torch.LongTensor(length)-1
+           torch.LongTensor(token_type_ids), torch.LongTensor(labels), torch.LongTensor(length) - 1
 
 
 def tokenize_multi_task(hps, data):
@@ -270,15 +272,15 @@ def compute_ppl(hps, model, data):
             label_ids = torch.LongTensor(label_inputs['input_ids']).unsqueeze(0).cuda()
             length = label_ids.shape[1]
             total_length += length
-            
+
             # label_mask = torch.LongTensor(label_inputs['attention_mask']).unsqueeze(0).cuda()
             attention_mask = torch.cat((attention_mask, torch.ones(1, label_ids.shape[1]).long().cuda()), 1)
-            label_ids = torch.cat((torch.LongTensor([-100]*input_ids.shape[1]).unsqueeze(0).cuda(), label_ids), 1)
+            label_ids = torch.cat((torch.LongTensor([-100] * input_ids.shape[1]).unsqueeze(0).cuda(), label_ids), 1)
             input_ids = torch.cat((input_ids, label_ids[:, input_ids.shape[1]:]), 1)
             with torch.no_grad():
                 loss = model(input_ids, attention_mask=attention_mask, labels=label_ids)[0]
                 lls.append(loss * length)
-                
+
         ppl = torch.exp(torch.stack(lls).sum() / total_length)
 
     else:
@@ -300,7 +302,8 @@ def compute_ppl(hps, model, data):
             # label_ids = torch.cat((torch.LongTensor([-100]*input_ids.shape[1]).unsqueeze(0).cuda(), label_ids), 1)
             # input_ids = torch.cat((input_ids, label_ids[:, input_ids.shape[1]:]), 1)
             with torch.no_grad():
-                loss = model(input_ids, attention_mask=attention_mask, decoder_input_ids=label_ids, decoder_attention_mask=label_mask, labels=label_ids)[0]
+                loss = model(input_ids, attention_mask=attention_mask, decoder_input_ids=label_ids,
+                             decoder_attention_mask=label_mask, labels=label_ids)[0]
                 lls.append(loss * length)
 
         ppl = torch.exp(torch.stack(lls).sum() / total_length)
@@ -348,8 +351,10 @@ def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
                         decoder_mask,
                         labels,
                         mode='generate')
-        generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in gen_ids.tolist()]
-        gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in decoder_ids[::2, :].tolist()]
+        generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                          gen_ids.tolist()]
+        gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                     decoder_ids[::2, :].tolist()]
 
         for i in range(len(generated_text)):
             bleu1 += bleu([gold_text[i]], generated_text[i], [1, 0, 0, 0])
@@ -395,7 +400,6 @@ def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
 #     return count / num_instances, bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances
 
 
-
 def load_data(path):
     data = [json.loads(line) for line in open(path, 'r')]
     return data
@@ -412,18 +416,18 @@ def cl_evaluation(hps, dataloader, model, loss_function, mode='train'):
 
         if mode == 'train':
             sent, seg_id, atten_mask, tmp_label, tmp_length = batch
-            probs_hypothesis_0, probs_hypothesis_1 = model(sent, atten_mask, tmp_label, seg_ids=seg_id, length=tmp_length, mode='eval')
+            batch_size = len(sent)
+            probs_hypothesis_0, probs_hypothesis_1 = model(sent, atten_mask, tmp_label, seg_ids=seg_id,
+                                                           length=tmp_length, mode='eval')
+            reasoning_labels = tmp_label[:, 1:].reshape(-1)
+            label = torch.argmax(reasoning_labels.view(-1, 2), dim=1).tolist()
 
-        probs = torch.cat([probs_hypothesis_0.unsqueeze(dim=1), probs_hypothesis_1.unsqueeze(dim=1)], dim=-1)
-        reasoning_labels = tmp_label[:, 1:].reshape(-1)
+        probs = torch.cat([probs_hypothesis_0, probs_hypothesis_1], dim=-1)
         loss += loss_function(probs.view(-1), reasoning_labels.float()).item()
-        # print("reasoning_labels.size:", reasoning_labels.size())
-        # print("probs:", probs)
-        predictions += torch.argmax(probs, dim=1).cpu().tolist()
-        labels += torch.argmax(tmp_label[:, 1:], dim=1).cpu().tolist()
-        # print("predictions:", predictions)
-        # print("labels:", labels)
-        
+        pred = torch.argmax(probs, dim=1).cpu()
+        predictions += pred.tolist()
+        labels += label
+
     count = 0
     for i in range(len(predictions)):
         if predictions[i] == labels[i]:
@@ -431,9 +435,9 @@ def cl_evaluation(hps, dataloader, model, loss_function, mode='train'):
         else:
             continue
     acc = count / len(predictions)
-    print("Acc:", acc)
 
     return acc, loss
+
 
 def evaluation(hps, dataloader, model, loss_function, epoch, mode='train'):
     predictions = []
@@ -517,9 +521,9 @@ def evaluation(hps, dataloader, model, loss_function, epoch, mode='train'):
                 fp += 1
             else:
                 tn += 1
-        precision = tp / (tp+fp)
-        recall = tp / (tp+fn)
-        f1 = 2*precision*recall/(precision+recall)
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        f1 = 2 * precision * recall / (precision + recall)
         return f1, 0
 
     else:
@@ -531,8 +535,7 @@ def evaluation(hps, dataloader, model, loss_function, epoch, mode='train'):
         t_a = torch.cat((t_a1, t_a2), dim=1)
         predict_labels = torch.argmax(a, 1).tolist()
         true_labels = torch.argmax(t_a, 1).tolist()
-    
-    
+
     count = 0
     for i in range(len(predict_labels)):
         if predict_labels[i] == true_labels[i]:
@@ -544,7 +547,7 @@ def evaluation(hps, dataloader, model, loss_function, epoch, mode='train'):
         writer = csv.writer(f)
         writer.writerows([[l] for l in predict_labels])
 
-    return count/len(true_labels), loss
+    return count / len(true_labels), loss
 
 
 def define_logger():
@@ -578,8 +581,8 @@ def tokenize_gen(data, hps):
             inputs.append(seq1)
             labels.append(seq2)
         elif hps.model_name == 'gpt2':
-            inputs.append([example['cause']+' '+example['effect'], example['conceptual_explanation']])
-            premise.append(example['cause']+' '+example['effect'])
+            inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
+            premise.append(example['cause'] + ' ' + example['effect'])
             labels.append(example['conceptual_explanation'])
         else:
             return
@@ -653,13 +656,15 @@ def evaluate_gpt2(dataloader, model, hps):
         decode_ids = torch.zeros([premise_ids.shape[0], 1]).long().cuda()
         predict_id = torch.zeros([premise_ids.shape[0], 1]).long().cuda()
 
-        while decode_ids.shape[1] <= 35 and predict_id.tolist() != (torch.ones([hps.batch_size, 1]).long()*50256).tolist():
+        while decode_ids.shape[1] <= 35 and predict_id.tolist() != (
+                torch.ones([hps.batch_size, 1]).long() * 50256).tolist():
             output = model(premise_ids, premise_mask, token_type_ids=premise_token_type_ids, mode='test')
             predict_id = torch.argmax(output[1][:, -1, :], -1).unsqueeze(1)
             decode_ids = torch.cat((decode_ids, predict_id), -1)
             premise_ids = torch.cat((premise_ids, predict_id), -1)
             premise_mask = torch.cat((premise_mask, torch.ones([premise_mask.shape[0], 1]).long().cuda()), -1)
-            premise_token_type_ids = torch.cat((premise_token_type_ids, torch.ones([premise_token_type_ids.shape[0], 1]).long().cuda()), -1)
+            premise_token_type_ids = torch.cat(
+                (premise_token_type_ids, torch.ones([premise_token_type_ids.shape[0], 1]).long().cuda()), -1)
 
         label_tokens = [tokenizer.convert_ids_to_tokens(gen_ids[i]) for i in range(gen_ids.shape[0])]
         predict_tokens = [tokenizer.convert_ids_to_tokens(decode_ids[i][1:]) for i in range(decode_ids.shape[0])]
@@ -674,8 +679,8 @@ def evaluate_gpt2(dataloader, model, hps):
 
 
 def remove_special_tokens(text):
-    return text.replace('<s>', '').replace('</s>', '').replace('<pad>', '').replace('<unk>', '').replace('<|endoftext|>', '')
-
+    return text.replace('<s>', '').replace('</s>', '').replace('<pad>', '').replace('<unk>', '').replace(
+        '<|endoftext|>', '')
 
 
 def top_k_logits(logits, k):
@@ -733,7 +738,8 @@ def sample_sequence(model, length, start_token=None, batch_size=None, context=No
                 gen_output = model(input_ids=output, attention_mask=attention_mask, past_key_values=None, mode='test')
                 logits = gen_output['logits']
             else:
-                logits, past, hiddens = model(inputs_embeds=output, attention_mask=attention_mask, past_key_values=None, output_hidden_states=True)
+                logits, past, hiddens = model(inputs_embeds=output, attention_mask=attention_mask, past_key_values=None,
+                                              output_hidden_states=True)
             logits = logits[:, -1, :] / temperature
             logits = top_k_logits(logits, k=top_k)
             log_probs = F.softmax(logits, dim=-1)
@@ -764,28 +770,31 @@ def gpt2_evaluate(model, length, data_loader, hps, epoch):
     for batch in data_loader:
         if hps.cuda:
             batch = tuple(term.cuda() for term in batch)
-        input_ids, input_mask, input_seg_ids, gen_ids, gen_mask, _, premise_ids, premise_mask, premise_token_type_ids = batch #dev
+        input_ids, input_mask, input_seg_ids, gen_ids, gen_mask, _, premise_ids, premise_mask, premise_token_type_ids = batch  # dev
         tmp = torch.ones(gen_mask.shape).long()
-        count_mask_length = torch.sum(tmp==gen_mask.cpu(), 1).squeeze().tolist()
+        count_mask_length = torch.sum(tmp == gen_mask.cpu(), 1).squeeze().tolist()
         true_labels = None
         for j in range(input_ids.shape[0]):
             if true_labels is None:
                 # true_labels = torch.cat((torch.ones(count_mask_length[j]).long(), input_ids[j, count_mask_length[j]:].cpu())).unsqueeze(0)
-                true_labels = torch.cat((input_ids[j, :-count_mask_length[j]]*0-100, input_ids[j, -count_mask_length[j]:])).unsqueeze(0)
+                true_labels = torch.cat(
+                    (input_ids[j, :-count_mask_length[j]] * 0 - 100, input_ids[j, -count_mask_length[j]:])).unsqueeze(0)
             else:
                 # true_labels = torch.cat((true_labels, torch.cat((torch.ones(count_mask_length[j]).long(), input_ids[j, count_mask_length[j]:].cpu())).unsqueeze(0)), 0)
-                true_labels = torch.cat((true_labels, torch.cat((input_ids[j, :-count_mask_length[j]]*0-100, input_ids[j, -count_mask_length[j]:])).unsqueeze(0)),0)
+                true_labels = torch.cat((true_labels, torch.cat(
+                    (input_ids[j, :-count_mask_length[j]] * 0 - 100, input_ids[j, -count_mask_length[j]:])).unsqueeze(
+                    0)), 0)
 
         output = model(input_ids=input_ids, attention_mask=input_mask, token_type_ids=input_seg_ids, labels=true_labels)
         loss = output[0]
         val_loss += loss.item()
 
         # output = sample_sequence(model, length, device='cuda', context=premise_ids, batch_size=hps.batch_size, attention_mask=premise_mask, input_type='ids')
-        generated = model.generate(input_ids=premise_ids, 
-                                   attention_mask=premise_mask, 
-                                   max_length=length+premise_ids.shape[1], 
-                                   num_beams=5, 
-                                   early_stopping=True, 
+        generated = model.generate(input_ids=premise_ids,
+                                   attention_mask=premise_mask,
+                                   max_length=length + premise_ids.shape[1],
+                                   num_beams=5,
+                                   early_stopping=True,
                                    do_sample=True,
                                    no_repeat_ngram_size=3,
                                    repetition_penalty=1.5
@@ -795,23 +804,25 @@ def gpt2_evaluate(model, length, data_loader, hps, epoch):
         # pdb.set_trace()
         generated = generated[:, premise_ids.shape[1]:]
 
-        generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in generated.cpu().tolist()]
-        gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in gen_ids.cpu().tolist()]
-        input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in premise_ids]
-        output_text += [[generated_text[i].split('.')[0]+'.'] for i in range(len(input_text))]
+        generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                          generated.cpu().tolist()]
+        gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                     gen_ids.cpu().tolist()]
+        input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                      premise_ids]
+        output_text += [[generated_text[i].split('.')[0] + '.'] for i in range(len(input_text))]
 
         for i in range(generated.shape[0]):
             # predict_tokens = tokenizer.convert_ids_to_tokens(generated[i])
             # generated_text = remove_special_tokens(tokenizer.convert_tokens_to_string(predict_tokens))
 
-
             # gold_tokens = tokenizer.convert_ids_to_tokens(gen_ids[i])
             # gold_text = remove_special_tokens(tokenizer.convert_tokens_to_string(gold_tokens))
 
-            bleu1 += bleu([gold_text[i]], generated_text[i].split('.')[0]+'.', [1, 0, 0, 0])
-            bleu2 += bleu([gold_text[i]], generated_text[i].split('.')[0]+'.', [0, 1, 0, 0])
-            bleu3 += bleu([gold_text[i]], generated_text[i].split('.')[0]+'.', [0, 0, 1, 0])
-            bleu4 += bleu([gold_text[i]], generated_text[i].split('.')[0]+'.', [0, 0, 0, 1])
+            bleu1 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [1, 0, 0, 0])
+            bleu2 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 1, 0, 0])
+            bleu3 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 0, 1, 0])
+            bleu4 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 0, 0, 1])
 
             try:
                 scores = rouge.get_scores(generated_text[i], gold_text[i])
@@ -821,7 +832,7 @@ def gpt2_evaluate(model, length, data_loader, hps, epoch):
             except:
                 continue
 
-    num_instances = (len(data_loader)-1) * hps.batch_size + gen_ids.shape[0]
+    num_instances = (len(data_loader) - 1) * hps.batch_size + gen_ids.shape[0]
 
     evaluation_output = dict(
         val_loss=val_loss * 100,
@@ -836,13 +847,12 @@ def gpt2_evaluate(model, length, data_loader, hps, epoch):
     )
     for metric in evaluation_output.keys():
         evaluation_output[metric] /= num_instances
-    
+
     with open(hps.output_dir + f'/gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerows(output_text)
-    
-    return evaluation_output
 
+    return evaluation_output
 
 
 def bart_evaluate(model, data_loader, hps):
@@ -860,53 +870,55 @@ def bart_evaluate(model, data_loader, hps):
             batch = tuple(term.cuda() for term in batch)
 
         input_ids, input_mask, labels, label_mask = batch
-        generate_ids = model.generate(input_ids, 
-        							  attention_mask=input_mask, 
-        							  num_beams=hps.beam_size, 
-        							  max_length=hps.length, 
-        							  early_stopping=True, 
+        generate_ids = model.generate(input_ids,
+                                      attention_mask=input_mask,
+                                      num_beams=hps.beam_size,
+                                      max_length=hps.length,
+                                      early_stopping=True,
                                       no_repeat_ngram_size=3,
-        							  repetition_penalty=1.5,        							  
-        							  # temperature=0.7,
-        							  # length_penalty=0.6
+                                      repetition_penalty=1.5,
+                                      # temperature=0.7,
+                                      # length_penalty=0.6
                                       )
         # generate_ids = generate_ids[:, input_ids.shape[1]:]
 
-        generate_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in generate_ids]
+        generate_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                         generate_ids]
         gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in labels]
-        input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in input_ids]
+        input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                      input_ids]
 
-        output_text += [[input_text[i], gold_text[i], generate_text[i].split('.')[0]+'.'] for i in range(len(input_text))]
-
+        output_text += [[input_text[i], gold_text[i], generate_text[i].split('.')[0] + '.'] for i in
+                        range(len(input_text))]
 
         for i in range(len(gold_text)):
 
-            bleu1 += bleu([gold_text[i]], generate_text[i].split('.')[0]+'.', [1, 0, 0, 0])
-            bleu2 += bleu([gold_text[i]], generate_text[i].split('.')[0]+'.', [0, 1, 0, 0])
-            bleu3 += bleu([gold_text[i]], generate_text[i].split('.')[0]+'.', [0, 0, 1, 0])
-            bleu4 += bleu([gold_text[i]], generate_text[i].split('.')[0]+'.', [0, 0, 0, 1])
+            bleu1 += bleu([gold_text[i]], generate_text[i].split('.')[0] + '.', [1, 0, 0, 0])
+            bleu2 += bleu([gold_text[i]], generate_text[i].split('.')[0] + '.', [0, 1, 0, 0])
+            bleu3 += bleu([gold_text[i]], generate_text[i].split('.')[0] + '.', [0, 0, 1, 0])
+            bleu4 += bleu([gold_text[i]], generate_text[i].split('.')[0] + '.', [0, 0, 0, 1])
 
             try:
                 scores = rouge.get_scores(generate_text[i], gold_text[i])
             except:
                 scores = [
-                  {
-                    "rouge-1": {
-                      "f": 0.0,
-                      "p": 0.0,
-                      "r": 0.0
-                    },
-                    "rouge-2": {
-                      "f": 0.0,
-                      "p": 0.0,
-                      "r": 0.0
-                    },
-                    "rouge-l": {
-                      "f": 0.0,
-                      "p": 0.0,
-                      "r": 0.0
+                    {
+                        "rouge-1": {
+                            "f": 0.0,
+                            "p": 0.0,
+                            "r": 0.0
+                        },
+                        "rouge-2": {
+                            "f": 0.0,
+                            "p": 0.0,
+                            "r": 0.0
+                        },
+                        "rouge-l": {
+                            "f": 0.0,
+                            "p": 0.0,
+                            "r": 0.0
+                        }
                     }
-                  }
                 ]
             rouge1 = scores[0]['rouge-1']
             rouge1f += rouge1['f']
@@ -923,13 +935,13 @@ def bart_evaluate(model, data_loader, hps):
             rougelp += rougel['p']
             rougelr += rougel['r']
 
-    num_instances = (len(data_loader)-1) * hps.batch_size + input_ids.shape[0]
+    num_instances = (len(data_loader) - 1) * hps.batch_size + input_ids.shape[0]
 
-    fo = open(hps.output_dir+'/bart_predict_'+nowtime+'.csv', 'w', encoding='utf-8')
+    fo = open(hps.output_dir + '/bart_predict_' + nowtime + '.csv', 'w', encoding='utf-8')
     writer = csv.writer(fo)
     writer.writerows(output_text)
 
-    return bleu1/num_instances, bleu2/num_instances, bleu3/num_instances, bleu4/num_instances, rouge1r/num_instances, rouge2r/num_instances, rougelr/num_instances
+    return bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances, rouge1r / num_instances, rouge2r / num_instances, rougelr / num_instances
 
 
 
