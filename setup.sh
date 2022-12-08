@@ -7,3 +7,4 @@ pip install rouge
 pip install sentencepiece
 pip install -U sentence-transformers
 pip install jsonlines
+pip install matplotlib
