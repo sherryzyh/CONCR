@@ -1,0 +1,89 @@
+2022-12-08 19:54:34,472 INFO    : === hps ===
+Namespace(data_dir='./data/Causal_Reasoning/', model_dir='bert-base-cased', save_dir='./output/saved_model', log_dir='./output/log', apex_dir='./output/log', train='train.jsonl', dev='dev.jsonl', devload='train', test='test.pkl', model_name='bert', save_name='cl_cossim_trainload_1e-5_bs64_10e_seed42', data_name='copa', cuda=True, gpu='0', batch_size=64, shuffle=False, epochs=10, evaluation_strategy='epoch', evaluation_step=20, lr=1e-05, set_seed=True, seed=42, patient=10, loss_func='BCE', hyp_only=False, prompt=None, score='cossim', hard_negative_weight=0.0, nowtime='20221208_195434')
+2022-12-08 19:54:34,472 INFO    : [DATA] Loading Data
+2022-12-08 19:54:34,472 INFO    : [DATA] Hypothesis Only: False
+2022-12-08 19:54:34,536 INFO    : [DATA] Tokenization and Padding for Data
+2022-12-08 19:54:42,575 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-12-08 19:54:42,576 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-12-08 19:54:42,576 INFO    : [MODEL] bert
+2022-12-08 19:54:51,424 INFO    : [INFO] Start Training
+2022-12-08 19:54:51,425 INFO    : [Epoch] 0
+2022-12-08 20:02:34,640 INFO    : [Train Metrics] Train Accuracy: 	0.712352625937835
+2022-12-08 20:02:34,640 INFO    : [Train Metrics] Train Loss: 	1812.0510125160217
+2022-12-08 20:02:34,641 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 20:02:50,456 INFO    : [Dev Metrics] Dev Accuracy: 	0.6965290806754222
+2022-12-08 20:02:50,456 INFO    : [Dev Metrics] Dev Loss: 	263.71996545791626
+2022-12-08 20:02:50,457 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 20:02:51,180 INFO    : [Patient] 0
+2022-12-08 20:02:51,180 INFO    : [Epoch] 1
+2022-12-08 20:10:32,591 INFO    : [Train Metrics] Train Accuracy: 	0.7755894962486602
+2022-12-08 20:10:32,591 INFO    : [Train Metrics] Train Loss: 	1642.58518409729
+2022-12-08 20:10:32,592 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 20:10:48,403 INFO    : [Dev Metrics] Dev Accuracy: 	0.724202626641651
+2022-12-08 20:10:48,403 INFO    : [Dev Metrics] Dev Loss: 	239.14697694778442
+2022-12-08 20:10:48,403 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 20:10:51,463 INFO    : [Patient] 0
+2022-12-08 20:10:51,463 INFO    : [Epoch] 2
+2022-12-08 20:18:33,708 INFO    : [Train Metrics] Train Accuracy: 	0.8220793140407289
+2022-12-08 20:18:33,708 INFO    : [Train Metrics] Train Loss: 	1538.3725962638855
+2022-12-08 20:18:33,709 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 20:18:49,877 INFO    : [Dev Metrics] Dev Accuracy: 	0.7293621013133208
+2022-12-08 20:18:49,878 INFO    : [Dev Metrics] Dev Loss: 	224.75945949554443
+2022-12-08 20:18:49,878 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 20:18:52,927 INFO    : [Patient] 0
+2022-12-08 20:18:52,928 INFO    : [Epoch] 3
+2022-12-08 20:26:40,999 INFO    : [Train Metrics] Train Accuracy: 	0.864884780278671
+2022-12-08 20:26:40,999 INFO    : [Train Metrics] Train Loss: 	1426.122585773468
+2022-12-08 20:26:41,000 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 20:26:57,028 INFO    : [Dev Metrics] Dev Accuracy: 	0.7349906191369606
+2022-12-08 20:26:57,028 INFO    : [Dev Metrics] Dev Loss: 	209.0499882698059
+2022-12-08 20:26:57,028 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 20:27:00,080 INFO    : [Patient] 0
+2022-12-08 20:27:00,081 INFO    : [Epoch] 4
+2022-12-08 20:34:41,123 INFO    : [Train Metrics] Train Accuracy: 	0.9005894962486602
+2022-12-08 20:34:41,123 INFO    : [Train Metrics] Train Loss: 	1321.0940947532654
+2022-12-08 20:34:41,124 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 20:34:57,322 INFO    : [Dev Metrics] Dev Accuracy: 	0.7420262664165104
+2022-12-08 20:34:57,322 INFO    : [Dev Metrics] Dev Loss: 	194.69302988052368
+2022-12-08 20:34:57,322 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 20:35:00,379 INFO    : [Patient] 0
+2022-12-08 20:35:00,379 INFO    : [Epoch] 5
+2022-12-08 20:42:40,319 INFO    : [Train Metrics] Train Accuracy: 	0.9293274383708467
+2022-12-08 20:42:40,319 INFO    : [Train Metrics] Train Loss: 	1205.0955214500427
+2022-12-08 20:42:40,320 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 20:42:55,773 INFO    : [Dev Metrics] Dev Accuracy: 	0.75187617260788
+2022-12-08 20:42:55,773 INFO    : [Dev Metrics] Dev Loss: 	178.86897659301758
+2022-12-08 20:42:55,773 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 20:42:58,829 INFO    : [Patient] 0
+2022-12-08 20:42:58,829 INFO    : [Epoch] 6
+2022-12-08 20:50:32,349 INFO    : [Train Metrics] Train Accuracy: 	0.9528403001071811
+2022-12-08 20:50:32,349 INFO    : [Train Metrics] Train Loss: 	1112.998655796051
+2022-12-08 20:50:32,350 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 20:50:47,552 INFO    : [Dev Metrics] Dev Accuracy: 	0.7467166979362101
+2022-12-08 20:50:47,553 INFO    : [Dev Metrics] Dev Loss: 	166.32516622543335
+2022-12-08 20:50:47,553 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 20:50:50,609 INFO    : [Patient] 0
+2022-12-08 20:50:50,609 INFO    : [Epoch] 7
+2022-12-08 20:58:25,772 INFO    : [Train Metrics] Train Accuracy: 	0.9684485530546624
+2022-12-08 20:58:25,773 INFO    : [Train Metrics] Train Loss: 	1052.0849344730377
+2022-12-08 20:58:25,774 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 20:58:41,123 INFO    : [Dev Metrics] Dev Accuracy: 	0.75187617260788
+2022-12-08 20:58:41,123 INFO    : [Dev Metrics] Dev Loss: 	158.63545179367065
+2022-12-08 20:58:41,123 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 20:58:44,181 INFO    : [Patient] 0
+2022-12-08 20:58:44,181 INFO    : [Epoch] 8
+2022-12-08 21:06:18,992 INFO    : [Train Metrics] Train Accuracy: 	0.9791666666666666
+2022-12-08 21:06:18,992 INFO    : [Train Metrics] Train Loss: 	1004.7561841011047
+2022-12-08 21:06:18,993 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 21:06:34,841 INFO    : [Dev Metrics] Dev Accuracy: 	0.7575046904315197
+2022-12-08 21:06:34,841 INFO    : [Dev Metrics] Dev Loss: 	152.61680054664612
+2022-12-08 21:06:34,841 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 21:06:37,891 INFO    : [Patient] 0
+2022-12-08 21:06:37,892 INFO    : [Epoch] 9
+2022-12-08 21:14:14,351 INFO    : [Train Metrics] Train Accuracy: 	0.9879421221864951
+2022-12-08 21:14:14,351 INFO    : [Train Metrics] Train Loss: 	959.7317137718201
+2022-12-08 21:14:14,352 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-08 21:14:29,697 INFO    : [Dev Metrics] Dev Accuracy: 	0.7668855534709194
+2022-12-08 21:14:29,697 INFO    : [Dev Metrics] Dev Loss: 	147.16086983680725
+2022-12-08 21:14:29,697 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-08 21:14:32,749 INFO    : [Patient] 0
