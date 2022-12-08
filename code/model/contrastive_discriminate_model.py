@@ -147,14 +147,6 @@ class contrastive_reasoning_model(nn.Module):
             seg_ids = seg_ids.view((-1, seg_ids.size(-1)))
         if length is not None:
             length = length.view(-1)
-        # labels = labels.view(-1)
-        # print("input_ids.size:", input_ids.size())
-        # print("attention_mask.size:", attention_mask.size())
-        # print("labels.size:", labels.size())
-        # print("seg_ids.size:", seg_ids.size())
-        # print("length.size:", length.size())
-
-        # print("input device:", input_ids.device)
 
         sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=seg_ids)
 
@@ -166,15 +158,12 @@ class contrastive_reasoning_model(nn.Module):
 
         # Separate representation
         premise, hypothesis_0 = pooler_output[:, 0], pooler_output[:, 1]
-        # print("premise.size:", premise.size())
-        # print("hypothesis.size:", hypothesis_0.size())
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
         causes_0 = causes_0.to(input_ids.device)
         effects_0 = effects_0.to(input_ids.device)
-        # causes_0 = self.cause_emb(causes_0)
-        # effects_0 = self.effect_emb(effects_0)
-        contrastive_causal_score = self.sim(causes_0, effects_0)
+        contrastive_causal_score = self.sim(causes_0.unsqueeze(1), effects_0.unsqueeze(0))
         # print("contrastive score:", contrastive_causal_score.size())
+        # print(contrastive_causal_score)
 
         # Hard negative
         if num_sent == 3:
@@ -182,9 +171,12 @@ class contrastive_reasoning_model(nn.Module):
             causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
             causes_1 = causes_1.to(input_ids.device)
             effects_1 = effects_1.to(input_ids.device)
-            # causes_1 = self.cause_emb(causes_1)
-            # effects_1 = self.effect_emb(effects_1)
-            hardneg_causal_score = self.sim(causes_1, effects_1)
+            hardneg_causal_score = self.sim(causes_1.unsqueeze(1), effects_1.unsqueeze(0))
+
+            # print("contrastive score:", contrastive_causal_score.size())
+            # print("hardneg_causal_score:", hardneg_causal_score.size())
+
+            contrastive_causal_score = torch.cat([contrastive_causal_score, hardneg_causal_score], dim=1)
 
             # Calculate loss with hard negatives
             # Note that weights are actually logits of weights
@@ -199,18 +191,14 @@ class contrastive_reasoning_model(nn.Module):
             # print("hard neg sample score:", weights)
             contrastive_causal_score = contrastive_causal_score + weights
 
-        # Hypothesis 0 is always the correct one (positive samples)
-        # Hypothesis 1 is always the wrong one (negative samples)
         labels = torch.arange(contrastive_causal_score.size(0)).long().to(input_ids.device)
-        # print("for loss, contrastive_causal_score:", contrastive_causal_score.size())
-        # print("for loss, labels:", labels.size())
-        # for i in range(batch_size):
-        #     print(f"=== data {i} ===")
-        #     print("score:", contrastive_causal_score[i])
-        #     print("label:", labels[i])
 
-        # Arg: contrastive_causal_score [batch_size, batch_size]
-        # Arg: labels [batch_size]
+        # print("labels:", labels.size())
+        # print(labels)
+        # logit_pred = torch.argmax(contrastive_causal_score, dim=1)
+        # print("logit pred:", logit_pred.size())
+        # print(logit_pred)
+
         loss = self.contrastive_loss(contrastive_causal_score, labels)
 
         return SequenceClassifierOutput(
@@ -244,17 +232,16 @@ class contrastive_reasoning_model(nn.Module):
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
         causes_0 = causes_0.to(input_ids.device)
         effects_0 = effects_0.to(input_ids.device)
-        # causes_0 = self.cause_emb(causes_0)
-        # effects_0 = self.effect_emb(effects_0)
-        score_0 = self.sim(causes_0, effects_0)
+
+        premise_0_score_matrix = self.sim(causes_0.unsqueeze(1), effects_0.unsqueeze(0))
+        score_0 = torch.diagonal(premise_0_score_matrix, offset=0)
+        print("score 0.size:", score_0)
 
         causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
         causes_1 = causes_1.to(input_ids.device)
         effects_1 = effects_1.to(input_ids.device)
-        # causes_1 = self.cause_emb(causes_1)
-        # effects_1 = self.effect_emb(effects_1)
-        score_1 = self.sim(causes_1, effects_1)
+        premise_1_score_matrix = self.sim(causes_1.unsqueeze(1), effects_1.unsqueeze(0))
+        score_1 = torch.diagonal(premise_1_score_matrix, offset=0)
+        print("score 1.size:", score_1)
 
-        # print("score_0:", score_0)
-        # print("score_1:", score_1)
         return score_0, score_1
