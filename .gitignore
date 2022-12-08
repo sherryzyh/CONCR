@@ -7,5 +7,9 @@ ecr
 data_CEQ
 
 try.sh
+exp.sh
+longexp.sh
+huggingface_cache/
 output/saved_model/
 output/log/test_*
+output/log/testlog/
