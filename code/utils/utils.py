@@ -1,4 +1,5 @@
 import pickle
+import argparse
 import numpy as np
 from transformers import BertTokenizer, RobertaTokenizer, AlbertTokenizer, OpenAIGPTTokenizer, XLNetTokenizer
 from transformers import GPT2Tokenizer, BartTokenizer
@@ -17,6 +18,56 @@ import csv
 import pdb
 import torch.nn as nn
 import json
+
+
+def parse_hps():
+    parser = argparse.ArgumentParser(description='ECR-ANLP')
+
+    # Data Paths
+    parser.add_argument('--data_dir', type=str, default='./data/final_data/data/', help='The dataset directory')
+    parser.add_argument('--model_dir', type=str, default='../../huggingface_transformers/xlnet-base-cased/',
+                        help='The pretrained model directory')
+    parser.add_argument('--save_dir', type=str, default='./output/saved_model', help='The model saving directory')
+    parser.add_argument('--log_dir', type=str, default='./output/log', help='The training log directory')
+    parser.add_argument('--apex_dir', type=str, default='./output/log', help='The apex directory')
+
+    # Data names
+    parser.add_argument('--train', type=str, default='train.pkl', help='The train data directory')
+    parser.add_argument('--dev', type=str, default='dev.pkl', help='The dev data directory')
+    parser.add_argument('--devload', type=str, default='train', help='loading mode for dev dataset')
+    parser.add_argument('--test', type=str, default='test.pkl', help='The test data directory')
+
+    # Model Settings
+    parser.add_argument('--model_name', type=str, default='xlnet', help='Pretrained model name')
+    parser.add_argument('--save_name', type=str, default=None, help='Experiment save name')
+    parser.add_argument('--data_name', type=str, default='copa')
+    parser.add_argument('--cuda', type=bool, default=True, help='Whether to use gpu for training')
+    parser.add_argument('--gpu', type=str, default='0', help='Gpu ids for training')
+    parser.add_argument('--apex', type=bool, default=False, help='Whether to use half precision')
+    parser.add_argument('--batch_size', type=int, default=10, help='batch_size for training and evaluation')
+    parser.add_argument('--shuffle', type=bool, default=False, help='whether to shuffle training data')
+    parser.add_argument('--epochs', type=int, default=200, help='training iterations')
+    parser.add_argument('--evaluation_strategy', type=str, default="step", help="evaluation metric [step] [epoch]")
+    parser.add_argument('--evaluation_step', type=int, default=20,
+                        help='when training for some steps, start evaluation')
+    parser.add_argument('--lr', type=float, default=1e-5, help='the learning rate of training')
+    parser.add_argument('--set_seed', type=bool, default=True, help='Whether to fix the random seed')
+    parser.add_argument('--seed', type=int, default=1024, help='fix the random seed for reproducible')
+    parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
+    parser.add_argument('--loss_func', type=str, default='BCE', help="loss function of output")
+    parser.add_argument('--hyp_only', type=bool, default=False, help="If set True, Only send hypothesis into model")
+    parser.add_argument('--warmup_proportion', type=float, default=0.1, help='warmup settings')
+
+    # Method Settings
+    parser.add_argument('--with_kb', type=str, default=False, help='Whether to use knowledge base')
+    parser.add_argument('--prompt', type=str, default=None, help="prompt template")
+    parser.add_argument('--score', type=str, default="cossim", help="scorer type")
+    parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
+
+    # parsing the hyper-parameters from command line and define logger
+    hps = parser.parse_args()
+    hps.nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    return hps
 
 
 def tokenize_data(data, model_path, model_name):

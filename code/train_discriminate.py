@@ -1,5 +1,5 @@
 import argparse
-from utils.utils import load_data, quick_tokenize, evaluation, define_logger
+from utils.utils import parse_hps, load_data, quick_tokenize, evaluation, define_logger
 import random
 import numpy as np
 import torch
@@ -17,50 +17,6 @@ import json
 from utils.kb import get_all_features, create_datasets_with_kbert
 from utils.kb_dataset import MyDataLoader
 
-def parse_hps():
-    parser = argparse.ArgumentParser(description='xCAR')
-
-    # Data Paths
-    parser.add_argument('--data_dir', type=str, default='./data/final_data/data/', help='The dataset directory')
-    parser.add_argument('--model_dir', type=str, default='../../huggingface_transformers/xlnet-base-cased/',
-                        help='The pretrained model directory')
-    parser.add_argument('--save_dir', type=str, default='./output/saved_model', help='The model saving directory')
-    parser.add_argument('--log_dir', type=str, default='./output/log', help='The training log directory')
-    parser.add_argument('--apex_dir', type=str, default='./output/log', help='The apex directory')
-    parser.add_argument('--output_dir', type=str, default='.')
-
-    # Data names
-    parser.add_argument('--train', type=str, default='train.pkl', help='The train data directory')
-    parser.add_argument('--dev', type=str, default='dev.pkl', help='The dev data directory')
-    parser.add_argument('--test', type=str, default='test.pkl', help='The test data directory')
-
-    # Model Settings
-    parser.add_argument('--with_kb', type=str, default=False, help='Whether to use knowledge base')
-    parser.add_argument('--model_name', type=str, default='xlnet', help='Pretrained model name')
-    parser.add_argument('--save_name', type=str, default=None, help='Experiment save name')
-    parser.add_argument('--data_name', type=str, default='copa')
-    parser.add_argument('--cuda', type=bool, default=True, help='Whether to use gpu for training')
-    parser.add_argument('--gpu', type=str, default='0', help='Gpu ids for training')
-    # parser.add_argument('--apex', type=bool, default=False, help='Whether to use half precision')
-    parser.add_argument('--batch_size', type=int, default=64, help='batch_size for training and evaluation')
-    parser.add_argument('--shuffle', type=bool, default=False, help='whether to shuffle training data')
-    parser.add_argument('--epochs', type=int, default=10, help='training iterations')
-    parser.add_argument('--evaluation_strategy', type=str, default="step", help="evaluation metric [step] [epoch]")
-    parser.add_argument('--evaluation_step', type=int, default=20,
-                        help='when training for some steps, start evaluation')
-    parser.add_argument('--lr', type=float, default=1e-5, help='the learning rate of training')
-    parser.add_argument('--set_seed', type=bool, default=True, help='Whether to fix the random seed')
-    parser.add_argument('--seed', type=int, default=1024, help='fix the random seed for reproducible')
-    parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
-    parser.add_argument('--loss_func', type=str, default='BCE', help="loss function of output")
-    parser.add_argument('--hyp_only', type=bool, default=False, help="If set True, Only send hypothesis into model")
-    parser.add_argument('--prompt', type=str, default=None, help="prompt template")
-    # parser.add_argument('--warmup_proportion', type=float, default=0.1, help='warmup settings')
-
-    # parsing the hyper-parameters from command line and define logger
-    hps = parser.parse_args()
-    hps.nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    return hps
 
 def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log):
     model.eval()
@@ -95,11 +51,11 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
                 os.mkdir(hps.save_dir)
             logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
             if hps.hyp_only:
-                torch.save(model, os.path.join(hps.save_dir, 'discriminate_'+ hps.model_name + '_hyp'))
+                torch.save(model, os.path.join(hps.save_dir, 'discriminate_' + hps.model_name + '_hyp'))
             else:
-                torch.save(model, os.path.join(hps.save_dir, 'discriminate_'+ hps.model_name))
+                torch.save(model, os.path.join(hps.save_dir, 'discriminate_' + hps.model_name))
             # torch.save(model, os.path.join(hps.save_dir, exp_name))
-                
+
         else:
             patient += 1
 
@@ -108,6 +64,7 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             logger.info("[INFO] Stopping Training by Early Stopping")
             stop_train = True
     return patient, stop_train
+
 
 def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps):
     logger.info("[INFO] Start Training")
@@ -137,25 +94,28 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
                 loss = loss_function(probs.squeeze(1), labels.float())
 
             total_loss += loss.item()
-            t.set_postfix(avg_loss='{}'.format(total_loss/(epoch_step+1)))
+            t.set_postfix(avg_loss='{}'.format(total_loss / (epoch_step + 1)))
             epoch_step += 1
 
             loss.backward()
             optimizer.step()
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
-                patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log)
+                patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
+                                               hps, epoch, metric_log)
                 if stop_train:
                     return
             step += 1
-        
+
         train_loss = total_loss / (epoch_step * hps.batch_size) * 100
         metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
-             
+
         if hps.evaluation_strategy == "epoch":
-            patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log)
+            patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
+                                           epoch, metric_log)
             if stop_train:
                 return
+
 
 def load_loss_function(hps):
     if hps.loss_func == "CrossEntropy":
@@ -163,6 +123,7 @@ def load_loss_function(hps):
     elif hps.loss_func == "BCE":
         loss_function = nn.BCEWithLogitsLoss(reduction='mean')
     return loss_function
+
 
 def main():
     # parse hyper parameters
@@ -193,7 +154,6 @@ def main():
 
     # logging all the hyper parameters
     logger.info(f"=== hps ===\n{hps}")
-
 
     # load data
     logger.info("[DATA] Loading Data")
@@ -226,10 +186,10 @@ def main():
             if len(gpu_ids) > 1:
                 train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
                 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=hps.batch_size,
-                                                        sampler=train_sampler)
+                                                               sampler=train_sampler)
                 dev_sampler = torch.utils.data.distributed.DistributedSampler(dev_dataset)
                 dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=hps.batch_size,
-                                                    sampler=dev_sampler)
+                                                             sampler=dev_sampler)
             else:
                 train_dataloader = MyDataLoader(train_dataset, batch_size=hps.batch_size)
                 dev_dataloader = MyDataLoader(dev_dataset, batch_size=hps.batch_size)
@@ -256,10 +216,6 @@ def main():
     # training
     train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps)
 
+
 if __name__ == '__main__':
     main()
-
-
-
-
-
