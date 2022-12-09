@@ -1,5 +1,5 @@
 import argparse
-from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, load_loss_function, evaluation, define_logger
+from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, load_loss_function, evaluation, define_logger, save_model
 import random
 import numpy as np
 import torch
