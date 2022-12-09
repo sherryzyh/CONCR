@@ -80,3 +80,10 @@ Namespace(data_dir='./data/Causal_Reasoning/', model_dir='xlnet-base-cased', sav
 2022-12-09 02:49:33,768 INFO    : [Saving] Saving Model to ./output/saved_model
 2022-12-09 02:49:37,157 INFO    : [Patient] 0
 2022-12-09 02:49:37,157 INFO    : [Epoch] 9
+2022-12-09 02:59:51,455 INFO    : [Train Metrics] Train Accuracy: 	0.967644694533762
+2022-12-09 02:59:51,456 INFO    : [Train Metrics] Train Loss: 	1628.7543368339539
+2022-12-09 02:59:51,457 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 03:00:12,402 INFO    : [Dev Metrics] Dev Accuracy: 	0.773921200750469
+2022-12-09 03:00:12,402 INFO    : [Dev Metrics] Dev Loss: 	247.45203471183777
+2022-12-09 03:00:12,402 INFO    : [Saving] Saving Model to ./output/saved_model
+2022-12-09 03:00:15,795 INFO    : [Patient] 0
