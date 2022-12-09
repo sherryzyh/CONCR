@@ -9,6 +9,7 @@ data_CEQ
 try.sh
 exp.sh
 longexp.sh
+*.sh
 huggingface_cache/
 output/saved_model/
 output/log/test_*
