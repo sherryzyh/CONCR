@@ -108,6 +108,9 @@ class contrastive_reasoning_model(nn.Module):
         if hps.model_name == 'bert':
             self.sentence_encoder = BertModel.from_pretrained(hps.model_dir)
             self.config = BertConfig(hps.model_dir)
+        elif hps.model_name == 'xlnet':
+            self.sentence_encoder = XLNetModel.from_pretrained(hps.model_dir, mem_len=1024)
+            self.config = XLNetConfig.from_pretrained(hps.model_dir)
 
         # self.cause_emb = MLPLayer(self.config)
         # self.effect_emb = MLPLayer(self.config)
@@ -124,12 +127,13 @@ class contrastive_reasoning_model(nn.Module):
         self.contrastive_loss = nn.CrossEntropyLoss()
 
     # compose causal pairs
-    def compose_causal_pair(self, premise, hypothesis, labels):
+    def compose_causal_pair(self, premise, hypothesis, labels, device):
         """
         Arguments:
             premise     [batch_size, hidden_size]
             hypothesis  [batch_size, hidden_size]
             labels     [batch_size, 3]
+            device
         """
         batch_size = labels.size(0)
         causes = torch.zeros((batch_size, self.config.hidden_size))
@@ -146,7 +150,7 @@ class contrastive_reasoning_model(nn.Module):
                 # causal_pairs[i] = torch.concat([premise[i], hypothesis[i]], dim=-1)
                 causes[i] = premise[i]
                 effects[i] = hypothesis[i]
-        return causes, effects
+        return causes.to(device), effects.to(device)
 
     def forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None, mode='train'):
         if mode == 'train':
@@ -154,8 +158,7 @@ class contrastive_reasoning_model(nn.Module):
         else:
             return self.eval_forward(input_ids, attention_mask, labels, seg_ids, length)
 
-    def cl_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
-
+    def forward_sent_encoding(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
         batch_size = input_ids.size(0)
         num_sent = input_ids.size(1)
 
@@ -171,15 +174,26 @@ class contrastive_reasoning_model(nn.Module):
 
         # Pooling
         # by default, use the "cls" embedding as the sentence representation
-        pooler_output = sent_embs.pooler_output
+        if self.hps.model_name == "bert":
+            pooler_output = sent_embs.pooler_output
+        elif self.hps.model_name == "xlnet":
+            pooler_output = sent_embs.last_hidden_state[:, 0, :]
+
         # print("pooler_output.size:", pooler_output.size())
-        pooler_output = pooler_output.view((batch_size, num_sent, pooler_output.size(-1)))  # (bs, num_sent, hidden)
+        pooler_output = pooler_output.view((batch_size, num_sent, pooler_output.size(-1)))  # [bs, num_sent, hidden_size]
+        return pooler_output
+
+    def cl_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
+        batch_size = input_ids.size(0)
+        num_sent = input_ids.size(1)
+        device = input_ids.device
+
+        # Sentence pooler encoding
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length) # [bs, num_sent, hidden_size]
 
         # Separate representation
         premise, hypothesis_0 = pooler_output[:, 0], pooler_output[:, 1]
-        causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
-        causes_0 = causes_0.to(input_ids.device)
-        effects_0 = effects_0.to(input_ids.device)
+        causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels, device)
 
         contrastive_causal_score = self.sim(causes_0, effects_0)
         # print("contrastive score:", contrastive_causal_score.size())
@@ -188,9 +202,7 @@ class contrastive_reasoning_model(nn.Module):
         # Hard negative
         if num_sent == 3:
             hypothesis_1 = pooler_output[:, 2]
-            causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
-            causes_1 = causes_1.to(input_ids.device)
-            effects_1 = effects_1.to(input_ids.device)
+            causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels, device)
             hardneg_causal_score = self.sim(causes_1, effects_1)
 
             # print("contrastive score:", contrastive_causal_score.size())
@@ -201,23 +213,17 @@ class contrastive_reasoning_model(nn.Module):
             # Calculate loss with hard negatives
             # Note that weights are actually logits of weights
 
-            # TODO: what is hard negative weight
+            # Add hard negative
             hard_neg_weight = self.hps.hard_negative_weight
             weights = torch.tensor(
                 [[0.0] * (contrastive_causal_score.size(-1) - hardneg_causal_score.size(-1)) + [0.0] * i + [
                     hard_neg_weight] + [0.0] * (hardneg_causal_score.size(-1) - i - 1) for i in
                  range(hardneg_causal_score.size(-1))]
-            ).to(input_ids.device)
+            ).to(device)
             # print("hard neg sample score:", weights)
             contrastive_causal_score = contrastive_causal_score + weights
 
-        labels = torch.arange(contrastive_causal_score.size(0)).long().to(input_ids.device)
-
-        # print("labels:", labels.size())
-        # print(labels)
-        # logit_pred = torch.argmax(contrastive_causal_score, dim=1)
-        # print("logit pred:", logit_pred.size())
-        # print(logit_pred)
+        labels = torch.arange(contrastive_causal_score.size(0)).long().to(device)
 
         loss = self.contrastive_loss(contrastive_causal_score, labels)
 
@@ -227,38 +233,23 @@ class contrastive_reasoning_model(nn.Module):
         )
 
     def eval_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
-
         batch_size = input_ids.size(0)
         num_sent = input_ids.size(1)
+        device = input_ids.device
 
-        # Flatten input for encoding
-        input_ids = input_ids.view((-1, input_ids.size(-1)))  # (bs * num_sent, len)
-        attention_mask = attention_mask.view((-1, attention_mask.size(-1)))  # (bs * num_sent len)
-        if seg_ids is not None:
-            seg_ids = seg_ids.view((-1, seg_ids.size(-1)))
-        if length is not None:
-            length = length.view(-1)
-
-        sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=seg_ids)
-
-        # Pooling
-        # by default, use the "cls" embedding as the sentence representation
-        pooler_output = sent_embs.pooler_output
-        pooler_output = pooler_output.view((batch_size, num_sent, pooler_output.size(-1)))  # (bs, num_sent, hidden)
+        # Sentence pooler encoding
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length) # [bs, num_sent, hidden_size]
 
         # Separate representation
         premise, hypothesis_0, hypothesis_1 = pooler_output[:, 0], pooler_output[:, 1], pooler_output[:, 2]
 
-        causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels)
-        causes_0 = causes_0.to(input_ids.device)
-        effects_0 = effects_0.to(input_ids.device)
-
+        # Scoring hypothesis 0
+        causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels, device)
         premise_0_score_matrix = self.sim(causes_0, effects_0)
         score_0 = torch.diagonal(premise_0_score_matrix, offset=0).unsqueeze(1)
 
-        causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels)
-        causes_1 = causes_1.to(input_ids.device)
-        effects_1 = effects_1.to(input_ids.device)
+        # Scoring hypothesis 1
+        causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels, device)
         premise_1_score_matrix = self.sim(causes_1, effects_1)
         score_1 = torch.diagonal(premise_1_score_matrix, offset=0).unsqueeze(1)
 
