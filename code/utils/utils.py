@@ -25,12 +25,14 @@ def parse_hps():
     parser = argparse.ArgumentParser(description='ECR-ANLP')
 
     # Data Paths
-    parser.add_argument('--data_dir', type=str, default='./data/final_data/data/', help='The dataset directory')
-    parser.add_argument('--model_dir', type=str, default='../../huggingface_transformers/xlnet-base-cased/',
+    parser.add_argument('--data_dir', type=str, default='data/final_data/data/', help='The dataset directory')
+    parser.add_argument('--model_dir', type=str, default='huggingface_cache/xlnet-base-cased/',
                         help='The pretrained model directory')
-    parser.add_argument('--save_dir', type=str, default='./output/saved_model', help='The model saving directory')
-    parser.add_argument('--log_dir', type=str, default='./output/log', help='The training log directory')
-    parser.add_argument('--apex_dir', type=str, default='./output/log', help='The apex directory')
+    parser.add_argument('--save_dir', type=str, default='output/saved_model', help='The model saving directory')
+    parser.add_argument('--log_dir', type=str, default='output/log', help='The training log directory')
+    parser.add_argument('--apex_dir', type=str, default='output/log', help='The apex directory')
+    parser.add_argument('--storage', type=bool, default=False, help='Whether to use external storage')
+    parser.add_argument('--storage_dir', type=str, default='/data', help='The storage root directory')
 
     # Data names
     parser.add_argument('--train', type=str, default='train.pkl', help='The train data directory')
@@ -1029,8 +1031,15 @@ def bart_evaluate(model, data_loader, hps):
     return bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances, rouge1r / num_instances, rouge2r / num_instances, rougelr / num_instances
 
 
+def get_exp_path(hps, exp_name):
+    if hps.storage:
+        exp_path = os.path.join(hps.storage_dir, hps.save_dir, exp_name)
+    else:
+        exp_path = os.path.join(hps.save_dir, exp_name)
+    return exp_path
+
 def save_model(model, hps, exp_name, mode="best"):
-    exp_path = os.path.join(hps.save_dir, exp_name)
+    exp_path = get_exp_path(hps, exp_name)
     if not os.path.exists(exp_path):
         os.mkdir(exp_path)
     if mode == "best":
@@ -1038,7 +1047,7 @@ def save_model(model, hps, exp_name, mode="best"):
 
 
 def save_metric_log(metric_log, hps, exp_name):
-    exp_path = os.path.join(hps.save_dir, exp_name)
+    exp_path = get_exp_path(hps, exp_name)
     if not os.path.exists(exp_path):
         os.mkdir(exp_path)
     with open(os.path.join(exp_path, "metric_log.json"), 'w', encoding='utf-8') as fp:

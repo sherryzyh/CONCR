@@ -1,5 +1,5 @@
 import argparse
-from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, contrastive_tokenize, load_loss_function, \
+from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, contrastive_tokenize, load_loss_function, \
     evaluation, cl_evaluation, define_logger, save_model, save_metric_log
 import random
 import numpy as np
@@ -136,6 +136,9 @@ def main():
 
     # logging all the hyper parameters
     logger.info(f"=== hps ===\n{hps}")
+
+    exp_path = get_exp_path(hps, exp_name)
+    logger.info(f"[INFO] Experiment Path: {exp_path}")
 
     # load data
     logger.info("[DATA] Loading Data")
