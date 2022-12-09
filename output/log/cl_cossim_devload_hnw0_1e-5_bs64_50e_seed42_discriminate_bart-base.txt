@@ -1,0 +1,370 @@
+2022-12-09 12:59:28,103 INFO    : === hps ===
+Namespace(data_dir='./data/Causal_Reasoning/', model_dir='facebook/bart-base', save_dir='./output/saved_model', log_dir='./output/log', apex_dir='./output/log', train='train.jsonl', dev='dev.jsonl', devload='dev', test='test.pkl', model_name='bart', save_name='cossim_devload_hnw0_1e-5_bs64_50e_seed42', data_name='copa', cuda=True, gpu='0', apex=False, batch_size=64, shuffle=False, epochs=50, evaluation_strategy='epoch', evaluation_step=20, lr=1e-05, set_seed=True, seed=42, patient=10, loss_func='BCE', hyp_only=False, warmup_proportion=0.1, with_kb=False, with_cl='true', prompt=None, score='cossim', hard_negative_weight=0.0, nowtime='20221209_125928')
+2022-12-09 12:59:28,103 INFO    : [DATA] Loading Data
+2022-12-09 12:59:28,103 INFO    : [DATA] Hypothesis Only: False
+2022-12-09 12:59:28,166 INFO    : [DATA] Tokenization and Padding for Data
+2022-12-09 12:59:35,188 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-12-09 12:59:35,188 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-12-09 12:59:35,188 INFO    : [MODEL] bart
+2022-12-09 12:59:41,100 INFO    : [INFO] Start Training
+2022-12-09 12:59:41,101 INFO    : [Epoch] 0
+2022-12-09 13:05:56,257 INFO    : [Train Metrics] Train Accuracy: 	0.5351688102893891
+2022-12-09 13:05:56,258 INFO    : [Train Metrics] Train Loss: 	2336.768359184265
+2022-12-09 13:05:56,258 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:06:12,903 INFO    : [Dev Metrics] Dev Accuracy: 	0.5586303939962477
+2022-12-09 13:06:12,903 INFO    : [Dev Metrics] Dev Loss: 	339.3636598587036
+2022-12-09 13:06:16,369 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:06:16,369 INFO    : [Patient] 0
+2022-12-09 13:06:16,369 INFO    : [Epoch] 1
+2022-12-09 13:12:32,636 INFO    : [Train Metrics] Train Accuracy: 	0.5397240085744909
+2022-12-09 13:12:32,637 INFO    : [Train Metrics] Train Loss: 	2327.3822917938232
+2022-12-09 13:12:32,637 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:12:49,334 INFO    : [Dev Metrics] Dev Accuracy: 	0.5379924953095685
+2022-12-09 13:12:49,335 INFO    : [Dev Metrics] Dev Loss: 	337.9000492095947
+2022-12-09 13:12:53,512 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:12:53,512 INFO    : [Patient] 0
+2022-12-09 13:12:53,512 INFO    : [Epoch] 2
+2022-12-09 13:19:10,556 INFO    : [Train Metrics] Train Accuracy: 	0.629890139335477
+2022-12-09 13:19:10,556 INFO    : [Train Metrics] Train Loss: 	2059.6842498779297
+2022-12-09 13:19:10,557 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:19:27,268 INFO    : [Dev Metrics] Dev Accuracy: 	0.6289868667917449
+2022-12-09 13:19:27,268 INFO    : [Dev Metrics] Dev Loss: 	299.39478302001953
+2022-12-09 13:19:31,420 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:19:31,421 INFO    : [Patient] 0
+2022-12-09 13:19:31,421 INFO    : [Epoch] 3
+2022-12-09 13:25:51,521 INFO    : [Train Metrics] Train Accuracy: 	0.6817390139335477
+2022-12-09 13:25:51,521 INFO    : [Train Metrics] Train Loss: 	1877.8511185646057
+2022-12-09 13:25:51,522 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:26:08,757 INFO    : [Dev Metrics] Dev Accuracy: 	0.651031894934334
+2022-12-09 13:26:08,757 INFO    : [Dev Metrics] Dev Loss: 	273.3123173713684
+2022-12-09 13:26:12,932 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:26:12,932 INFO    : [Patient] 0
+2022-12-09 13:26:12,932 INFO    : [Epoch] 4
+2022-12-09 13:32:31,359 INFO    : [Train Metrics] Train Accuracy: 	0.7063906752411575
+2022-12-09 13:32:31,359 INFO    : [Train Metrics] Train Loss: 	1771.3248076438904
+2022-12-09 13:32:31,360 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:32:48,630 INFO    : [Dev Metrics] Dev Accuracy: 	0.6716697936210131
+2022-12-09 13:32:48,630 INFO    : [Dev Metrics] Dev Loss: 	257.96721744537354
+2022-12-09 13:32:52,811 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:32:52,812 INFO    : [Patient] 0
+2022-12-09 13:32:52,812 INFO    : [Epoch] 5
+2022-12-09 13:39:09,043 INFO    : [Train Metrics] Train Accuracy: 	0.7314442658092176
+2022-12-09 13:39:09,044 INFO    : [Train Metrics] Train Loss: 	1673.0402660369873
+2022-12-09 13:39:09,045 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:39:25,767 INFO    : [Dev Metrics] Dev Accuracy: 	0.6866791744840526
+2022-12-09 13:39:25,767 INFO    : [Dev Metrics] Dev Loss: 	243.2553882598877
+2022-12-09 13:39:29,948 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:39:29,948 INFO    : [Patient] 0
+2022-12-09 13:39:29,948 INFO    : [Epoch] 6
+2022-12-09 13:45:52,049 INFO    : [Train Metrics] Train Accuracy: 	0.757435691318328
+2022-12-09 13:45:52,049 INFO    : [Train Metrics] Train Loss: 	1612.9414024353027
+2022-12-09 13:45:52,050 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:46:09,379 INFO    : [Dev Metrics] Dev Accuracy: 	0.6946529080675422
+2022-12-09 13:46:09,379 INFO    : [Dev Metrics] Dev Loss: 	234.06282711029053
+2022-12-09 13:46:13,561 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:46:13,561 INFO    : [Patient] 0
+2022-12-09 13:46:13,561 INFO    : [Epoch] 7
+2022-12-09 13:52:28,515 INFO    : [Train Metrics] Train Accuracy: 	0.7786709539121115
+2022-12-09 13:52:28,515 INFO    : [Train Metrics] Train Loss: 	1553.3239250183105
+2022-12-09 13:52:28,516 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:52:45,704 INFO    : [Dev Metrics] Dev Accuracy: 	0.7073170731707317
+2022-12-09 13:52:45,704 INFO    : [Dev Metrics] Dev Loss: 	225.6420636177063
+2022-12-09 13:52:49,880 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:52:49,881 INFO    : [Patient] 0
+2022-12-09 13:52:49,881 INFO    : [Epoch] 8
+2022-12-09 13:59:06,844 INFO    : [Train Metrics] Train Accuracy: 	0.797494640943194
+2022-12-09 13:59:06,845 INFO    : [Train Metrics] Train Loss: 	1493.2766032218933
+2022-12-09 13:59:06,846 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 13:59:23,670 INFO    : [Dev Metrics] Dev Accuracy: 	0.7063789868667918
+2022-12-09 13:59:23,670 INFO    : [Dev Metrics] Dev Loss: 	216.24487733840942
+2022-12-09 13:59:27,855 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 13:59:27,856 INFO    : [Patient] 0
+2022-12-09 13:59:27,856 INFO    : [Epoch] 9
+2022-12-09 14:05:47,451 INFO    : [Train Metrics] Train Accuracy: 	0.8169882100750268
+2022-12-09 14:05:47,452 INFO    : [Train Metrics] Train Loss: 	1424.7783436775208
+2022-12-09 14:05:47,452 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:06:04,791 INFO    : [Dev Metrics] Dev Accuracy: 	0.7138836772983115
+2022-12-09 14:06:04,791 INFO    : [Dev Metrics] Dev Loss: 	206.65400552749634
+2022-12-09 14:06:08,947 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:06:08,948 INFO    : [Patient] 0
+2022-12-09 14:06:08,948 INFO    : [Epoch] 10
+2022-12-09 14:12:25,541 INFO    : [Train Metrics] Train Accuracy: 	0.8314576634512326
+2022-12-09 14:12:25,542 INFO    : [Train Metrics] Train Loss: 	1363.704575061798
+2022-12-09 14:12:25,542 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:12:42,212 INFO    : [Dev Metrics] Dev Accuracy: 	0.7185741088180112
+2022-12-09 14:12:42,212 INFO    : [Dev Metrics] Dev Loss: 	197.8514904975891
+2022-12-09 14:12:46,393 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:12:46,393 INFO    : [Patient] 0
+2022-12-09 14:12:46,393 INFO    : [Epoch] 11
+2022-12-09 14:19:02,227 INFO    : [Train Metrics] Train Accuracy: 	0.8493435155412647
+2022-12-09 14:19:02,228 INFO    : [Train Metrics] Train Loss: 	1324.2765045166016
+2022-12-09 14:19:02,228 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:19:18,927 INFO    : [Dev Metrics] Dev Accuracy: 	0.7209193245778611
+2022-12-09 14:19:18,927 INFO    : [Dev Metrics] Dev Loss: 	192.42915153503418
+2022-12-09 14:19:23,094 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:19:23,094 INFO    : [Patient] 0
+2022-12-09 14:19:23,094 INFO    : [Epoch] 12
+2022-12-09 14:25:40,716 INFO    : [Train Metrics] Train Accuracy: 	0.8632770632368703
+2022-12-09 14:25:40,716 INFO    : [Train Metrics] Train Loss: 	1269.4052538871765
+2022-12-09 14:25:40,717 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:25:58,073 INFO    : [Dev Metrics] Dev Accuracy: 	0.7223264540337712
+2022-12-09 14:25:58,074 INFO    : [Dev Metrics] Dev Loss: 	184.1818585395813
+2022-12-09 14:26:02,254 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:26:02,254 INFO    : [Patient] 0
+2022-12-09 14:26:02,254 INFO    : [Epoch] 13
+2022-12-09 14:32:21,116 INFO    : [Train Metrics] Train Accuracy: 	0.8767416934619507
+2022-12-09 14:32:21,116 INFO    : [Train Metrics] Train Loss: 	1227.6708898544312
+2022-12-09 14:32:21,117 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:32:38,418 INFO    : [Dev Metrics] Dev Accuracy: 	0.7270168855534709
+2022-12-09 14:32:38,419 INFO    : [Dev Metrics] Dev Loss: 	178.6097846031189
+2022-12-09 14:32:42,568 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:32:42,568 INFO    : [Patient] 0
+2022-12-09 14:32:42,568 INFO    : [Epoch] 14
+2022-12-09 14:39:02,453 INFO    : [Train Metrics] Train Accuracy: 	0.8889335476956056
+2022-12-09 14:39:02,454 INFO    : [Train Metrics] Train Loss: 	1191.737536907196
+2022-12-09 14:39:02,455 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:39:19,673 INFO    : [Dev Metrics] Dev Accuracy: 	0.7349906191369606
+2022-12-09 14:39:19,673 INFO    : [Dev Metrics] Dev Loss: 	173.67123413085938
+2022-12-09 14:39:23,826 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:39:23,826 INFO    : [Patient] 0
+2022-12-09 14:39:23,826 INFO    : [Epoch] 15
+2022-12-09 14:45:42,476 INFO    : [Train Metrics] Train Accuracy: 	0.9006564844587353
+2022-12-09 14:45:42,477 INFO    : [Train Metrics] Train Loss: 	1151.1700835227966
+2022-12-09 14:45:42,477 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:45:59,294 INFO    : [Dev Metrics] Dev Accuracy: 	0.7373358348968105
+2022-12-09 14:45:59,294 INFO    : [Dev Metrics] Dev Loss: 	167.75744104385376
+2022-12-09 14:46:03,446 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:46:03,447 INFO    : [Patient] 0
+2022-12-09 14:46:03,447 INFO    : [Epoch] 16
+2022-12-09 14:52:20,835 INFO    : [Train Metrics] Train Accuracy: 	0.9117095391211146
+2022-12-09 14:52:20,836 INFO    : [Train Metrics] Train Loss: 	1115.8560996055603
+2022-12-09 14:52:20,837 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:52:37,593 INFO    : [Dev Metrics] Dev Accuracy: 	0.7335834896810507
+2022-12-09 14:52:37,593 INFO    : [Dev Metrics] Dev Loss: 	163.0238094329834
+2022-12-09 14:52:41,626 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:52:41,627 INFO    : [Patient] 0
+2022-12-09 14:52:41,627 INFO    : [Epoch] 17
+2022-12-09 14:58:58,926 INFO    : [Train Metrics] Train Accuracy: 	0.9197481243301179
+2022-12-09 14:58:58,927 INFO    : [Train Metrics] Train Loss: 	1084.5916547775269
+2022-12-09 14:58:58,928 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:59:16,300 INFO    : [Dev Metrics] Dev Accuracy: 	0.7340525328330206
+2022-12-09 14:59:16,302 INFO    : [Dev Metrics] Dev Loss: 	158.8296709060669
+2022-12-09 14:59:20,794 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 14:59:20,794 INFO    : [Patient] 0
+2022-12-09 14:59:20,795 INFO    : [Epoch] 18
+2022-12-09 15:05:36,550 INFO    : [Train Metrics] Train Accuracy: 	0.9330787781350482
+2022-12-09 15:05:36,551 INFO    : [Train Metrics] Train Loss: 	1054.4338383674622
+2022-12-09 15:05:36,552 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:05:53,292 INFO    : [Dev Metrics] Dev Accuracy: 	0.7387429643527205
+2022-12-09 15:05:53,292 INFO    : [Dev Metrics] Dev Loss: 	154.66132760047913
+2022-12-09 15:05:57,645 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:05:57,645 INFO    : [Patient] 0
+2022-12-09 15:05:57,645 INFO    : [Epoch] 19
+2022-12-09 15:12:13,781 INFO    : [Train Metrics] Train Accuracy: 	0.9392416934619507
+2022-12-09 15:12:13,781 INFO    : [Train Metrics] Train Loss: 	1025.2802629470825
+2022-12-09 15:12:13,782 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:12:30,528 INFO    : [Dev Metrics] Dev Accuracy: 	0.7382739212007504
+2022-12-09 15:12:30,529 INFO    : [Dev Metrics] Dev Loss: 	150.74022817611694
+2022-12-09 15:12:34,895 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:12:34,895 INFO    : [Patient] 0
+2022-12-09 15:12:34,895 INFO    : [Epoch] 20
+2022-12-09 15:18:50,555 INFO    : [Train Metrics] Train Accuracy: 	0.9458065380493034
+2022-12-09 15:18:50,555 INFO    : [Train Metrics] Train Loss: 	1002.4760525226593
+2022-12-09 15:18:50,556 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:19:07,255 INFO    : [Dev Metrics] Dev Accuracy: 	0.7349906191369606
+2022-12-09 15:19:07,255 INFO    : [Dev Metrics] Dev Loss: 	147.74616503715515
+2022-12-09 15:19:11,581 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:19:11,581 INFO    : [Patient] 0
+2022-12-09 15:19:11,581 INFO    : [Epoch] 21
+2022-12-09 15:25:28,283 INFO    : [Train Metrics] Train Accuracy: 	0.9535771704180064
+2022-12-09 15:25:28,284 INFO    : [Train Metrics] Train Loss: 	986.8082866668701
+2022-12-09 15:25:28,285 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:25:45,644 INFO    : [Dev Metrics] Dev Accuracy: 	0.7410881801125704
+2022-12-09 15:25:45,644 INFO    : [Dev Metrics] Dev Loss: 	145.7148892879486
+2022-12-09 15:25:49,972 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:25:49,972 INFO    : [Patient] 0
+2022-12-09 15:25:49,972 INFO    : [Epoch] 22
+2022-12-09 15:32:06,836 INFO    : [Train Metrics] Train Accuracy: 	0.9596061093247589
+2022-12-09 15:32:06,837 INFO    : [Train Metrics] Train Loss: 	958.793515920639
+2022-12-09 15:32:06,837 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:32:23,680 INFO    : [Dev Metrics] Dev Accuracy: 	0.7382739212007504
+2022-12-09 15:32:23,680 INFO    : [Dev Metrics] Dev Loss: 	142.13349199295044
+2022-12-09 15:32:28,007 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:32:28,008 INFO    : [Patient] 0
+2022-12-09 15:32:28,008 INFO    : [Epoch] 23
+2022-12-09 15:38:45,398 INFO    : [Train Metrics] Train Accuracy: 	0.9632234726688103
+2022-12-09 15:38:45,398 INFO    : [Train Metrics] Train Loss: 	946.9788641929626
+2022-12-09 15:38:45,399 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:39:02,220 INFO    : [Dev Metrics] Dev Accuracy: 	0.7396810506566605
+2022-12-09 15:39:02,220 INFO    : [Dev Metrics] Dev Loss: 	140.6847105026245
+2022-12-09 15:39:06,575 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:39:06,575 INFO    : [Patient] 0
+2022-12-09 15:39:06,575 INFO    : [Epoch] 24
+2022-12-09 15:45:23,375 INFO    : [Train Metrics] Train Accuracy: 	0.9681136120042872
+2022-12-09 15:45:23,375 INFO    : [Train Metrics] Train Loss: 	933.8781900405884
+2022-12-09 15:45:23,376 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:45:40,086 INFO    : [Dev Metrics] Dev Accuracy: 	0.7476547842401501
+2022-12-09 15:45:40,086 INFO    : [Dev Metrics] Dev Loss: 	139.42745065689087
+2022-12-09 15:45:44,411 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:45:44,412 INFO    : [Patient] 0
+2022-12-09 15:45:44,412 INFO    : [Epoch] 25
+2022-12-09 15:52:01,521 INFO    : [Train Metrics] Train Accuracy: 	0.9738745980707395
+2022-12-09 15:52:01,521 INFO    : [Train Metrics] Train Loss: 	914.2114808559418
+2022-12-09 15:52:01,522 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:52:18,350 INFO    : [Dev Metrics] Dev Accuracy: 	0.74812382739212
+2022-12-09 15:52:18,350 INFO    : [Dev Metrics] Dev Loss: 	136.59233474731445
+2022-12-09 15:52:22,692 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:52:22,692 INFO    : [Patient] 0
+2022-12-09 15:52:22,692 INFO    : [Epoch] 26
+2022-12-09 15:58:39,763 INFO    : [Train Metrics] Train Accuracy: 	0.977424973204716
+2022-12-09 15:58:39,764 INFO    : [Train Metrics] Train Loss: 	900.9237442016602
+2022-12-09 15:58:39,765 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:58:56,489 INFO    : [Dev Metrics] Dev Accuracy: 	0.7457786116322702
+2022-12-09 15:58:56,489 INFO    : [Dev Metrics] Dev Loss: 	135.20193672180176
+2022-12-09 15:59:00,851 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 15:59:00,852 INFO    : [Patient] 0
+2022-12-09 15:59:00,852 INFO    : [Epoch] 27
+2022-12-09 16:05:17,297 INFO    : [Train Metrics] Train Accuracy: 	0.9807073954983923
+2022-12-09 16:05:17,298 INFO    : [Train Metrics] Train Loss: 	894.1318612098694
+2022-12-09 16:05:17,298 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:05:34,116 INFO    : [Dev Metrics] Dev Accuracy: 	0.7439024390243902
+2022-12-09 16:05:34,117 INFO    : [Dev Metrics] Dev Loss: 	134.14957356452942
+2022-12-09 16:05:38,492 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:05:38,492 INFO    : [Patient] 0
+2022-12-09 16:05:38,492 INFO    : [Epoch] 28
+2022-12-09 16:11:54,652 INFO    : [Train Metrics] Train Accuracy: 	0.9837218649517685
+2022-12-09 16:11:54,653 INFO    : [Train Metrics] Train Loss: 	884.8372807502747
+2022-12-09 16:11:54,654 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:12:11,435 INFO    : [Dev Metrics] Dev Accuracy: 	0.7401500938086304
+2022-12-09 16:12:11,435 INFO    : [Dev Metrics] Dev Loss: 	133.01185250282288
+2022-12-09 16:12:15,795 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:12:15,796 INFO    : [Patient] 0
+2022-12-09 16:12:15,796 INFO    : [Epoch] 29
+2022-12-09 16:18:33,867 INFO    : [Train Metrics] Train Accuracy: 	0.984860664523044
+2022-12-09 16:18:33,867 INFO    : [Train Metrics] Train Loss: 	875.1974515914917
+2022-12-09 16:18:33,868 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:18:51,235 INFO    : [Dev Metrics] Dev Accuracy: 	0.74812382739212
+2022-12-09 16:18:51,235 INFO    : [Dev Metrics] Dev Loss: 	132.35178327560425
+2022-12-09 16:18:55,589 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:18:55,589 INFO    : [Patient] 0
+2022-12-09 16:18:55,589 INFO    : [Epoch] 30
+2022-12-09 16:25:14,739 INFO    : [Train Metrics] Train Accuracy: 	0.9882770632368703
+2022-12-09 16:25:14,740 INFO    : [Train Metrics] Train Loss: 	863.2399258613586
+2022-12-09 16:25:14,741 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:25:32,013 INFO    : [Dev Metrics] Dev Accuracy: 	0.7429643527204502
+2022-12-09 16:25:32,013 INFO    : [Dev Metrics] Dev Loss: 	130.656583070755
+2022-12-09 16:25:36,342 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:25:36,342 INFO    : [Patient] 0
+2022-12-09 16:25:36,342 INFO    : [Epoch] 31
+2022-12-09 16:31:55,184 INFO    : [Train Metrics] Train Accuracy: 	0.9893488745980707
+2022-12-09 16:31:55,184 INFO    : [Train Metrics] Train Loss: 	854.120641708374
+2022-12-09 16:31:55,185 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:32:12,022 INFO    : [Dev Metrics] Dev Accuracy: 	0.7528142589118199
+2022-12-09 16:32:12,022 INFO    : [Dev Metrics] Dev Loss: 	130.29092741012573
+2022-12-09 16:32:16,375 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:32:16,375 INFO    : [Patient] 0
+2022-12-09 16:32:16,375 INFO    : [Epoch] 32
+2022-12-09 16:38:34,524 INFO    : [Train Metrics] Train Accuracy: 	0.9910905680600214
+2022-12-09 16:38:34,524 INFO    : [Train Metrics] Train Loss: 	846.3147721290588
+2022-12-09 16:38:34,525 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:38:51,380 INFO    : [Dev Metrics] Dev Accuracy: 	0.7424953095684803
+2022-12-09 16:38:51,381 INFO    : [Dev Metrics] Dev Loss: 	129.78419518470764
+2022-12-09 16:38:55,731 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:38:55,731 INFO    : [Patient] 0
+2022-12-09 16:38:55,731 INFO    : [Epoch] 33
+2022-12-09 16:45:13,142 INFO    : [Train Metrics] Train Accuracy: 	0.992631296891747
+2022-12-09 16:45:13,142 INFO    : [Train Metrics] Train Loss: 	839.9100489616394
+2022-12-09 16:45:13,143 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:45:30,122 INFO    : [Dev Metrics] Dev Accuracy: 	0.7429643527204502
+2022-12-09 16:45:30,122 INFO    : [Dev Metrics] Dev Loss: 	128.63666582107544
+2022-12-09 16:45:34,487 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:45:34,488 INFO    : [Patient] 0
+2022-12-09 16:45:34,488 INFO    : [Epoch] 34
+2022-12-09 16:51:54,927 INFO    : [Train Metrics] Train Accuracy: 	0.9932341907824223
+2022-12-09 16:51:54,927 INFO    : [Train Metrics] Train Loss: 	833.5496006011963
+2022-12-09 16:51:54,928 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:52:12,002 INFO    : [Dev Metrics] Dev Accuracy: 	0.7485928705440901
+2022-12-09 16:52:12,002 INFO    : [Dev Metrics] Dev Loss: 	128.5859558582306
+2022-12-09 16:52:16,378 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:52:16,378 INFO    : [Patient] 0
+2022-12-09 16:52:16,378 INFO    : [Epoch] 35
+2022-12-09 16:58:33,925 INFO    : [Train Metrics] Train Accuracy: 	0.9935691318327974
+2022-12-09 16:58:33,925 INFO    : [Train Metrics] Train Loss: 	822.237649679184
+2022-12-09 16:58:33,926 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:58:51,166 INFO    : [Dev Metrics] Dev Accuracy: 	0.7443714821763602
+2022-12-09 16:58:51,166 INFO    : [Dev Metrics] Dev Loss: 	126.79716515541077
+2022-12-09 16:58:55,501 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 16:58:55,501 INFO    : [Patient] 0
+2022-12-09 16:58:55,501 INFO    : [Epoch] 36
+2022-12-09 17:05:14,141 INFO    : [Train Metrics] Train Accuracy: 	0.995042872454448
+2022-12-09 17:05:14,141 INFO    : [Train Metrics] Train Loss: 	817.6335365772247
+2022-12-09 17:05:14,142 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:05:30,791 INFO    : [Dev Metrics] Dev Accuracy: 	0.7457786116322702
+2022-12-09 17:05:30,791 INFO    : [Dev Metrics] Dev Loss: 	126.2362048625946
+2022-12-09 17:05:35,123 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:05:35,123 INFO    : [Patient] 0
+2022-12-09 17:05:35,123 INFO    : [Epoch] 37
+2022-12-09 17:11:53,822 INFO    : [Train Metrics] Train Accuracy: 	0.995109860664523
+2022-12-09 17:11:53,822 INFO    : [Train Metrics] Train Loss: 	806.8626809120178
+2022-12-09 17:11:53,823 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:12:10,886 INFO    : [Dev Metrics] Dev Accuracy: 	0.7462476547842402
+2022-12-09 17:12:10,886 INFO    : [Dev Metrics] Dev Loss: 	124.97958731651306
+2022-12-09 17:12:15,244 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:12:15,244 INFO    : [Patient] 0
+2022-12-09 17:12:15,244 INFO    : [Epoch] 38
+2022-12-09 17:18:34,847 INFO    : [Train Metrics] Train Accuracy: 	0.9960476956055734
+2022-12-09 17:18:34,847 INFO    : [Train Metrics] Train Loss: 	801.4489586353302
+2022-12-09 17:18:34,848 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:18:51,983 INFO    : [Dev Metrics] Dev Accuracy: 	0.7462476547842402
+2022-12-09 17:18:51,983 INFO    : [Dev Metrics] Dev Loss: 	125.04164171218872
+2022-12-09 17:18:56,340 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:18:56,340 INFO    : [Patient] 0
+2022-12-09 17:18:56,340 INFO    : [Epoch] 39
+2022-12-09 17:25:13,175 INFO    : [Train Metrics] Train Accuracy: 	0.9965836012861736
+2022-12-09 17:25:13,176 INFO    : [Train Metrics] Train Loss: 	800.2422661781311
+2022-12-09 17:25:13,176 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:25:29,986 INFO    : [Dev Metrics] Dev Accuracy: 	0.7415572232645403
+2022-12-09 17:25:29,987 INFO    : [Dev Metrics] Dev Loss: 	124.74924349784851
+2022-12-09 17:25:34,312 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:25:34,312 INFO    : [Patient] 0
+2022-12-09 17:25:34,313 INFO    : [Epoch] 40
+2022-12-09 17:31:51,147 INFO    : [Train Metrics] Train Accuracy: 	0.9969855305466238
+2022-12-09 17:31:51,147 INFO    : [Train Metrics] Train Loss: 	790.9824452400208
+2022-12-09 17:31:51,148 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:32:07,804 INFO    : [Dev Metrics] Dev Accuracy: 	0.7462476547842402
+2022-12-09 17:32:07,804 INFO    : [Dev Metrics] Dev Loss: 	123.40884637832642
+2022-12-09 17:32:12,137 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:32:12,137 INFO    : [Patient] 0
+2022-12-09 17:32:12,137 INFO    : [Epoch] 41
+2022-12-09 17:38:34,110 INFO    : [Train Metrics] Train Accuracy: 	0.997521436227224
+2022-12-09 17:38:34,110 INFO    : [Train Metrics] Train Loss: 	789.727650642395
+2022-12-09 17:38:34,112 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:38:50,934 INFO    : [Dev Metrics] Dev Accuracy: 	0.7462476547842402
+2022-12-09 17:38:50,934 INFO    : [Dev Metrics] Dev Loss: 	123.69670748710632
+2022-12-09 17:38:55,307 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:38:55,307 INFO    : [Patient] 0
+2022-12-09 17:38:55,307 INFO    : [Epoch] 42
+2022-12-09 17:45:10,956 INFO    : [Train Metrics] Train Accuracy: 	0.9981243301178992
+2022-12-09 17:45:10,956 INFO    : [Train Metrics] Train Loss: 	778.0927286148071
+2022-12-09 17:45:10,957 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:45:27,809 INFO    : [Dev Metrics] Dev Accuracy: 	0.7462476547842402
+2022-12-09 17:45:27,809 INFO    : [Dev Metrics] Dev Loss: 	122.30892086029053
+2022-12-09 17:45:32,162 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:45:32,162 INFO    : [Patient] 0
+2022-12-09 17:45:32,162 INFO    : [Epoch] 43
+2022-12-09 17:51:50,252 INFO    : [Train Metrics] Train Accuracy: 	0.9979903536977492
+2022-12-09 17:51:50,252 INFO    : [Train Metrics] Train Loss: 	775.56103348732
+2022-12-09 17:51:50,253 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:52:07,266 INFO    : [Dev Metrics] Dev Accuracy: 	0.7462476547842402
+2022-12-09 17:52:07,267 INFO    : [Dev Metrics] Dev Loss: 	121.96544027328491
+2022-12-09 17:52:11,636 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:52:11,636 INFO    : [Patient] 0
+2022-12-09 17:52:11,636 INFO    : [Epoch] 44
+2022-12-09 17:58:28,400 INFO    : [Train Metrics] Train Accuracy: 	0.9983922829581994
+2022-12-09 17:58:28,401 INFO    : [Train Metrics] Train Loss: 	767.0679941177368
+2022-12-09 17:58:28,402 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 17:58:45,737 INFO    : [Dev Metrics] Dev Accuracy: 	0.7453095684803002
+2022-12-09 17:58:45,737 INFO    : [Dev Metrics] Dev Loss: 	121.57366967201233
+2022-12-09 17:58:50,119 INFO    : [Saving] Saving Model to ./output/saved_model/cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_bart-base
+2022-12-09 17:58:50,119 INFO    : [Patient] 0
+2022-12-09 17:58:50,119 INFO    : [Epoch] 45
