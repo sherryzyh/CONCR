@@ -108,6 +108,9 @@ class contrastive_reasoning_model(nn.Module):
         if hps.model_name == 'bert':
             self.sentence_encoder = BertModel.from_pretrained(hps.model_dir)
             self.config = BertConfig(hps.model_dir)
+        elif hps.model_name == 'roberta':
+            self.sentence_encoder = RobertaModel.from_pretrained(hps.model_dir)
+            self.config = RobertaConfig(hps.model_dir)
         elif hps.model_name == 'xlnet':
             self.sentence_encoder = XLNetModel.from_pretrained(hps.model_dir, mem_len=1024)
             self.config = XLNetConfig.from_pretrained(hps.model_dir)
@@ -179,7 +182,7 @@ class contrastive_reasoning_model(nn.Module):
 
         # Pooling
         # by default, use the "cls" embedding as the sentence representation
-        if self.hps.model_name == "bert":
+        if self.hps.model_name in ["bert", "roberta", "albert"]:
             pooler_output = sent_embs.pooler_output
         elif self.hps.model_name in ["xlnet", "gpt2"]:
             pooler_output = sent_embs.last_hidden_state[:, 0, :]
