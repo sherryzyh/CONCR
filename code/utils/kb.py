@@ -11,9 +11,13 @@ from utils.kb_dataset import MyDataset
 def get_all_features(data, hps, max_seq_length=128):
     semantic_features = get_features_with_kbert(data, hps,
                                               max_seq_length=max_seq_length)
-    x = [i[0] for i in semantic_features]  # semantic_features
-    y = [i[1] for i in semantic_features]  # 分离标签
-    return [(x[i], y[i]) for i in range(len(y))]
+    input_ids = [i[0][1] for i in semantic_features]
+    attention_mask = [i[0][2] for i in semantic_features]
+    segment_ids = [i[0][3] for i in semantic_features]
+    soft_pos_ids = [i[0][4] for i in semantic_features]
+    labels = [i[1] for i in semantic_features]  # 分离标签
+    return torch.LongTensor(input_ids), torch.LongTensor(attention_mask), \
+        torch.LongTensor(segment_ids), torch.LongTensor(soft_pos_ids), torch.LongTensor(labels)
 
 
 def get_features_with_kbert(data, hps,
@@ -31,7 +35,6 @@ def get_features_with_kbert(data, hps,
     print('reduce graph noise done!')
 
     features = []
-    # for i in data.values:
     for example in data:
         premise, a1, a2 = example['premise'], example['hypothesis1'], example['hypothesis2']
         if example['ask-for'] == 'cause':
@@ -42,7 +45,8 @@ def get_features_with_kbert(data, hps,
             instance2 = [premise, a2]
 
         choices_features = []
-        for instance in [instance1, instance2]:
+        labels = [0, 1] if example['label'] == 1 else [1, 0]
+        for i, instance in enumerate([instance1, instance2]):
             context_tokens = instance[0]
             ending_tokens = instance[1]
 
@@ -73,9 +77,8 @@ def get_features_with_kbert(data, hps,
                 # 而 Bert 是从零开始的
                 soft_pos_id = soft_pos_id + 2
 
-            choices_features.append(
-                (tokens, input_ids, attention_mask, segment_ids, soft_pos_id))
-        features.append((choices_features, example['label']))
+            features.append(
+                ((tokens, input_ids, attention_mask, segment_ids, soft_pos_id), labels[i]))
     return features
 
 

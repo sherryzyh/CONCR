@@ -40,11 +40,11 @@ class pretrained_model(nn.Module):
             self.classification = nn.Linear(self.config.hidden_size, 1)
 
 
-    def forward(self, input_ids, attention_mask, seg_ids=None, length=None):
+    def forward(self, input_ids, attention_mask, seg_ids=None, length=None, position_ids=None):
 
         # model list: Bert, ALBERT, GPT
         if self.model_name in ['bert', 'albert', 'gpt']:
-            output = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=seg_ids)
+            output = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=seg_ids, position_ids=position_ids)
 
         # model list: Roberta, XLNet, bart
         else:

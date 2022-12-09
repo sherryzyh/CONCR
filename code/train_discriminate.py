@@ -75,14 +75,17 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
         t = trange(len(train_dataloader))
         epoch_step = 0
         total_loss = 0
-        for i, batch in zip(t, train_dataloader):
+        for _, batch in zip(t, train_dataloader):
             optimizer.zero_grad()
             model.train()
             if hps.cuda:
                 batch = tuple(term.cuda() for term in batch)
-
-            sent, seg_id, atten_mask, labels, length = batch
-            probs = model(sent, atten_mask, seg_ids=seg_id, length=length)
+            if not hps.with_kb:
+                sent, seg_id, attention_mask, labels, length = batch
+                probs = model(sent, attention_mask, seg_ids=seg_id, length=length)
+            else:
+                sent, seg_id, attention_mask, labels, pos_ids = batch
+                probs = model(sent, attention_mask, seg_ids=seg_id, position_ids=pos_ids)
 
             if hps.loss_func == 'CrossEntropy':
                 loss = loss_function(probs, labels)
@@ -156,26 +159,14 @@ def main():
         dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     else:
         logger.info("[DATA] Tokenization and Padding for Data")
-        train_features = get_all_features(train_data, hps)
-        dev_features = get_all_features(dev_data, hps)
+        train_ids, train_mask, train_seg_ids, train_pos_ids, train_labels = get_all_features(train_data, hps)
+        dev_ids, dev_mask, dev_seg_ids, dev_pos_ids, dev_labels = get_all_features(dev_data, hps)
+        # Dataset and DataLoader
         logger.info("[INFO] Creating Dataset and splitting batch for data")
-        train_dataset = create_datasets_with_kbert(train_features, shuffle=True)
-        dev_dataset = create_datasets_with_kbert(dev_features, shuffle=False)
-        if hps.cuda:
-            gpu_ids = [int(x) for x in hps.gpu.split(',')]
-            if len(gpu_ids) > 1:
-                train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
-                train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=hps.batch_size,
-                                                               sampler=train_sampler)
-                dev_sampler = torch.utils.data.distributed.DistributedSampler(dev_dataset)
-                dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=hps.batch_size,
-                                                             sampler=dev_sampler)
-            else:
-                train_dataloader = MyDataLoader(train_dataset, batch_size=hps.batch_size)
-                dev_dataloader = MyDataLoader(dev_dataset, batch_size=hps.batch_size)
-
-        train_dataloader = list(train_dataloader)
-        dev_dataloader = list(dev_dataloader)
+        TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_pos_ids)
+        DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_pos_ids)
+        train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+        dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
 
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
