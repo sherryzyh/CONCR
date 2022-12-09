@@ -184,10 +184,13 @@ class contrastive_reasoning_model(nn.Module):
         # by default, use the "cls" embedding as the sentence representation
         if self.hps.model_name in ["bert", "roberta", "albert"]:
             pooler_output = sent_embs.pooler_output
-        elif self.hps.model_name in ["xlnet", "gpt2"]:
+        elif self.hps.model_name in ["xlnet"]:
             pooler_output = sent_embs.last_hidden_state[:, 0, :]
         elif self.hps.model_name == "bart":
             pooler_output = sent_embs.encoder_last_hidden_state[:, 0, :]
+        elif self.hps.model_name == "gpt2":
+            last_hidden_state = sent_embs.last_hidden_state
+            pooler_output = torch.nanmean(last_hidden_state, dim=1)
 
         # print("pooler_output.size:", pooler_output.size())
         pooler_output = pooler_output.view(
