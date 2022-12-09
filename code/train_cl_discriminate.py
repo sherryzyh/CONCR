@@ -15,7 +15,7 @@ import datetime
 import logging
 
 
-def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, exp_name, mode="dev"):
+def CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, exp_name, mode="dev"):
     model.eval()
     stop_train = False
 
@@ -83,7 +83,7 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
             optimizer.step()
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
-                patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
+                patient, stop_train = CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
                                                hps, exp_name)
                 if stop_train:
                     return
@@ -95,7 +95,7 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
         logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
 
         if hps.evaluation_strategy == "epoch":
-            patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
+            patient, stop_train = CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
                                            exp_name)
         if stop_train:
             return
