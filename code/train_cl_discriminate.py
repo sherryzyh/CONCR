@@ -170,7 +170,12 @@ def main():
     model = contrastive_reasoning_model(hps)
 
     # logger.info(f"=== model architecture ===\n{model}")
-    optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
+    if hps.use_wd:
+        optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()),
+                                        lr=hps.lr,
+                                        weight_decay=hps.wd)
+    else:
+        optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
     loss_function = load_loss_function(hps)
 
     # multi-Gpu training

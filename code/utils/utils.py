@@ -54,6 +54,8 @@ def parse_hps():
     parser.add_argument('--evaluation_step', type=int, default=20,
                         help='when training for some steps, start evaluation')
     parser.add_argument('--lr', type=float, default=1e-5, help='the learning rate of training')
+    parser.add_argument('--use_wd', type=bool, default=False, help='Whether to add weight decay')
+    parser.add_argument('--wd', type=float, default=1e-4, help='the weight decay')
     parser.add_argument('--set_seed', type=bool, default=True, help='Whether to fix the random seed')
     parser.add_argument('--seed', type=int, default=1024, help='fix the random seed for reproducible')
     parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
