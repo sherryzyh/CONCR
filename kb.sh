@@ -13,10 +13,10 @@ python3 code/train_discriminate.py \
   --batch_size 2 \
   --cuda true\
   --epochs 10 \
-  --evaluation_step 250 \
   --lr 1e-5 \
   --set_seed true \
   --seed 42 \
   --patient 3 \
   --loss_func "BCE" \
   --with_kb true
+  --evaluation_strategy "epoch"
