@@ -159,7 +159,7 @@ def load_loss_function(hps):
 def main():
     # parse hyper parameters
     hps = parse_hps()
-    exp_name = "discriminate_" + hps.model_dir
+    exp_name = "discriminate_" + hps.model_dir.split("/")[-1]
     if hps.save_name is not None:
         exp_name = hps.save_name + "_" + exp_name
     if hps.hyp_only:

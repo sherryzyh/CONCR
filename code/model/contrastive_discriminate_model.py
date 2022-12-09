@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch
 from transformers import BertModel, BertConfig, RobertaModel, RobertaConfig, AlbertModel, AlbertConfig
 from transformers import OpenAIGPTConfig, OpenAIGPTModel, XLNetConfig, XLNetModel
-from transformers import BartConfig, BartForSequenceClassification
+from transformers import BartConfig, BartForSequenceClassification, BartModel
 from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel, RobertaModel, RobertaLMHead
 from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertModel, BertLMPredictionHead
 from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOutputWithPoolingAndCrossAttentions
@@ -91,8 +91,8 @@ class Scorer(nn.Module):
 
         idx_0 = idx_0.reshape(-1)
         idx_1 = idx_1.reshape(-1)
-        xypair = torch.cat([x[idx_0],y[idx_1]], dim=1) # [batch_size * batch_size, hidden_size * 2]
-        xypair = xypair.view(batch_size, batch_size, -1) # [batch_size, batch_size, hidden_size * 2]
+        xypair = torch.cat([x[idx_0], y[idx_1]], dim=1)  # [batch_size * batch_size, hidden_size * 2]
+        xypair = xypair.view(batch_size, batch_size, -1)  # [batch_size, batch_size, hidden_size * 2]
         # print("xypair.size:", xypair.size())
         return xypair
 
@@ -111,19 +111,17 @@ class contrastive_reasoning_model(nn.Module):
         elif hps.model_name == 'xlnet':
             self.sentence_encoder = XLNetModel.from_pretrained(hps.model_dir, mem_len=1024)
             self.config = XLNetConfig.from_pretrained(hps.model_dir)
+        elif hps.model_name == 'bart':
+            self.sentence_encoder = BartModel.from_pretrained(hps.model_dir)
+            self.config = BartConfig.from_pretrained(hps.model_dir)
 
-        # self.cause_emb = MLPLayer(self.config)
-        # self.effect_emb = MLPLayer(self.config)
-
-        # embedding of the causal-effect pair
-        # init mlp weights
-        # self.causal_mlp = nn.Linear(self.config.hidden_size * 2, self.config.hidden_size)
+        # Scorer
         if hps.score == "cossim":
             self.sim = CosSimilarity()
         elif hps.score == "causalscore":
             self.sim = Scorer(self.config)
 
-        # by default, the loss func is "BCE"
+        # Contrastive Loss
         self.contrastive_loss = nn.CrossEntropyLoss()
 
     # compose causal pairs
@@ -170,7 +168,11 @@ class contrastive_reasoning_model(nn.Module):
         if length is not None:
             length = length.view(-1)
 
-        sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=seg_ids)
+        if self.hps.model_name in ['bert', 'albert', 'gpt']:
+            sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask,
+                                              token_type_ids=seg_ids)
+        else:
+            sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask)
 
         # Pooling
         # by default, use the "cls" embedding as the sentence representation
@@ -178,9 +180,12 @@ class contrastive_reasoning_model(nn.Module):
             pooler_output = sent_embs.pooler_output
         elif self.hps.model_name == "xlnet":
             pooler_output = sent_embs.last_hidden_state[:, 0, :]
+        elif self.hps.model_name == "bart":
+            pooler_output = sent_embs.encoder_last_hidden_state[:, 0, :]
 
         # print("pooler_output.size:", pooler_output.size())
-        pooler_output = pooler_output.view((batch_size, num_sent, pooler_output.size(-1)))  # [bs, num_sent, hidden_size]
+        pooler_output = pooler_output.view(
+            (batch_size, num_sent, pooler_output.size(-1)))  # [bs, num_sent, hidden_size]
         return pooler_output
 
     def cl_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
@@ -189,7 +194,7 @@ class contrastive_reasoning_model(nn.Module):
         device = input_ids.device
 
         # Sentence pooler encoding
-        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length) # [bs, num_sent, hidden_size]
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length)  # [bs, num_sent, hidden_size]
 
         # Separate representation
         premise, hypothesis_0 = pooler_output[:, 0], pooler_output[:, 1]
@@ -238,7 +243,7 @@ class contrastive_reasoning_model(nn.Module):
         device = input_ids.device
 
         # Sentence pooler encoding
-        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length) # [bs, num_sent, hidden_size]
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length)  # [bs, num_sent, hidden_size]
 
         # Separate representation
         premise, hypothesis_0, hypothesis_1 = pooler_output[:, 0], pooler_output[:, 1], pooler_output[:, 2]
