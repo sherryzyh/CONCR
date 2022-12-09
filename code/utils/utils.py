@@ -72,16 +72,16 @@ def parse_hps():
     return hps
 
 def get_exp_name(hps, task):
-    exp_name = ""
-    if hps.with_cl:
-        exp_name += "cl_"
-    if hps.with_kb:
-        exp_name += "kb_"
     exp_name = task + "_" + hps.model_dir.split("/")[-1]
-    if hps.save_name is not None:
-        exp_name = hps.save_name + "_" + exp_name
     if hps.hyp_only:
         exp_name = exp_name + "_hyp"
+    if hps.save_name is not None:
+        exp_name = hps.save_name + "_" + exp_name
+    if hps.with_kb:
+        exp_name = "kb_" + exp_name
+    if hps.with_cl:
+        exp_name = "cl_" + exp_name
+    
     return exp_name
 
 def load_loss_function(hps):
