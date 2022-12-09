@@ -4,7 +4,7 @@ from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, cont
 import random
 import numpy as np
 import torch
-from model.discriminate_model import pretrained_model
+from collections import defaultdict
 from model.contrastive_discriminate_model import contrastive_reasoning_model
 # from transformers import AdamW
 import sys
