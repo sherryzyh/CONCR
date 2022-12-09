@@ -1,6 +1,6 @@
 import argparse
 from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, contrastive_tokenize, load_loss_function, \
-    evaluation, cl_evaluation, define_logger, save_model
+    evaluation, cl_evaluation, define_logger, save_model, save_metric_log
 import random
 import numpy as np
 import torch
@@ -50,7 +50,7 @@ def CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, lo
         if patient >= hps.patient:
             logger.info("[INFO] Stopping Training by Early Stopping")
             stop_train = True
-    return patient, stop_train
+    return patient, stop_train, dev_accu, dev_loss
 
 
 def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps, exp_name):
@@ -59,6 +59,7 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
     patient = 0
     best_accuracy = 0
     stop_train = False
+    metric_log = defaultdict(dict)
     for epoch in range(hps.epochs):
         logger.info('[Epoch] {}'.format(epoch))
         t = trange(len(train_dataloader))
@@ -85,8 +86,9 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
             optimizer.step()
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
-                patient, stop_train = CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
-                                                  hps, exp_name)
+                patient, stop_train, dev_accu, dev_loss = CL_evaluate(model, dev_dataloader, patient, best_accuracy,
+                                                                      loss_function, logger,
+                                                                      hps, exp_name)
                 if stop_train:
                     return
             step += 1
@@ -95,10 +97,18 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
             train_accu, train_loss = cl_evaluation(hps, train_dataloader, model, loss_function)
         logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
         logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
+        metric_log[f'epoch_{epoch}']['train_accu'] = train_accu
+        metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
 
         if hps.evaluation_strategy == "epoch":
-            patient, stop_train = CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
-                                              exp_name)
+            patient, stop_train, dev_accu, dev_loss = CL_evaluate(model, dev_dataloader, patient, best_accuracy,
+                                                                  loss_function, logger, hps,
+                                                                  exp_name)
+            metric_log[f'epoch_{epoch}']['dev_accu'] = dev_accu
+            metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
+
+        save_metric_log(metric_log, hps, exp_name)
+
         if stop_train:
             return
 

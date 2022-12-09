@@ -71,6 +71,7 @@ def parse_hps():
     hps.nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     return hps
 
+
 def get_exp_name(hps, task):
     exp_name = task + "_" + hps.model_dir.split("/")[-1]
     if hps.hyp_only:
@@ -81,8 +82,9 @@ def get_exp_name(hps, task):
         exp_name = "kb_" + exp_name
     if hps.with_cl:
         exp_name = "cl_" + exp_name
-    
+
     return exp_name
+
 
 def load_loss_function(hps):
     if hps.loss_func == "CrossEntropy":
@@ -90,6 +92,7 @@ def load_loss_function(hps):
     elif hps.loss_func == "BCE":
         loss_function = nn.BCEWithLogitsLoss(reduction='mean')
     return loss_function
+
 
 def tokenize_data(data, model_path, model_name):
     # tokenizer = BertTokenizer(vocab_file=model_path+'/'+'vocab.txt')
@@ -1020,8 +1023,16 @@ def bart_evaluate(model, data_loader, hps):
 
 
 def save_model(model, hps, exp_name, mode="best"):
-    model_path = os.path.join(hps.save_dir, exp_name)
-    if not os.path.exists(model_path):
-        os.mkdir(model_path)
+    exp_path = os.path.join(hps.save_dir, exp_name)
+    if not os.path.exists(exp_path):
+        os.mkdir(exp_path)
     if mode == "best":
-        torch.save(model, os.path.join(model_path, "best_acc_ckpt.pt"))
+        torch.save(model, os.path.join(exp_path, "best_acc_ckpt.pt"))
+
+
+def save_metric_log(metric_log, hps, exp_name):
+    exp_path = os.path.join(hps.save_dir, exp_name)
+    if not os.path.exists(exp_path):
+        os.mkdir(exp_path)
+    with open(os.path.join(exp_path, "metric_log.json"), 'w', encoding='utf-8') as fp:
+        json.dump(metric_log, fp)
