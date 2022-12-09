@@ -392,8 +392,9 @@ def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
     count = 0
     for batch1, batch2, t in zip(dataloader_input, dataloader_output, trange(len(dataloader_input))):
         if hps.cuda:
-            batch1 = tuple(term.cuda() for term in batch1)
-            batch2 = tuple(term.cuda() for term in batch2)
+            device = f"cuda:{hps.gpu}"
+            batch1 = tuple(term.to(device) for term in batch1)
+            batch2 = tuple(term.to(device) for term in batch2)
 
         input_ids, attention_mask, labels = batch1
         decoder_ids, decoder_mask = batch2
@@ -487,7 +488,8 @@ def cl_evaluation(hps, dataloader, model, loss_function, mode='train', verbose=F
     model.eval()
     for batch in dataloader:
         if hps.cuda:
-            batch = tuple(term.cuda() for term in batch)
+            device = f"cuda:{hps.gpu}"
+            batch = tuple(term.to(device) for term in batch)
 
         if mode == 'train':
             sent, seg_id, atten_mask, tmp_label, tmp_length = batch
@@ -699,7 +701,8 @@ def evaluation_bart(dataloader, model, hps):
     score = 0
     for batch in dataloader:
         if hps.cuda:
-            batch = tuple(term.cuda() for term in batch)
+            device = f"cuda:{hps.gpu}"
+            batch = tuple(term.to(device) for term in batch)
 
         input_ids, input_mask, labels, label_mask = batch
         predict_id = torch.zeros([input_ids.shape[0], 1]).long().cuda()
@@ -728,7 +731,8 @@ def evaluate_gpt2(dataloader, model, hps):
     score = 0
     for batch in dataloader:
         if hps.cuda:
-            batch = tuple(term.cuda() for term in batch)
+            device = f"cuda:{hps.gpu}"
+            batch = tuple(term.to(device) for term in batch)
 
         gen_ids, gen_mask, _, premise_ids, premise_mask, premise_token_type_ids = batch
         decode_ids = torch.zeros([premise_ids.shape[0], 1]).long().cuda()
@@ -847,7 +851,9 @@ def gpt2_evaluate(model, length, data_loader, hps, epoch):
 
     for batch in data_loader:
         if hps.cuda:
-            batch = tuple(term.cuda() for term in batch)
+            device = f"cuda:{hps.gpu}"
+            batch = tuple(term.to(device) for term in batch)
+
         input_ids, input_mask, input_seg_ids, gen_ids, gen_mask, _, premise_ids, premise_mask, premise_token_type_ids = batch  # dev
         tmp = torch.ones(gen_mask.shape).long()
         count_mask_length = torch.sum(tmp == gen_mask.cpu(), 1).squeeze().tolist()
@@ -945,7 +951,8 @@ def bart_evaluate(model, data_loader, hps):
 
     for batch in data_loader:
         if hps.cuda:
-            batch = tuple(term.cuda() for term in batch)
+            device = f"cuda:{hps.gpu}"
+            batch = tuple(term.to(device) for term in batch)
 
         input_ids, input_mask, labels, label_mask = batch
         generate_ids = model.generate(input_ids,
