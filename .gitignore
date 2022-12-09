@@ -15,3 +15,5 @@ output/log/test_*
 output/log/testlog/
 
 .idea/
+
+conceptnet5

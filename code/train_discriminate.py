@@ -14,6 +14,8 @@ import datetime
 import logging
 from collections import defaultdict
 import json
+from utils.kb import get_all_features, create_datasets_with_kbert
+from utils.kb_dataset import MyDataLoader
 
 def parse_hps():
     parser = argparse.ArgumentParser(description='xCAR')
@@ -33,6 +35,7 @@ def parse_hps():
     parser.add_argument('--test', type=str, default='test.pkl', help='The test data directory')
 
     # Model Settings
+    parser.add_argument('--with_kb', type=str, default=False, help='Whether to use knowledge base')
     parser.add_argument('--model_name', type=str, default='xlnet', help='Pretrained model name')
     parser.add_argument('--save_name', type=str, default=None, help='Experiment save name')
     parser.add_argument('--data_name', type=str, default='copa')
@@ -197,26 +200,39 @@ def main():
     # test_data = load_data(os.path.join(hps.data_dir, hps.test))
     print("loaded data:", dev_data[0])
 
-    # tokenization
-    logger.info("[DATA] Tokenization and Padding for Data")
-    train_ids, train_mask, train_seg_ids, train_labels, train_length = quick_tokenize(train_data, hps)
-    dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = quick_tokenize(dev_data, hps)
-    # test_ids, test_mask, test_seg_ids, test_labels, test_length = quick_tokenize(test_data, hps)
-    # print("tokenzied data:", len(dev_ids))
-    # print("\tdev_ids:", dev_ids[0])
-    # print("\tdev_mask:", dev_mask[0])
-    # print("\tdev_seg_ids:", dev_seg_ids[0])
-    # print("\tdev_labels:", dev_labels[0])
-    # print("\tdev_length:", dev_length[0])
+    # tokenization and data loading
+    if not hps.with_kb:
+        logger.info("[DATA] Tokenization and Padding for Data")
+        train_ids, train_mask, train_seg_ids, train_labels, train_length = quick_tokenize(train_data, hps)
+        dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = quick_tokenize(dev_data, hps)
+        # Dataset and DataLoader
+        logger.info("[INFO] Creating Dataset and splitting batch for data")
+        TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_length)
+        DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_length)
+        train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+        dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+    else:
+        logger.info("[DATA] Tokenization and Padding for Data")
+        train_features = get_all_features(train_data, hps)
+        dev_features = get_all_features(dev_data, hps)
+        logger.info("[INFO] Creating Dataset and splitting batch for data")
+        train_dataset = create_datasets_with_kbert(train_features, shuffle=True)
+        dev_dataset = create_datasets_with_kbert(dev_features, shuffle=False)
+        if hps.cuda:
+            gpu_ids = [int(x) for x in hps.gpu.split(',')]
+            if len(gpu_ids) > 1:
+                train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+                train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=hps.batch_size,
+                                                        sampler=train_sampler)
+                dev_sampler = torch.utils.data.distributed.DistributedSampler(dev_dataset)
+                dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=hps.batch_size,
+                                                    sampler=dev_sampler)
+            else:
+                train_dataloader = MyDataLoader(train_dataset, batch_size=hps.batch_size)
+                dev_dataloader = MyDataLoader(dev_dataset, batch_size=hps.batch_size)
 
-    # Dataset and DataLoader
-    logger.info("[INFO] Creating Dataset and splitting batch for data")
-    TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_length)
-    DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_length)
-    # TEST = TensorDataset(test_ids, test_seg_ids, test_mask, test_labels, test_length)
-    train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-    dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-    # test_dataloader = DataLoader(TEST, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+        train_dataloader = list(train_dataloader)
+        dev_dataloader = list(dev_dataloader)
 
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
