@@ -1,13 +1,10 @@
 # Explainable-Causal-Reasoning
  
 ## Running Causal Reasoning Task
-### Parameters
-**model_dir**: If use pre-trained model, use the name in Huggingface hub, e.g., "bert-base-cased".
-**model_name**: Options include only "bert", "roberta", "albert", "gpt", "gpt2", "bart", or by default "xlnet".
 
-### Baselines
-1. fine-tuning with GPT-2
+1. Causal Reasoning with GPT-2
 ```
+# GPT-2_CR baseline
 python3 code/gpt2_discriminate.py \
   --data_dir "./data/Causal_Reasoning/" \
   --model_dir "gpt2" \
@@ -27,8 +24,14 @@ python3 code/gpt2_discriminate.py \
   --patient 10 
 ```
 
-2. fine-tuning with XLNet-base
+2. Causal Reasoning with other models
+
+**model_dir**: The name of pre-trained model in Huggingface hub, e.g., "bert-base-cased".
+
+**model_name**: Options include only "bert", "roberta", "albert", "bart", or by default "xlnet".
+
 ```
+# XLNet-base_CR baseline
 python3 code/train_discriminate.py \
  --data_dir "./data/Causal_Reasoning/" \
  --model_dir "xlnet-base-cased" \
