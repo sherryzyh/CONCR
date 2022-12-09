@@ -2,7 +2,7 @@ from turtle import forward
 import torch.nn as nn
 import torch
 from transformers import BertModel, BertConfig, RobertaModel, RobertaConfig, AlbertModel, AlbertConfig
-from transformers import OpenAIGPTConfig, OpenAIGPTModel, XLNetConfig, XLNetModel
+from transformers import OpenAIGPTConfig, OpenAIGPTModel, XLNetConfig, XLNetModel, GPT2Model, GPT2Config
 from transformers import BartConfig, BartForSequenceClassification, BartModel
 from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel, RobertaModel, RobertaLMHead
 from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertModel, BertLMPredictionHead
@@ -114,6 +114,9 @@ class contrastive_reasoning_model(nn.Module):
         elif hps.model_name == 'bart':
             self.sentence_encoder = BartModel.from_pretrained(hps.model_dir)
             self.config = BartConfig.from_pretrained(hps.model_dir)
+        elif hps.model_name == 'gpt2':
+            self.sentence_encoder = GPT2Model.from_pretrained(hps.model_dir)
+            self.config = GPT2Config.from_pretrained(hps.model_dir)
 
         # Scorer
         if hps.score == "cossim":
@@ -168,7 +171,7 @@ class contrastive_reasoning_model(nn.Module):
         if length is not None:
             length = length.view(-1)
 
-        if self.hps.model_name in ['bert', 'albert', 'gpt']:
+        if self.hps.model_name in ['bert', 'albert', 'gpt2']:
             sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask,
                                               token_type_ids=seg_ids)
         else:
@@ -178,7 +181,7 @@ class contrastive_reasoning_model(nn.Module):
         # by default, use the "cls" embedding as the sentence representation
         if self.hps.model_name == "bert":
             pooler_output = sent_embs.pooler_output
-        elif self.hps.model_name == "xlnet":
+        elif self.hps.model_name in ["xlnet", "gpt2"]:
             pooler_output = sent_embs.last_hidden_state[:, 0, :]
         elif self.hps.model_name == "bart":
             pooler_output = sent_embs.encoder_last_hidden_state[:, 0, :]
