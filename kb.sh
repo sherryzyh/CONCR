@@ -1,3 +1,5 @@
+export TRANSFORMERS_CACHE=./huggingface_cache/
+
 python3 code/train_discriminate.py \
   --data_dir "./data/Causal_Reasoning/" \
   --model_dir "bert-base-cased" \
