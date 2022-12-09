@@ -16,8 +16,8 @@ def get_all_features(data, hps, max_seq_length=128):
     segment_ids = [i[0][3] for i in semantic_features]
     soft_pos_ids = [i[0][4] for i in semantic_features]
     labels = [i[1] for i in semantic_features]  # 分离标签
-    return torch.vstack(input_ids), torch.vstack(attention_mask), \
-        torch.vstack(segment_ids), torch.vstack(soft_pos_ids), torch.LongTensor(labels)
+    return torch.stack(input_ids, dim=0), torch.stack(attention_mask, dim=0), \
+        torch.stack(segment_ids, dim=0), torch.stack(soft_pos_ids, dim=0), torch.LongTensor(labels)
 
 
 def get_features_with_kbert(data, hps,
