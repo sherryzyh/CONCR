@@ -69,6 +69,24 @@ def parse_hps():
     hps.nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     return hps
 
+def get_exp_name(hps, task):
+    exp_name = ""
+    if hps.with_cl:
+        exp_name += "cl_"
+    if hps.with_kb:
+        exp_name += "kb_"
+    exp_name = task + "_" + hps.model_dir.split("/")[-1]
+    if hps.save_name is not None:
+        exp_name = hps.save_name + "_" + exp_name
+    if hps.hyp_only:
+        exp_name = exp_name + "_hyp"
+
+def load_loss_function(hps):
+    if hps.loss_func == "CrossEntropy":
+        loss_function = nn.CrossEntropyLoss(reduction='mean')
+    elif hps.loss_func == "BCE":
+        loss_function = nn.BCEWithLogitsLoss(reduction='mean')
+    return loss_function
 
 def tokenize_data(data, model_path, model_name):
     # tokenizer = BertTokenizer(vocab_file=model_path+'/'+'vocab.txt')

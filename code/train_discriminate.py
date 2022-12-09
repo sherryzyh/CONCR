@@ -1,5 +1,5 @@
 import argparse
-from utils.utils import parse_hps, load_data, quick_tokenize, evaluation, define_logger
+from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, load_loss_function, evaluation, define_logger
 import random
 import numpy as np
 import torch
@@ -50,11 +50,7 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             if not os.path.exists(hps.save_dir):
                 os.mkdir(hps.save_dir)
             logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-            if hps.hyp_only:
-                torch.save(model, os.path.join(hps.save_dir, 'discriminate_' + hps.model_name + '_hyp'))
-            else:
-                torch.save(model, os.path.join(hps.save_dir, 'discriminate_' + hps.model_name))
-            # torch.save(model, os.path.join(hps.save_dir, exp_name))
+            torch.save(model, os.path.join(hps.save_dir, exp_name))
 
         else:
             patient += 1
@@ -116,26 +112,10 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             if stop_train:
                 return
 
-
-def load_loss_function(hps):
-    if hps.loss_func == "CrossEntropy":
-        loss_function = nn.CrossEntropyLoss(reduction='mean')
-    elif hps.loss_func == "BCE":
-        loss_function = nn.BCEWithLogitsLoss(reduction='mean')
-    return loss_function
-
-
 def main():
     # parse hyper parameters
     hps = parse_hps()
-    exp_name = ""
-    if hps.with_kb:
-        exp_name += "kb_"
-    exp_name += "discriminate_" + hps.model_name
-    if hps.save_name is not None:
-        exp_name = hps.save_name + "_" + exp_name
-    if hps.hyp_only:
-        exp_name = exp_name + "_hyp"
+    exp_name = get_exp_name(hps, "discriminate")
 
     # fix random seed
     if hps.set_seed:

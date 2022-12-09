@@ -1,5 +1,5 @@
 import argparse
-from utils.utils import parse_hps, load_data, quick_tokenize, contrastive_tokenize, evaluation, cl_evaluation, define_logger
+from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, contrastive_tokenize, load_loss_function, evaluation, cl_evaluation, define_logger
 import random
 import numpy as np
 import torch
@@ -100,23 +100,10 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
         if stop_train:
             return
 
-
-def load_loss_function(hps):
-    if hps.loss_func == "CrossEntropy":
-        loss_function = nn.CrossEntropyLoss(reduction='mean')
-    elif hps.loss_func == "BCE":
-        loss_function = nn.BCEWithLogitsLoss(reduction='mean')
-    return loss_function
-
-
 def main():
     # parse hyper parameters
     hps = parse_hps()
-    exp_name = "discriminate_" + hps.model_dir.split("/")[-1]
-    if hps.save_name is not None:
-        exp_name = hps.save_name + "_" + exp_name
-    if hps.hyp_only:
-        exp_name = exp_name + "_hyp"
+    exp_name = get_exp_name(hps, "discriminate")
 
     # fix random seed
     if hps.set_seed:
