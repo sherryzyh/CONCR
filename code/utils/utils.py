@@ -60,6 +60,7 @@ def parse_hps():
 
     # Method Settings
     parser.add_argument('--with_kb', type=str, default=False, help='Whether to use knowledge base')
+    parser.add_argument('--with_cl', type=str, default=False, help='Whether to use knowledge base')
     parser.add_argument('--prompt', type=str, default=None, help="prompt template")
     parser.add_argument('--score', type=str, default="cossim", help="scorer type")
     parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
@@ -80,6 +81,7 @@ def get_exp_name(hps, task):
         exp_name = hps.save_name + "_" + exp_name
     if hps.hyp_only:
         exp_name = exp_name + "_hyp"
+    return exp_name
 
 def load_loss_function(hps):
     if hps.loss_func == "CrossEntropy":
