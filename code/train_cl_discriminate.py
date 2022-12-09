@@ -69,7 +69,8 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
             optimizer.zero_grad()
             model.train()
             if hps.cuda:
-                batch = tuple(term.cuda() for term in batch)
+                device = f"cuda:{hps.gpu}"
+                batch = tuple(term.to(device) for term in batch)
 
             sent, seg_id, atten_mask, labels, length = batch
             output = model.forward(sent, atten_mask, labels, seg_ids=seg_id, length=length, mode='train')
@@ -172,7 +173,8 @@ def main():
     # multi-Gpu training
     if hps.cuda:
         gpu_ids = [int(x) for x in hps.gpu.split(',')]
-        model = model.cuda()
+        device = f"cuda:{hps.gpu}"
+        model = model.to(device)
         if len(gpu_ids) > 1:
             model = nn.DataParallel(model, device_ids=gpu_ids)
             # model = nn.parallel.DistributedDataParallel(model, device_ids=gpu_ids)
