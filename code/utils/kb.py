@@ -16,8 +16,8 @@ def get_all_features(data, hps, max_seq_length=128):
     segment_ids = [i[0][3] for i in semantic_features]
     soft_pos_ids = [i[0][4] for i in semantic_features]
     labels = [i[1] for i in semantic_features]  # 分离标签
-    return torch.LongTensor(input_ids), torch.LongTensor(attention_mask), \
-        torch.LongTensor(segment_ids), torch.LongTensor(soft_pos_ids), torch.LongTensor(labels)
+    return torch.vstack(input_ids), torch.vstack(attention_mask), \
+        torch.vstack(segment_ids), torch.vstack(soft_pos_ids), torch.LongTensor(labels)
 
 
 def get_features_with_kbert(data, hps,
@@ -44,7 +44,7 @@ def get_features_with_kbert(data, hps,
             instance1 = [premise, a1]
             instance2 = [premise, a2]
 
-        choices_features = []
+        # choices_features = []
         labels = [0, 1] if example['label'] == 1 else [1, 0]
         for i, instance in enumerate([instance1, instance2]):
             context_tokens = instance[0]
@@ -62,15 +62,25 @@ def get_features_with_kbert(data, hps,
                                                                                      max_entities=2,
                                                                                      max_length=max_seq_length)
             tokens = tokens[0]
-            soft_pos_id = torch.tensor(soft_pos_id[0])
-            attention_mask = torch.tensor(attention_mask[0])
-            segment_ids = torch.tensor(segment_ids[0])
-            input_ids = torch.tensor(tokenizer.convert_tokens_to_ids(tokens))
+            soft_pos_id = torch.LongTensor(soft_pos_id[0])
+            attention_mask = torch.LongTensor(attention_mask[0])
+            segment_ids = torch.LongTensor(segment_ids[0])
+            input_ids = torch.LongTensor(tokenizer.convert_tokens_to_ids(tokens))
 
             assert input_ids.shape[0] == max_seq_length
             assert attention_mask.shape[0] == max_seq_length
             assert soft_pos_id.shape[0] == max_seq_length
             assert segment_ids.shape[0] == max_seq_length
+
+            # soft_pos_id = soft_pos_id[0]
+            # attention_mask = attention_mask[0]
+            # segment_ids = segment_ids[0]
+            # input_ids = tokenizer.convert_tokens_to_ids(tokens)
+
+            # assert len(input_ids) == max_seq_length
+            # assert len(attention_mask) == max_seq_length
+            # assert len(soft_pos_id) == max_seq_length
+            # assert len(segment_ids) == max_seq_length
 
             if 'Roberta' in str(type(tokenizer)):
                 # 这里做特判是因为 Roberta 的 Embedding pos_id 是从 2 开始的

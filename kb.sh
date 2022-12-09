@@ -18,5 +18,5 @@ python3 code/train_discriminate.py \
   --seed 42 \
   --patient 3 \
   --loss_func "BCE" \
-  --with_kb true
+  --with_kb true \
   --evaluation_strategy "epoch"

@@ -14,7 +14,7 @@ import datetime
 import logging
 from collections import defaultdict
 import json
-from utils.kb import get_all_features, create_datasets_with_kbert
+from utils.kb import get_all_features
 from utils.kb_dataset import MyDataLoader
 
 
@@ -160,6 +160,12 @@ def main():
     else:
         logger.info("[DATA] Tokenization and Padding for Data")
         train_ids, train_mask, train_seg_ids, train_pos_ids, train_labels = get_all_features(train_data, hps)
+        print("got all train features as long tensors")
+        print(f"size of input_ids: {train_ids.size()}")
+        print(f"size of attention_mask: {train_mask.size()}")
+        print(f"size of segment_ids: {train_seg_ids.size()}")
+        print(f"size of soft_pos_ids: {train_pos_ids.size()}")
+        print(f"size of labels: {train_labels.size()}")
         dev_ids, dev_mask, dev_seg_ids, dev_pos_ids, dev_labels = get_all_features(dev_data, hps)
         # Dataset and DataLoader
         logger.info("[INFO] Creating Dataset and splitting batch for data")
