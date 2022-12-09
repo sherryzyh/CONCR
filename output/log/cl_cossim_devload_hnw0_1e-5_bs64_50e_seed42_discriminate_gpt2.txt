@@ -1,0 +1,409 @@
+2022-12-09 14:17:09,564 INFO    : === hps ===
+Namespace(data_dir='./data/Causal_Reasoning/', model_dir='gpt2', save_dir='./output/saved_model', log_dir='./output/log', apex_dir='./output/log', train='train.jsonl', dev='dev.jsonl', devload='dev', test='test.pkl', model_name='gpt2', save_name='cossim_devload_hnw0_1e-5_bs64_50e_seed42', data_name='copa', cuda=True, gpu='1', apex=False, batch_size=64, shuffle=False, epochs=50, evaluation_strategy='epoch', evaluation_step=20, lr=1e-05, set_seed=True, seed=42, patient=10, loss_func='BCE', hyp_only=False, warmup_proportion=0.1, with_kb=False, with_cl='true', prompt=None, score='cossim', hard_negative_weight=0.0, nowtime='20221209_141709')
+2022-12-09 14:17:09,564 INFO    : [DATA] Loading Data
+2022-12-09 14:17:09,565 INFO    : [DATA] Hypothesis Only: False
+2022-12-09 14:17:09,620 INFO    : [DATA] Tokenization and Padding for Data
+2022-12-09 14:17:15,156 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-12-09 14:17:15,157 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-12-09 14:17:15,157 INFO    : [MODEL] gpt2
+2022-12-09 14:17:18,703 INFO    : [INFO] Start Training
+2022-12-09 14:17:18,703 INFO    : [Epoch] 0
+2022-12-09 14:20:06,419 INFO    : [Train Metrics] Train Accuracy: 	0.5553322615219721
+2022-12-09 14:20:06,420 INFO    : [Train Metrics] Train Loss: 	2331.9715662002563
+2022-12-09 14:20:06,421 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:20:12,454 INFO    : [Dev Metrics] Dev Accuracy: 	0.5689493433395872
+2022-12-09 14:20:12,454 INFO    : [Dev Metrics] Dev Loss: 	338.8081464767456
+2022-12-09 14:20:17,238 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:20:17,239 INFO    : [Patient] 0
+2022-12-09 14:20:17,285 INFO    : [Epoch] 1
+2022-12-09 14:23:19,610 INFO    : [Train Metrics] Train Accuracy: 	0.5560021436227224
+2022-12-09 14:23:19,610 INFO    : [Train Metrics] Train Loss: 	2196.9706859588623
+2022-12-09 14:23:19,611 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:23:25,697 INFO    : [Dev Metrics] Dev Accuracy: 	0.5689493433395872
+2022-12-09 14:23:25,697 INFO    : [Dev Metrics] Dev Loss: 	318.6746816635132
+2022-12-09 14:23:30,497 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:23:30,497 INFO    : [Patient] 0
+2022-12-09 14:23:30,498 INFO    : [Epoch] 2
+2022-12-09 14:26:32,818 INFO    : [Train Metrics] Train Accuracy: 	0.5638397642015005
+2022-12-09 14:26:32,818 INFO    : [Train Metrics] Train Loss: 	2217.230875015259
+2022-12-09 14:26:32,819 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:26:38,921 INFO    : [Dev Metrics] Dev Accuracy: 	0.5703564727954972
+2022-12-09 14:26:38,921 INFO    : [Dev Metrics] Dev Loss: 	321.2548427581787
+2022-12-09 14:26:43,744 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:26:43,744 INFO    : [Patient] 0
+2022-12-09 14:26:43,745 INFO    : [Epoch] 3
+2022-12-09 14:29:45,801 INFO    : [Train Metrics] Train Accuracy: 	0.5767015005359056
+2022-12-09 14:29:45,802 INFO    : [Train Metrics] Train Loss: 	2183.1378211975098
+2022-12-09 14:29:45,803 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:29:51,872 INFO    : [Dev Metrics] Dev Accuracy: 	0.5689493433395872
+2022-12-09 14:29:51,873 INFO    : [Dev Metrics] Dev Loss: 	316.1291742324829
+2022-12-09 14:29:56,680 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:29:56,680 INFO    : [Patient] 0
+2022-12-09 14:29:56,681 INFO    : [Epoch] 4
+2022-12-09 14:32:58,616 INFO    : [Train Metrics] Train Accuracy: 	0.5967309753483387
+2022-12-09 14:32:58,616 INFO    : [Train Metrics] Train Loss: 	2111.9651613235474
+2022-12-09 14:32:58,617 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:33:04,684 INFO    : [Dev Metrics] Dev Accuracy: 	0.5825515947467167
+2022-12-09 14:33:04,684 INFO    : [Dev Metrics] Dev Loss: 	305.6529731750488
+2022-12-09 14:33:09,558 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:33:09,558 INFO    : [Patient] 0
+2022-12-09 14:33:09,560 INFO    : [Epoch] 5
+2022-12-09 14:36:11,376 INFO    : [Train Metrics] Train Accuracy: 	0.6180332261521972
+2022-12-09 14:36:11,377 INFO    : [Train Metrics] Train Loss: 	2085.996787071228
+2022-12-09 14:36:11,378 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:36:17,444 INFO    : [Dev Metrics] Dev Accuracy: 	0.5956848030018762
+2022-12-09 14:36:17,444 INFO    : [Dev Metrics] Dev Loss: 	301.89531993865967
+2022-12-09 14:36:22,286 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:36:22,287 INFO    : [Patient] 0
+2022-12-09 14:36:22,288 INFO    : [Epoch] 6
+2022-12-09 14:39:23,969 INFO    : [Train Metrics] Train Accuracy: 	0.6393354769560557
+2022-12-09 14:39:23,969 INFO    : [Train Metrics] Train Loss: 	2019.8326110839844
+2022-12-09 14:39:23,970 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:39:30,072 INFO    : [Dev Metrics] Dev Accuracy: 	0.6261726078799249
+2022-12-09 14:39:30,072 INFO    : [Dev Metrics] Dev Loss: 	292.0252103805542
+2022-12-09 14:39:34,951 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:39:34,951 INFO    : [Patient] 0
+2022-12-09 14:39:34,952 INFO    : [Epoch] 7
+2022-12-09 14:42:36,808 INFO    : [Train Metrics] Train Accuracy: 	0.6580251875669882
+2022-12-09 14:42:36,808 INFO    : [Train Metrics] Train Loss: 	1963.0159006118774
+2022-12-09 14:42:36,809 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:42:42,870 INFO    : [Dev Metrics] Dev Accuracy: 	0.6458724202626641
+2022-12-09 14:42:42,870 INFO    : [Dev Metrics] Dev Loss: 	283.4347505569458
+2022-12-09 14:42:47,739 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:42:47,739 INFO    : [Patient] 0
+2022-12-09 14:42:47,741 INFO    : [Epoch] 8
+2022-12-09 14:45:49,673 INFO    : [Train Metrics] Train Accuracy: 	0.6706189710610932
+2022-12-09 14:45:49,674 INFO    : [Train Metrics] Train Loss: 	1913.8484840393066
+2022-12-09 14:45:49,675 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:45:55,734 INFO    : [Dev Metrics] Dev Accuracy: 	0.6477485928705441
+2022-12-09 14:45:55,734 INFO    : [Dev Metrics] Dev Loss: 	276.1869263648987
+2022-12-09 14:46:00,581 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:46:00,581 INFO    : [Patient] 0
+2022-12-09 14:46:00,582 INFO    : [Epoch] 9
+2022-12-09 14:49:02,309 INFO    : [Train Metrics] Train Accuracy: 	0.6794614147909968
+2022-12-09 14:49:02,310 INFO    : [Train Metrics] Train Loss: 	1927.9006028175354
+2022-12-09 14:49:02,311 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:49:08,381 INFO    : [Dev Metrics] Dev Accuracy: 	0.650093808630394
+2022-12-09 14:49:08,382 INFO    : [Dev Metrics] Dev Loss: 	278.0184850692749
+2022-12-09 14:49:13,229 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:49:13,230 INFO    : [Patient] 0
+2022-12-09 14:49:13,231 INFO    : [Epoch] 10
+2022-12-09 14:52:14,952 INFO    : [Train Metrics] Train Accuracy: 	0.692457127545552
+2022-12-09 14:52:14,953 INFO    : [Train Metrics] Train Loss: 	1920.3942818641663
+2022-12-09 14:52:14,954 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:52:21,016 INFO    : [Dev Metrics] Dev Accuracy: 	0.6557223264540337
+2022-12-09 14:52:21,016 INFO    : [Dev Metrics] Dev Loss: 	277.2151961326599
+2022-12-09 14:52:25,860 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:52:25,860 INFO    : [Patient] 0
+2022-12-09 14:52:25,861 INFO    : [Epoch] 11
+2022-12-09 14:55:27,525 INFO    : [Train Metrics] Train Accuracy: 	0.6862272240085745
+2022-12-09 14:55:27,526 INFO    : [Train Metrics] Train Loss: 	1932.6735281944275
+2022-12-09 14:55:27,526 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:55:33,582 INFO    : [Dev Metrics] Dev Accuracy: 	0.6557223264540337
+2022-12-09 14:55:33,582 INFO    : [Dev Metrics] Dev Loss: 	279.734326839447
+2022-12-09 14:55:41,633 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:55:41,639 INFO    : [Patient] 0
+2022-12-09 14:55:41,649 INFO    : [Epoch] 12
+2022-12-09 14:58:43,088 INFO    : [Train Metrics] Train Accuracy: 	0.6958735262593784
+2022-12-09 14:58:43,089 INFO    : [Train Metrics] Train Loss: 	1882.6875185966492
+2022-12-09 14:58:43,090 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 14:58:49,158 INFO    : [Dev Metrics] Dev Accuracy: 	0.6646341463414634
+2022-12-09 14:58:49,159 INFO    : [Dev Metrics] Dev Loss: 	272.3982663154602
+2022-12-09 14:58:53,992 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 14:58:53,992 INFO    : [Patient] 0
+2022-12-09 14:58:53,993 INFO    : [Epoch] 13
+2022-12-09 15:01:55,824 INFO    : [Train Metrics] Train Accuracy: 	0.7041130760986066
+2022-12-09 15:01:55,825 INFO    : [Train Metrics] Train Loss: 	1839.649332523346
+2022-12-09 15:01:55,825 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:02:01,892 INFO    : [Dev Metrics] Dev Accuracy: 	0.6655722326454033
+2022-12-09 15:02:01,892 INFO    : [Dev Metrics] Dev Loss: 	266.03126668930054
+2022-12-09 15:02:06,704 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:02:06,704 INFO    : [Patient] 0
+2022-12-09 15:02:06,706 INFO    : [Epoch] 14
+2022-12-09 15:05:08,675 INFO    : [Train Metrics] Train Accuracy: 	0.7187165058949625
+2022-12-09 15:05:08,676 INFO    : [Train Metrics] Train Loss: 	1834.703049659729
+2022-12-09 15:05:08,676 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:05:14,719 INFO    : [Dev Metrics] Dev Accuracy: 	0.6707317073170732
+2022-12-09 15:05:14,719 INFO    : [Dev Metrics] Dev Loss: 	265.4773325920105
+2022-12-09 15:05:19,538 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:05:19,538 INFO    : [Patient] 0
+2022-12-09 15:05:19,539 INFO    : [Epoch] 15
+2022-12-09 15:08:21,398 INFO    : [Train Metrics] Train Accuracy: 	0.72494640943194
+2022-12-09 15:08:21,399 INFO    : [Train Metrics] Train Loss: 	1802.2271151542664
+2022-12-09 15:08:21,400 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:08:27,481 INFO    : [Dev Metrics] Dev Accuracy: 	0.6712007504690432
+2022-12-09 15:08:27,482 INFO    : [Dev Metrics] Dev Loss: 	261.01663303375244
+2022-12-09 15:08:32,351 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:08:32,351 INFO    : [Patient] 0
+2022-12-09 15:08:32,353 INFO    : [Epoch] 16
+2022-12-09 15:11:34,236 INFO    : [Train Metrics] Train Accuracy: 	0.7335209003215434
+2022-12-09 15:11:34,237 INFO    : [Train Metrics] Train Loss: 	1750.4230585098267
+2022-12-09 15:11:34,237 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:11:40,305 INFO    : [Dev Metrics] Dev Accuracy: 	0.6726078799249531
+2022-12-09 15:11:40,306 INFO    : [Dev Metrics] Dev Loss: 	253.39001607894897
+2022-12-09 15:11:45,144 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:11:45,145 INFO    : [Patient] 0
+2022-12-09 15:11:45,146 INFO    : [Epoch] 17
+2022-12-09 15:14:47,159 INFO    : [Train Metrics] Train Accuracy: 	0.7416934619506966
+2022-12-09 15:14:47,160 INFO    : [Train Metrics] Train Loss: 	1765.4912929534912
+2022-12-09 15:14:47,161 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:14:53,233 INFO    : [Dev Metrics] Dev Accuracy: 	0.675891181988743
+2022-12-09 15:14:53,234 INFO    : [Dev Metrics] Dev Loss: 	255.77207040786743
+2022-12-09 15:14:58,085 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:14:58,085 INFO    : [Patient] 0
+2022-12-09 15:14:58,087 INFO    : [Epoch] 18
+2022-12-09 15:17:59,553 INFO    : [Train Metrics] Train Accuracy: 	0.7493301178992497
+2022-12-09 15:17:59,554 INFO    : [Train Metrics] Train Loss: 	1734.0352730751038
+2022-12-09 15:17:59,555 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:18:05,623 INFO    : [Dev Metrics] Dev Accuracy: 	0.6801125703564728
+2022-12-09 15:18:05,623 INFO    : [Dev Metrics] Dev Loss: 	250.99577808380127
+2022-12-09 15:18:10,438 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:18:10,438 INFO    : [Patient] 0
+2022-12-09 15:18:10,439 INFO    : [Epoch] 19
+2022-12-09 15:21:12,366 INFO    : [Train Metrics] Train Accuracy: 	0.7564978563772776
+2022-12-09 15:21:12,367 INFO    : [Train Metrics] Train Loss: 	1737.9596538543701
+2022-12-09 15:21:12,367 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:21:18,428 INFO    : [Dev Metrics] Dev Accuracy: 	0.6848030018761726
+2022-12-09 15:21:18,428 INFO    : [Dev Metrics] Dev Loss: 	251.47308111190796
+2022-12-09 15:21:23,466 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:21:23,467 INFO    : [Patient] 0
+2022-12-09 15:21:23,468 INFO    : [Epoch] 20
+2022-12-09 15:24:25,202 INFO    : [Train Metrics] Train Accuracy: 	0.762459807073955
+2022-12-09 15:24:25,203 INFO    : [Train Metrics] Train Loss: 	1702.5835461616516
+2022-12-09 15:24:25,203 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:24:31,291 INFO    : [Dev Metrics] Dev Accuracy: 	0.6862101313320825
+2022-12-09 15:24:31,291 INFO    : [Dev Metrics] Dev Loss: 	246.56131172180176
+2022-12-09 15:24:36,139 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:24:36,139 INFO    : [Patient] 0
+2022-12-09 15:24:36,141 INFO    : [Epoch] 21
+2022-12-09 15:27:38,172 INFO    : [Train Metrics] Train Accuracy: 	0.7631296891747053
+2022-12-09 15:27:38,173 INFO    : [Train Metrics] Train Loss: 	1776.9082508087158
+2022-12-09 15:27:38,174 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:27:44,251 INFO    : [Dev Metrics] Dev Accuracy: 	0.6871482176360225
+2022-12-09 15:27:44,251 INFO    : [Dev Metrics] Dev Loss: 	257.44556856155396
+2022-12-09 15:27:49,053 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:27:49,054 INFO    : [Patient] 0
+2022-12-09 15:27:49,055 INFO    : [Epoch] 22
+2022-12-09 15:30:50,959 INFO    : [Train Metrics] Train Accuracy: 	0.7466505894962486
+2022-12-09 15:30:50,959 INFO    : [Train Metrics] Train Loss: 	1979.500267982483
+2022-12-09 15:30:50,960 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:30:57,022 INFO    : [Dev Metrics] Dev Accuracy: 	0.6829268292682927
+2022-12-09 15:30:57,022 INFO    : [Dev Metrics] Dev Loss: 	287.2753849029541
+2022-12-09 15:31:01,847 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:31:01,847 INFO    : [Patient] 0
+2022-12-09 15:31:01,848 INFO    : [Epoch] 23
+2022-12-09 15:34:03,639 INFO    : [Train Metrics] Train Accuracy: 	0.7443060021436227
+2022-12-09 15:34:03,639 INFO    : [Train Metrics] Train Loss: 	1937.098738193512
+2022-12-09 15:34:03,640 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:34:09,691 INFO    : [Dev Metrics] Dev Accuracy: 	0.6819887429643527
+2022-12-09 15:34:09,691 INFO    : [Dev Metrics] Dev Loss: 	280.7585473060608
+2022-12-09 15:34:14,491 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:34:14,492 INFO    : [Patient] 0
+2022-12-09 15:34:14,493 INFO    : [Epoch] 24
+2022-12-09 15:37:16,359 INFO    : [Train Metrics] Train Accuracy: 	0.739951768488746
+2022-12-09 15:37:16,360 INFO    : [Train Metrics] Train Loss: 	1949.7732787132263
+2022-12-09 15:37:16,360 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:37:22,435 INFO    : [Dev Metrics] Dev Accuracy: 	0.6852720450281425
+2022-12-09 15:37:22,435 INFO    : [Dev Metrics] Dev Loss: 	283.7374849319458
+2022-12-09 15:37:27,291 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:37:27,292 INFO    : [Patient] 0
+2022-12-09 15:37:27,293 INFO    : [Epoch] 25
+2022-12-09 15:40:29,180 INFO    : [Train Metrics] Train Accuracy: 	0.7416934619506966
+2022-12-09 15:40:29,180 INFO    : [Train Metrics] Train Loss: 	1888.6030173301697
+2022-12-09 15:40:29,181 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:40:35,246 INFO    : [Dev Metrics] Dev Accuracy: 	0.6843339587242027
+2022-12-09 15:40:35,246 INFO    : [Dev Metrics] Dev Loss: 	274.54476833343506
+2022-12-09 15:40:40,054 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:40:40,055 INFO    : [Patient] 0
+2022-12-09 15:40:40,056 INFO    : [Epoch] 26
+2022-12-09 15:43:42,047 INFO    : [Train Metrics] Train Accuracy: 	0.7467845659163987
+2022-12-09 15:43:42,048 INFO    : [Train Metrics] Train Loss: 	1840.3604607582092
+2022-12-09 15:43:42,049 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:43:48,119 INFO    : [Dev Metrics] Dev Accuracy: 	0.6838649155722326
+2022-12-09 15:43:48,120 INFO    : [Dev Metrics] Dev Loss: 	266.5846667289734
+2022-12-09 15:43:52,952 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:43:52,952 INFO    : [Patient] 0
+2022-12-09 15:43:52,954 INFO    : [Epoch] 27
+2022-12-09 15:46:54,877 INFO    : [Train Metrics] Train Accuracy: 	0.7404876741693462
+2022-12-09 15:46:54,878 INFO    : [Train Metrics] Train Loss: 	1906.9207048416138
+2022-12-09 15:46:54,878 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:47:00,943 INFO    : [Dev Metrics] Dev Accuracy: 	0.674953095684803
+2022-12-09 15:47:00,943 INFO    : [Dev Metrics] Dev Loss: 	277.020432472229
+2022-12-09 15:47:05,799 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:47:05,799 INFO    : [Patient] 0
+2022-12-09 15:47:05,801 INFO    : [Epoch] 28
+2022-12-09 15:50:07,606 INFO    : [Train Metrics] Train Accuracy: 	0.7435021436227224
+2022-12-09 15:50:07,606 INFO    : [Train Metrics] Train Loss: 	1835.526725769043
+2022-12-09 15:50:07,607 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:50:13,693 INFO    : [Dev Metrics] Dev Accuracy: 	0.6712007504690432
+2022-12-09 15:50:13,694 INFO    : [Dev Metrics] Dev Loss: 	265.69711112976074
+2022-12-09 15:50:18,546 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:50:18,546 INFO    : [Patient] 0
+2022-12-09 15:50:18,547 INFO    : [Epoch] 29
+2022-12-09 15:53:20,472 INFO    : [Train Metrics] Train Accuracy: 	0.735061629153269
+2022-12-09 15:53:20,473 INFO    : [Train Metrics] Train Loss: 	1916.7362184524536
+2022-12-09 15:53:20,473 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:53:26,568 INFO    : [Dev Metrics] Dev Accuracy: 	0.6712007504690432
+2022-12-09 15:53:26,568 INFO    : [Dev Metrics] Dev Loss: 	277.96894931793213
+2022-12-09 15:53:31,373 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:53:31,373 INFO    : [Patient] 0
+2022-12-09 15:53:31,374 INFO    : [Epoch] 30
+2022-12-09 15:56:33,180 INFO    : [Train Metrics] Train Accuracy: 	0.73760718113612
+2022-12-09 15:56:33,181 INFO    : [Train Metrics] Train Loss: 	1887.4777312278748
+2022-12-09 15:56:33,182 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:56:39,232 INFO    : [Dev Metrics] Dev Accuracy: 	0.6801125703564728
+2022-12-09 15:56:39,232 INFO    : [Dev Metrics] Dev Loss: 	273.48432207107544
+2022-12-09 15:56:44,052 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:56:44,053 INFO    : [Patient] 0
+2022-12-09 15:56:44,054 INFO    : [Epoch] 31
+2022-12-09 15:59:45,871 INFO    : [Train Metrics] Train Accuracy: 	0.740018756698821
+2022-12-09 15:59:45,871 INFO    : [Train Metrics] Train Loss: 	1835.65838098526
+2022-12-09 15:59:45,872 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 15:59:51,928 INFO    : [Dev Metrics] Dev Accuracy: 	0.6782363977485929
+2022-12-09 15:59:51,928 INFO    : [Dev Metrics] Dev Loss: 	265.6974639892578
+2022-12-09 15:59:56,763 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 15:59:56,764 INFO    : [Patient] 0
+2022-12-09 15:59:56,766 INFO    : [Epoch] 32
+2022-12-09 16:02:58,621 INFO    : [Train Metrics] Train Accuracy: 	0.744908896034298
+2022-12-09 16:02:58,621 INFO    : [Train Metrics] Train Loss: 	1811.833800792694
+2022-12-09 16:02:58,622 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:03:04,693 INFO    : [Dev Metrics] Dev Accuracy: 	0.6791744840525328
+2022-12-09 16:03:04,694 INFO    : [Dev Metrics] Dev Loss: 	262.09000873565674
+2022-12-09 16:03:09,525 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:03:09,525 INFO    : [Patient] 0
+2022-12-09 16:03:09,527 INFO    : [Epoch] 33
+2022-12-09 16:06:11,343 INFO    : [Train Metrics] Train Accuracy: 	0.750066988210075
+2022-12-09 16:06:11,344 INFO    : [Train Metrics] Train Loss: 	1803.2667589187622
+2022-12-09 16:06:11,344 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:06:17,415 INFO    : [Dev Metrics] Dev Accuracy: 	0.6838649155722326
+2022-12-09 16:06:17,415 INFO    : [Dev Metrics] Dev Loss: 	260.8618059158325
+2022-12-09 16:06:22,253 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:06:22,254 INFO    : [Patient] 0
+2022-12-09 16:06:22,255 INFO    : [Epoch] 34
+2022-12-09 16:09:24,076 INFO    : [Train Metrics] Train Accuracy: 	0.7546221864951769
+2022-12-09 16:09:24,077 INFO    : [Train Metrics] Train Loss: 	1782.2413935661316
+2022-12-09 16:09:24,078 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:09:30,147 INFO    : [Dev Metrics] Dev Accuracy: 	0.6824577861163227
+2022-12-09 16:09:30,147 INFO    : [Dev Metrics] Dev Loss: 	257.8402409553528
+2022-12-09 16:09:35,041 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:09:35,041 INFO    : [Patient] 0
+2022-12-09 16:09:35,043 INFO    : [Epoch] 35
+2022-12-09 16:12:36,878 INFO    : [Train Metrics] Train Accuracy: 	0.7555600214362272
+2022-12-09 16:12:36,878 INFO    : [Train Metrics] Train Loss: 	1775.988200187683
+2022-12-09 16:12:36,879 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:12:42,938 INFO    : [Dev Metrics] Dev Accuracy: 	0.6801125703564728
+2022-12-09 16:12:42,938 INFO    : [Dev Metrics] Dev Loss: 	257.0180358886719
+2022-12-09 16:12:47,772 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:12:47,772 INFO    : [Patient] 0
+2022-12-09 16:12:47,774 INFO    : [Epoch] 36
+2022-12-09 16:15:49,604 INFO    : [Train Metrics] Train Accuracy: 	0.7585075026795284
+2022-12-09 16:15:49,605 INFO    : [Train Metrics] Train Loss: 	1787.3754782676697
+2022-12-09 16:15:49,606 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:15:55,651 INFO    : [Dev Metrics] Dev Accuracy: 	0.6848030018761726
+2022-12-09 16:15:55,652 INFO    : [Dev Metrics] Dev Loss: 	258.63884687423706
+2022-12-09 16:16:00,467 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:16:00,467 INFO    : [Patient] 0
+2022-12-09 16:16:00,469 INFO    : [Epoch] 37
+2022-12-09 16:19:02,259 INFO    : [Train Metrics] Train Accuracy: 	0.7644694533762058
+2022-12-09 16:19:02,260 INFO    : [Train Metrics] Train Loss: 	1756.2892994880676
+2022-12-09 16:19:02,261 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:19:08,325 INFO    : [Dev Metrics] Dev Accuracy: 	0.6805816135084428
+2022-12-09 16:19:08,326 INFO    : [Dev Metrics] Dev Loss: 	254.14229202270508
+2022-12-09 16:19:13,160 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:19:13,160 INFO    : [Patient] 0
+2022-12-09 16:19:13,162 INFO    : [Epoch] 38
+2022-12-09 16:22:15,081 INFO    : [Train Metrics] Train Accuracy: 	0.7655412647374062
+2022-12-09 16:22:15,082 INFO    : [Train Metrics] Train Loss: 	1749.2492904663086
+2022-12-09 16:22:15,083 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:22:21,141 INFO    : [Dev Metrics] Dev Accuracy: 	0.6890243902439024
+2022-12-09 16:22:21,142 INFO    : [Dev Metrics] Dev Loss: 	253.20975971221924
+2022-12-09 16:22:26,158 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:22:26,158 INFO    : [Patient] 0
+2022-12-09 16:22:26,160 INFO    : [Epoch] 39
+2022-12-09 16:25:27,916 INFO    : [Train Metrics] Train Accuracy: 	0.7698285101822079
+2022-12-09 16:25:27,917 INFO    : [Train Metrics] Train Loss: 	1758.2036995887756
+2022-12-09 16:25:27,918 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:25:33,995 INFO    : [Dev Metrics] Dev Accuracy: 	0.6857410881801126
+2022-12-09 16:25:33,995 INFO    : [Dev Metrics] Dev Loss: 	254.4976363182068
+2022-12-09 16:25:45,556 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:25:45,561 INFO    : [Patient] 0
+2022-12-09 16:25:45,593 INFO    : [Epoch] 40
+2022-12-09 16:28:46,937 INFO    : [Train Metrics] Train Accuracy: 	0.7744506966773848
+2022-12-09 16:28:46,938 INFO    : [Train Metrics] Train Loss: 	1734.038664340973
+2022-12-09 16:28:46,939 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:28:53,027 INFO    : [Dev Metrics] Dev Accuracy: 	0.6871482176360225
+2022-12-09 16:28:53,027 INFO    : [Dev Metrics] Dev Loss: 	250.8421607017517
+2022-12-09 16:28:57,906 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:28:57,906 INFO    : [Patient] 0
+2022-12-09 16:28:57,908 INFO    : [Epoch] 41
+2022-12-09 16:31:59,829 INFO    : [Train Metrics] Train Accuracy: 	0.7772642015005359
+2022-12-09 16:31:59,830 INFO    : [Train Metrics] Train Loss: 	1753.6103615760803
+2022-12-09 16:31:59,831 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:32:05,910 INFO    : [Dev Metrics] Dev Accuracy: 	0.6885553470919324
+2022-12-09 16:32:05,910 INFO    : [Dev Metrics] Dev Loss: 	254.01043939590454
+2022-12-09 16:32:10,812 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:32:10,812 INFO    : [Patient] 0
+2022-12-09 16:32:10,814 INFO    : [Epoch] 42
+2022-12-09 16:35:12,617 INFO    : [Train Metrics] Train Accuracy: 	0.7812834941050375
+2022-12-09 16:35:12,617 INFO    : [Train Metrics] Train Loss: 	1723.790735244751
+2022-12-09 16:35:12,618 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:35:18,677 INFO    : [Dev Metrics] Dev Accuracy: 	0.6857410881801126
+2022-12-09 16:35:18,678 INFO    : [Dev Metrics] Dev Loss: 	249.48325538635254
+2022-12-09 16:35:23,513 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:35:23,513 INFO    : [Patient] 0
+2022-12-09 16:35:23,515 INFO    : [Epoch] 43
+2022-12-09 16:38:25,218 INFO    : [Train Metrics] Train Accuracy: 	0.7854367631296891
+2022-12-09 16:38:25,218 INFO    : [Train Metrics] Train Loss: 	1723.300696849823
+2022-12-09 16:38:25,219 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:38:31,296 INFO    : [Dev Metrics] Dev Accuracy: 	0.6843339587242027
+2022-12-09 16:38:31,296 INFO    : [Dev Metrics] Dev Loss: 	249.3510241508484
+2022-12-09 16:38:36,127 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:38:36,127 INFO    : [Patient] 0
+2022-12-09 16:38:36,129 INFO    : [Epoch] 44
+2022-12-09 16:41:37,791 INFO    : [Train Metrics] Train Accuracy: 	0.7891881028938906
+2022-12-09 16:41:37,792 INFO    : [Train Metrics] Train Loss: 	1718.6167259216309
+2022-12-09 16:41:37,792 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:41:43,849 INFO    : [Dev Metrics] Dev Accuracy: 	0.6843339587242027
+2022-12-09 16:41:43,849 INFO    : [Dev Metrics] Dev Loss: 	248.8798770904541
+2022-12-09 16:41:48,691 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:41:48,691 INFO    : [Patient] 0
+2022-12-09 16:41:48,694 INFO    : [Epoch] 45
+2022-12-09 16:44:50,628 INFO    : [Train Metrics] Train Accuracy: 	0.7937433011789925
+2022-12-09 16:44:50,629 INFO    : [Train Metrics] Train Loss: 	1701.3414015769958
+2022-12-09 16:44:50,629 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:44:56,721 INFO    : [Dev Metrics] Dev Accuracy: 	0.6866791744840526
+2022-12-09 16:44:56,721 INFO    : [Dev Metrics] Dev Loss: 	246.26817512512207
+2022-12-09 16:45:01,568 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:45:01,568 INFO    : [Patient] 0
+2022-12-09 16:45:01,570 INFO    : [Epoch] 46
+2022-12-09 16:48:03,406 INFO    : [Train Metrics] Train Accuracy: 	0.79997320471597
+2022-12-09 16:48:03,407 INFO    : [Train Metrics] Train Loss: 	1703.950436592102
+2022-12-09 16:48:03,408 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:48:09,449 INFO    : [Dev Metrics] Dev Accuracy: 	0.6852720450281425
+2022-12-09 16:48:09,449 INFO    : [Dev Metrics] Dev Loss: 	246.58731985092163
+2022-12-09 16:48:14,311 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:48:14,311 INFO    : [Patient] 0
+2022-12-09 16:48:14,313 INFO    : [Epoch] 47
+2022-12-09 16:51:15,597 INFO    : [Train Metrics] Train Accuracy: 	0.8018488745980707
+2022-12-09 16:51:15,598 INFO    : [Train Metrics] Train Loss: 	1688.6575565338135
+2022-12-09 16:51:15,599 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:51:21,624 INFO    : [Dev Metrics] Dev Accuracy: 	0.6871482176360225
+2022-12-09 16:51:21,625 INFO    : [Dev Metrics] Dev Loss: 	244.39155101776123
+2022-12-09 16:51:26,491 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:51:26,491 INFO    : [Patient] 0
+2022-12-09 16:51:26,493 INFO    : [Epoch] 48
+2022-12-09 16:54:31,415 INFO    : [Train Metrics] Train Accuracy: 	0.8077438370846731
+2022-12-09 16:54:31,415 INFO    : [Train Metrics] Train Loss: 	1684.8576488494873
+2022-12-09 16:54:31,416 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:54:38,142 INFO    : [Dev Metrics] Dev Accuracy: 	0.6876172607879925
+2022-12-09 16:54:38,142 INFO    : [Dev Metrics] Dev Loss: 	243.71736192703247
+2022-12-09 16:54:43,025 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:54:43,025 INFO    : [Patient] 0
+2022-12-09 16:54:43,027 INFO    : [Epoch] 49
+2022-12-09 16:58:25,067 INFO    : [Train Metrics] Train Accuracy: 	0.8119640943193998
+2022-12-09 16:58:25,068 INFO    : [Train Metrics] Train Loss: 	1662.9727230072021
+2022-12-09 16:58:25,069 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 16:58:32,828 INFO    : [Dev Metrics] Dev Accuracy: 	0.6885553470919324
+2022-12-09 16:58:32,830 INFO    : [Dev Metrics] Dev Loss: 	240.57970190048218
+2022-12-09 16:58:37,759 INFO    : [Saving] Saving Model to ./output/saved_model/cl_cossim_devload_hnw0_1e-5_bs64_50e_seed42_discriminate_gpt2
+2022-12-09 16:58:37,759 INFO    : [Patient] 0
