@@ -1,0 +1,17 @@
+2022-12-09 03:02:09,219 INFO    : === hps ===
+Namespace(data_dir='../data/Causal_Reasoning/', model_dir='../../huggingface_transformers/bert-base-cased/', save_dir='./output/saved_model', log_dir='./output/log', apex_dir='./output/log', output_dir='.', train='train.jsonl', dev='dev.jsonl', test='test.jsonl', with_kb='True', model_name='bert', save_name=None, data_name='copa', cuda=True, gpu='0', batch_size=2, shuffle=False, epochs=10, evaluation_strategy='step', evaluation_step=250, lr=1e-05, set_seed=True, seed=338, patient=3, loss_func='BCE', hyp_only=False, prompt=None, nowtime='20221209_030209')
+2022-12-09 03:02:09,219 INFO    : [DATA] Loading Data
+2022-12-09 03:02:09,220 INFO    : [DATA] Hypothesis Only: False
+2022-12-09 03:14:45,938 INFO    : === hps ===
+Namespace(data_dir='./data/Causal_Reasoning/', model_dir='./../huggingface_transformers/bert-base-cased/', save_dir='./output/saved_model', log_dir='./output/log', apex_dir='./output/log', output_dir='.', train='train.jsonl', dev='dev.jsonl', test='test.jsonl', with_kb='True', model_name='bert', save_name=None, data_name='copa', cuda=True, gpu='0', batch_size=2, shuffle=False, epochs=10, evaluation_strategy='step', evaluation_step=250, lr=1e-05, set_seed=True, seed=338, patient=3, loss_func='BCE', hyp_only=False, prompt=None, nowtime='20221209_031445')
+2022-12-09 03:14:45,938 INFO    : [DATA] Loading Data
+2022-12-09 03:14:45,938 INFO    : [DATA] Hypothesis Only: False
+2022-12-09 03:14:46,075 INFO    : [DATA] Tokenization and Padding for Data
+2022-12-09 03:16:19,349 INFO    : === hps ===
+Namespace(data_dir='./data/Causal_Reasoning/', model_dir='bert-base-cased', save_dir='./output/saved_model', log_dir='./output/log', apex_dir='./output/log', output_dir='.', train='train.jsonl', dev='dev.jsonl', test='test.jsonl', with_kb='True', model_name='bert', save_name=None, data_name='copa', cuda=True, gpu='0', batch_size=2, shuffle=False, epochs=10, evaluation_strategy='step', evaluation_step=250, lr=1e-05, set_seed=True, seed=338, patient=3, loss_func='BCE', hyp_only=False, prompt=None, nowtime='20221209_031619')
+2022-12-09 03:16:19,349 INFO    : [DATA] Loading Data
+2022-12-09 03:16:19,349 INFO    : [DATA] Hypothesis Only: False
+2022-12-09 03:16:19,472 INFO    : [DATA] Tokenization and Padding for Data
+2022-12-09 03:19:04,596 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-12-09 03:19:04,655 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-12-09 03:19:04,655 INFO    : [MODEL] bert

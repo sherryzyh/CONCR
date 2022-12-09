@@ -42,9 +42,9 @@ def parse_hps():
     parser.add_argument('--cuda', type=bool, default=True, help='Whether to use gpu for training')
     parser.add_argument('--gpu', type=str, default='0', help='Gpu ids for training')
     # parser.add_argument('--apex', type=bool, default=False, help='Whether to use half precision')
-    parser.add_argument('--batch_size', type=int, default=10, help='batch_size for training and evaluation')
+    parser.add_argument('--batch_size', type=int, default=64, help='batch_size for training and evaluation')
     parser.add_argument('--shuffle', type=bool, default=False, help='whether to shuffle training data')
-    parser.add_argument('--epochs', type=int, default=200, help='training iterations')
+    parser.add_argument('--epochs', type=int, default=10, help='training iterations')
     parser.add_argument('--evaluation_strategy', type=str, default="step", help="evaluation metric [step] [epoch]")
     parser.add_argument('--evaluation_step', type=int, default=20,
                         help='when training for some steps, start evaluation')

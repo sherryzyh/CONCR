@@ -4,9 +4,9 @@ import pandas as pd
 import torch
 from transformers import BertTokenizer, RobertaTokenizer
 import numpy as np
-from graph import GraphUtils
-from utils import load_pretrained_tokenizer
-from kb_dataset import MyDataset
+from utils.graph import GraphUtils
+from utils.utils import load_pretrained_tokenizer
+from utils.kb_dataset import MyDataset
 
 def get_all_features(data, hps, max_seq_length=128):
     semantic_features = get_features_with_kbert(data, hps,

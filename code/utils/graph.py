@@ -5,7 +5,7 @@ import pickle
 from transformers import BertTokenizer, RobertaTokenizer
 from collections import defaultdict
 from bidict import bidict
-from text2uri import standardized_uri
+from utils.text2uri import standardized_uri
 import numpy as np
 import re
 import string

@@ -1,6 +1,6 @@
-python3 train_discriminate.py \
-  --data_dir "../data/Causal_Reasoning/" \
-  --model_dir "../../huggingface_transformers/bert-base-cased/" \
+python3 code/train_discriminate.py \
+  --data_dir "./data/Causal_Reasoning/" \
+  --model_dir "bert-base-cased" \
   --save_dir "./output/saved_model" \
   --log_dir "./output/log" \
   --train "train.jsonl" \
@@ -9,12 +9,12 @@ python3 train_discriminate.py \
   --model_name "bert" \
   --gpu "0" \
   --batch_size 2 \
-  --cuda True\
+  --cuda true\
   --epochs 10 \
   --evaluation_step 250 \
   --lr 1e-5 \
-  --set_seed True \
-  --seed 338 \
+  --set_seed true \
+  --seed 42 \
   --patient 3 \
   --loss_func "BCE" \
-  --with_kb True
+  --with_kb true
