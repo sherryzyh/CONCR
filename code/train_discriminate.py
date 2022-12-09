@@ -49,8 +49,8 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             best_accuracy = dev_accu
             if not os.path.exists(hps.save_dir):
                 os.mkdir(hps.save_dir)
-            logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-            torch.save(model, os.path.join(hps.save_dir, exp_name))
+            save_model(model, hps, exp_name)
+            logger.info("[Saving] Saving Model to {}".format(os.path.join(hps.save_dir, exp_name)))
 
         else:
             patient += 1

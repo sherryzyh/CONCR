@@ -1,5 +1,6 @@
 import pickle
 import argparse
+import os
 import numpy as np
 from transformers import BertTokenizer, RobertaTokenizer, AlbertTokenizer, OpenAIGPTTokenizer, XLNetTokenizer
 from transformers import GPT2Tokenizer, BartTokenizer
@@ -1016,3 +1017,11 @@ def bart_evaluate(model, data_loader, hps):
     writer.writerows(output_text)
 
     return bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances, rouge1r / num_instances, rouge2r / num_instances, rougelr / num_instances
+
+
+def save_model(model, hps, exp_name, mode="best"):
+    model_path = os.path.join(hps.save_dir, exp_name)
+    if not os.path.exists(model_path):
+        os.mkdir(model_path)
+    if mode == "best":
+        torch.save(model, os.path.join(model_path, "best_acc_ckpt.pt"))

@@ -1,5 +1,6 @@
 import argparse
-from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, contrastive_tokenize, load_loss_function, evaluation, cl_evaluation, define_logger
+from utils.utils import parse_hps, get_exp_name, load_data, quick_tokenize, contrastive_tokenize, load_loss_function, \
+    evaluation, cl_evaluation, define_logger, save_model
 import random
 import numpy as np
 import torch
@@ -38,8 +39,9 @@ def CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, lo
             best_accuracy = dev_accu
             if not os.path.exists(hps.save_dir):
                 os.mkdir(hps.save_dir)
-            logger.info("[Saving] Saving Model to {}".format(hps.save_dir))
-            torch.save(model, os.path.join(hps.save_dir, exp_name))
+            save_model(model, hps, exp_name)
+            logger.info("[Saving] Saving Model to {}".format(os.path.join(hps.save_dir, exp_name)))
+
 
         else:
             patient += 1
@@ -84,7 +86,7 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
                 patient, stop_train = CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
-                                               hps, exp_name)
+                                                  hps, exp_name)
                 if stop_train:
                     return
             step += 1
@@ -96,9 +98,10 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
 
         if hps.evaluation_strategy == "epoch":
             patient, stop_train = CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
-                                           exp_name)
+                                              exp_name)
         if stop_train:
             return
+
 
 def main():
     # parse hyper parameters
