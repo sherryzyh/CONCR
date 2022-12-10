@@ -1,5 +1,5 @@
 import argparse
-from utils.utils import load_data, define_logger, tokenize_gen, evaluate_gpt2, gpt2_evaluate, compute_ppl
+from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, define_logger, tokenize_gen, gpt2_eg_evaluate, compute_ppl
 import random
 import numpy as np
 import torch
@@ -18,45 +18,10 @@ from collections import defaultdict
 import json
 
 def main():
-    parser = argparse.ArgumentParser(description='xCAR')
-
-    # Data Paths
-    parser.add_argument('--data_dir', type=str, default='./data/', help='The dataset directory')
-    parser.add_argument('--model_dir', type=str, default='../../huggingface_transformers/gpt2/',
-                        help='The pretrained model directory')
-    parser.add_argument('--save_dir', type=str, default='./output/saved_model', help='The model saving directory')
-    parser.add_argument('--log_dir', type=str, default='./output/log', help='The training log directory')
-    parser.add_argument('--apex_dir', type=str, default='./output/log', help='The apex directory')
-
-    # Data names
-    parser.add_argument('--train', type=str, default='train_gen.pkl', help='The train data directory')
-    parser.add_argument('--dev', type=str, default='dev_gen.pkl', help='The dev data directory')
-    parser.add_argument('--test', type=str, default='test_gen.pkl', help='The test data directory')
-
-    # Model Settings
-    parser.add_argument('--model_name', type=str, default='gpt2', help='Pretrained model name')
-    parser.add_argument('--cuda', type=bool, default=True, help='Whether to use gpu for training')
-    parser.add_argument('--gpu', type=str, default='0', help='Gpu ids for training')
-    parser.add_argument('--batch_size', type=int, default=32, help='batch_size for training and evaluation')
-    parser.add_argument('--shuffle', type=bool, default=False, help='whether to shuffle training data')
-    parser.add_argument('--epochs', type=int, default=200, help='training iterations')
-    parser.add_argument('--evaluation_step', type=int, default=100,
-                        help='when training for some steps, start evaluation')
-    parser.add_argument('--lr', type=float, default=1e-5, help='the learning rate of training')
-    parser.add_argument('--set_seed', type=bool, default=True, help='Whether to fix the random seed')
-    parser.add_argument('--seed', type=int, default=1024, help='fix the random seed for reproducible')
-    parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
-    parser.add_argument('--length', type=int, default=22, help='the max length of generated text')
-    parser.add_argument('--output_dir', type=str, default='../analysis/raw_output')
-
-    # parsing the hyper-parameters from command line and define logger
-    hps = parser.parse_args()
-    logger, formatter = define_logger()
-    nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    log_path = os.path.join(hps.log_dir, 'prompt1_generated_'+hps.model_name+'.txt')
-    file_handler = logging.FileHandler(log_path)
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    # parse hyper parameters
+    hps = parse_hps()
+    exp_name = get_exp_name(hps, "generate")
+    exp_path = get_exp_path(hps, exp_name)
 
     # fix random seed
     if hps.set_seed:
@@ -64,6 +29,22 @@ def main():
         np.random.seed(hps.seed)
         torch.manual_seed(hps.seed)
         torch.cuda.manual_seed(hps.seed)
+
+
+    # prepare logger
+    logger, formatter = define_logger()
+    log_path = os.path.join(hps.log_dir, 'prompt1_generated_'+hps.model_name+'.txt')
+    log_path = os.path.join(exp_path, exp_name + ".txt")
+
+    nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    file_handler = logging.FileHandler(log_path)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    # logging all the hyper parameters
+    logger.info(f"=== hps ===\n{hps}")
+
+    logger.info(f"[INFO] Experiment Path: {exp_path}")
 
     # load data
     # logger.info("[Pytorch] %s", torch.)
@@ -97,8 +78,9 @@ def main():
 
     # Multi-Gpu training
     if hps.cuda:
-        gpu_ids = [int(x) for x in hps.gpu.split(' ')]
-        model.cuda(gpu_ids[0])
+        gpu_ids = [int(x) for x in hps.gpu.split(',')]
+        device = f"cuda:{hps.gpu}"
+        model = model.to(device)
         if len(gpu_ids) > 1:
             model = nn.DataParallel(model, device_ids=gpu_ids)
 
@@ -118,7 +100,8 @@ def main():
             optimizer.zero_grad()
             model.train()
             if hps.cuda:
-                batch = tuple(term.cuda() for term in batch)
+                device = f"cuda:{hps.gpu}"
+                batch = tuple(term.to(device) for term in batch)
 
             input_ids, input_mask, input_seg_ids, input_labels, input_labels_mask = batch
             # pdb.set_trace()
@@ -154,7 +137,7 @@ def main():
         # with torch.no_grad():
         print('\n')
         logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
-        evaluation_output = gpt2_evaluate(model, hps.length, dev_dataloader, hps, epoch)
+        evaluation_output = gpt2_eg_evaluate(model, hps.length, dev_dataloader, hps, epoch)
         dev_ppl = compute_ppl(hps, model, dev_data)
         metric_log[f'epoch_{epoch}'].update(evaluation_output)
         metric_log[f'epoch_{epoch}']['perplexity'] = dev_ppl
@@ -174,7 +157,7 @@ def main():
             torch.save(model, os.path.join(hps.save_dir, '{}_{}'.format('generated', hps.model_name)))
             # logger.info("[Test Evaluation] Start Evaluation on Test Set")
 
-            # test_bleu1, test_bleu2, test_bleu3, test_bleu4, test_rouge1, test_rouge2, test_rougel = gpt2_evaluate(model, hps.length, test_dataloader, hps)
+            # test_bleu1, test_bleu2, test_bleu3, test_bleu4, test_rouge1, test_rouge2, test_rougel = gpt2_eg_evaluate(model, hps.length, test_dataloader, hps)
             
             # print('\n')
             # logger.info("[TEST Metrics] Test BLEU: \t({}, {}, {}, {})".format(test_bleu1, test_bleu2, test_bleu3, test_bleu4))

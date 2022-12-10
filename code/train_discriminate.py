@@ -73,7 +73,8 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             optimizer.zero_grad()
             model.train()
             if hps.cuda:
-                batch = tuple(term.cuda() for term in batch)
+                device = f"cuda:{hps.gpu}"
+                batch = tuple(term.to(device) for term in batch)
             if not hps.with_kb:
                 sent, seg_id, attention_mask, labels, length = batch
                 probs = model(sent, attention_mask, seg_ids=seg_id, length=length)
@@ -184,7 +185,8 @@ def main():
     # multi-Gpu training
     if hps.cuda:
         gpu_ids = [int(x) for x in hps.gpu.split(',')]
-        model = model.cuda()
+        device = f"cuda:{hps.gpu}"
+        model = model.to(device)
         if len(gpu_ids) > 1:
             model = nn.DataParallel(model, device_ids=gpu_ids)
             # model = nn.parallel.DistributedDataParallel(model, device_ids=gpu_ids)

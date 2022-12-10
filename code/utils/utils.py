@@ -70,9 +70,9 @@ def parse_hps():
     # Method Settings
     parser.add_argument('--with_kb', type=str, default=False, help='Whether to use knowledge base')
     parser.add_argument('--with_cl', type=str, default=False, help='Whether to use knowledge base')
-    parser.add_argument('--prompt', type=str, default=None, help="prompt template")
     parser.add_argument('--score', type=str, default="cossim", help="scorer type")
     parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
+    parser.add_argument('--prompt', type=str, default=None, help="prompt template, options: [T0][T1][T2] etc.")
 
     # parsing the hyper-parameters from command line and define logger
     hps = parser.parse_args()
@@ -90,7 +90,11 @@ def get_exp_name(hps, task):
         exp_name = "kb_" + exp_name
     if hps.with_cl:
         exp_name = "cl_" + exp_name
-
+    if task == "generate":
+        if hps.prompt is None:
+            exp_name = "vanilla_" + exp_name
+        else:
+            exp_name = hps.prompt + "_" + exp_name
     return exp_name
 
 
@@ -650,6 +654,106 @@ def cr_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mo
 
     return count / len(true_labels), loss
 
+# called in gpt2_generate.py
+def gpt2_eg_evaluate(model, length, data_loader, hps, epoch):
+    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
+    val_loss = 0
+    bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
+    rouge1r, rouge2r, rougelr = 0, 0, 0
+    rouge = Rouge()
+    output_text = []
+    nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    for batch in data_loader:
+        if hps.cuda:
+            device = f"cuda:{hps.gpu}"
+            batch = tuple(term.to(device) for term in batch)
+
+        input_ids, input_mask, input_seg_ids, gen_ids, gen_mask, _, premise_ids, premise_mask, premise_token_type_ids = batch  # dev
+        tmp = torch.ones(gen_mask.shape).long()
+        count_mask_length = torch.sum(tmp == gen_mask.cpu(), 1).squeeze().tolist()
+        true_labels = None
+        for j in range(input_ids.shape[0]):
+            if true_labels is None:
+                # true_labels = torch.cat((torch.ones(count_mask_length[j]).long(), input_ids[j, count_mask_length[j]:].cpu())).unsqueeze(0)
+                true_labels = torch.cat(
+                    (input_ids[j, :-count_mask_length[j]] * 0 - 100, input_ids[j, -count_mask_length[j]:])).unsqueeze(0)
+            else:
+                # true_labels = torch.cat((true_labels, torch.cat((torch.ones(count_mask_length[j]).long(), input_ids[j, count_mask_length[j]:].cpu())).unsqueeze(0)), 0)
+                true_labels = torch.cat((true_labels, torch.cat(
+                    (input_ids[j, :-count_mask_length[j]] * 0 - 100, input_ids[j, -count_mask_length[j]:])).unsqueeze(
+                    0)), 0)
+
+        output = model(input_ids=input_ids, attention_mask=input_mask, token_type_ids=input_seg_ids, labels=true_labels)
+        loss = output[0]
+        val_loss += loss.item()
+
+        # output = sample_sequence(model, length, device='cuda', context=premise_ids, batch_size=hps.batch_size, attention_mask=premise_mask, input_type='ids')
+        generated = model.generate(input_ids=premise_ids,
+                                   attention_mask=premise_mask,
+                                   max_length=length + premise_ids.shape[1],
+                                   num_beams=5,
+                                   early_stopping=True,
+                                   do_sample=True,
+                                   no_repeat_ngram_size=3,
+                                   repetition_penalty=1.5
+                                   )
+
+        # generated = output[:, premise_ids.shape[1]:]
+        # pdb.set_trace()
+        generated = generated[:, premise_ids.shape[1]:]
+
+        generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                          generated.cpu().tolist()]
+        gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                     gen_ids.cpu().tolist()]
+        input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                      premise_ids]
+        output_text += [[generated_text[i].split('.')[0] + '.'] for i in range(len(input_text))]
+
+        for i in range(generated.shape[0]):
+            # predict_tokens = tokenizer.convert_ids_to_tokens(generated[i])
+            # generated_text = remove_special_tokens(tokenizer.convert_tokens_to_string(predict_tokens))
+
+            # gold_tokens = tokenizer.convert_ids_to_tokens(gen_ids[i])
+            # gold_text = remove_special_tokens(tokenizer.convert_tokens_to_string(gold_tokens))
+
+            bleu1 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [1, 0, 0, 0])
+            bleu2 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 1, 0, 0])
+            bleu3 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 0, 1, 0])
+            bleu4 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 0, 0, 1])
+
+            try:
+                scores = rouge.get_scores(generated_text[i], gold_text[i])
+                rouge1r += scores[0]['rouge-1']['r']
+                rouge2r += scores[0]['rouge-2']['r']
+                rougelr += scores[0]['rouge-l']['r']
+            except:
+                continue
+
+    num_instances = (len(data_loader) - 1) * hps.batch_size + gen_ids.shape[0]
+
+    evaluation_output = dict(
+        val_loss=val_loss * 100,
+        bleu1=bleu1,
+        bleu2=bleu2,
+        bleu3=bleu3,
+        bleu4=bleu4,
+        avg_bleu=sum([bleu1, bleu2, bleu3, bleu4]) / 4,
+        rouge1=rouge1r,
+        rouge2=rouge2r,
+        rougel=rougelr
+    )
+    for metric in evaluation_output.keys():
+        evaluation_output[metric] /= num_instances
+
+    with open(hps.output_dir + f'/gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerows(output_text)
+
+    return evaluation_output
+
+
 
 """
     Misc.
@@ -828,105 +932,6 @@ def sample_sequence(model, length, start_token=None, batch_size=None, context=No
             attention_mask = torch.cat((attention_mask, torch.ones(prev.shape).long().cuda()), -1)
     return output if input_type == 'ids' else output_id
 
-
-# called in gpt2_generate.py
-def gpt2_evaluate(model, length, data_loader, hps, epoch):
-    tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
-    val_loss = 0
-    bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
-    rouge1r, rouge2r, rougelr = 0, 0, 0
-    rouge = Rouge()
-    output_text = []
-    nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-
-    for batch in data_loader:
-        if hps.cuda:
-            device = f"cuda:{hps.gpu}"
-            batch = tuple(term.to(device) for term in batch)
-
-        input_ids, input_mask, input_seg_ids, gen_ids, gen_mask, _, premise_ids, premise_mask, premise_token_type_ids = batch  # dev
-        tmp = torch.ones(gen_mask.shape).long()
-        count_mask_length = torch.sum(tmp == gen_mask.cpu(), 1).squeeze().tolist()
-        true_labels = None
-        for j in range(input_ids.shape[0]):
-            if true_labels is None:
-                # true_labels = torch.cat((torch.ones(count_mask_length[j]).long(), input_ids[j, count_mask_length[j]:].cpu())).unsqueeze(0)
-                true_labels = torch.cat(
-                    (input_ids[j, :-count_mask_length[j]] * 0 - 100, input_ids[j, -count_mask_length[j]:])).unsqueeze(0)
-            else:
-                # true_labels = torch.cat((true_labels, torch.cat((torch.ones(count_mask_length[j]).long(), input_ids[j, count_mask_length[j]:].cpu())).unsqueeze(0)), 0)
-                true_labels = torch.cat((true_labels, torch.cat(
-                    (input_ids[j, :-count_mask_length[j]] * 0 - 100, input_ids[j, -count_mask_length[j]:])).unsqueeze(
-                    0)), 0)
-
-        output = model(input_ids=input_ids, attention_mask=input_mask, token_type_ids=input_seg_ids, labels=true_labels)
-        loss = output[0]
-        val_loss += loss.item()
-
-        # output = sample_sequence(model, length, device='cuda', context=premise_ids, batch_size=hps.batch_size, attention_mask=premise_mask, input_type='ids')
-        generated = model.generate(input_ids=premise_ids,
-                                   attention_mask=premise_mask,
-                                   max_length=length + premise_ids.shape[1],
-                                   num_beams=5,
-                                   early_stopping=True,
-                                   do_sample=True,
-                                   no_repeat_ngram_size=3,
-                                   repetition_penalty=1.5
-                                   )
-
-        # generated = output[:, premise_ids.shape[1]:]
-        # pdb.set_trace()
-        generated = generated[:, premise_ids.shape[1]:]
-
-        generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
-                          generated.cpu().tolist()]
-        gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
-                     gen_ids.cpu().tolist()]
-        input_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
-                      premise_ids]
-        output_text += [[generated_text[i].split('.')[0] + '.'] for i in range(len(input_text))]
-
-        for i in range(generated.shape[0]):
-            # predict_tokens = tokenizer.convert_ids_to_tokens(generated[i])
-            # generated_text = remove_special_tokens(tokenizer.convert_tokens_to_string(predict_tokens))
-
-            # gold_tokens = tokenizer.convert_ids_to_tokens(gen_ids[i])
-            # gold_text = remove_special_tokens(tokenizer.convert_tokens_to_string(gold_tokens))
-
-            bleu1 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [1, 0, 0, 0])
-            bleu2 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 1, 0, 0])
-            bleu3 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 0, 1, 0])
-            bleu4 += bleu([gold_text[i]], generated_text[i].split('.')[0] + '.', [0, 0, 0, 1])
-
-            try:
-                scores = rouge.get_scores(generated_text[i], gold_text[i])
-                rouge1r += scores[0]['rouge-1']['r']
-                rouge2r += scores[0]['rouge-2']['r']
-                rougelr += scores[0]['rouge-l']['r']
-            except:
-                continue
-
-    num_instances = (len(data_loader) - 1) * hps.batch_size + gen_ids.shape[0]
-
-    evaluation_output = dict(
-        val_loss=val_loss * 100,
-        bleu1=bleu1,
-        bleu2=bleu2,
-        bleu3=bleu3,
-        bleu4=bleu4,
-        avg_bleu=sum([bleu1, bleu2, bleu3, bleu4]) / 4,
-        rouge1=rouge1r,
-        rouge2=rouge2r,
-        rougel=rougelr
-    )
-    for metric in evaluation_output.keys():
-        evaluation_output[metric] /= num_instances
-
-    with open(hps.output_dir + f'/gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerows(output_text)
-
-    return evaluation_output
 
 
 def bart_evaluate(model, data_loader, hps):
