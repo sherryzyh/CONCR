@@ -10,6 +10,7 @@ try.sh
 exp.sh
 longexp.sh
 *.sh
+*.pem
 huggingface_cache/
 output/saved_model/
 output/log/test_*
