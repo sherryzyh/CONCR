@@ -423,7 +423,8 @@ def tokenize_gen(data, hps):
         else:
             return
 
-    print(input)
+    print("here")
+    print(inputs)
     if hps.model_name == 'bart':
         outputs = tokenizer(inputs, padding=True)
         input_ids = torch.LongTensor(outputs['input_ids'])
