@@ -1,6 +1,6 @@
 import argparse
 from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, contrastive_tokenize, load_loss_function, \
-    evaluation, cl_evaluation, define_logger, save_model, save_metric_log
+    cl_evaluation, define_logger, save_model, save_metric_log
 import random
 import numpy as np
 import torch
@@ -16,7 +16,7 @@ import datetime
 import logging
 
 
-def CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, exp_name, mode="dev"):
+def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, eval_step, exp_name, exp_path, mode="dev"):
     model.eval()
     stop_train = False
 
@@ -24,12 +24,12 @@ def CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, lo
         print('\n')
         logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
         if hps.loss_func == 'CrossEntropy':
-            dev_accu, dev_exact_accu, dev_loss = cl_evaluation(hps, dev_dataloader, model, loss_function)
+            dev_accu, dev_exact_accu, dev_loss = cl_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path)
             print('\n')
             logger.info("[Dev Metrics] Dev Soft Accuracy: \t{}".format(dev_accu))
             logger.info("[Dev Metrics] Dev Exact Accuracy: \t{}".format(dev_exact_accu))
         else:
-            dev_accu, dev_loss = cl_evaluation(hps, dev_dataloader, model, loss_function)
+            dev_accu, dev_loss = cl_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path)
             print('\n')
             logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
         logger.info("[Dev Metrics] Dev Loss: \t{}".format(dev_loss))
@@ -53,7 +53,7 @@ def CL_evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, lo
     return patient, stop_train, dev_accu, dev_loss
 
 
-def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps, exp_name):
+def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps, exp_name, exp_path):
     logger.info("[INFO] Start Training")
     step = 0
     patient = 0
@@ -87,24 +87,21 @@ def CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, 
             optimizer.step()
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
-                patient, stop_train, dev_accu, dev_loss = CL_evaluate(model, dev_dataloader, patient, best_accuracy,
-                                                                      loss_function, logger,
-                                                                      hps, exp_name)
+                patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, step, exp_name, exp_path)
+                metric_log[f'step_{step}']['dev_accu'] = dev_accu
+                metric_log[f'step_{step}']['dev_loss'] = dev_loss
                 if stop_train:
                     return
             step += 1
 
-        if hps.loss_func == 'BCE':
-            train_accu, train_loss = cl_evaluation(hps, train_dataloader, model, loss_function)
+        train_accu, train_loss = cl_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path, print_pred=False)
         logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
         logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
         metric_log[f'epoch_{epoch}']['train_accu'] = train_accu
         metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
 
         if hps.evaluation_strategy == "epoch":
-            patient, stop_train, dev_accu, dev_loss = CL_evaluate(model, dev_dataloader, patient, best_accuracy,
-                                                                  loss_function, logger, hps,
-                                                                  exp_name)
+            patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, exp_name, exp_path)
             metric_log[f'epoch_{epoch}']['dev_accu'] = dev_accu
             metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
 
@@ -118,6 +115,7 @@ def main():
     # parse hyper parameters
     hps = parse_hps()
     exp_name = get_exp_name(hps, "discriminate")
+    exp_path = get_exp_path(hps, exp_name)
 
     # fix random seed
     if hps.set_seed:
@@ -128,7 +126,7 @@ def main():
 
     # prepare logger
     logger, formatter = define_logger()
-    log_path = os.path.join(hps.log_dir, exp_name + ".txt")
+    log_path = os.path.join(exp_path, exp_name + ".txt")
 
     file_handler = logging.FileHandler(log_path)
     file_handler.setFormatter(formatter)
@@ -136,8 +134,6 @@ def main():
 
     # logging all the hyper parameters
     logger.info(f"=== hps ===\n{hps}")
-
-    exp_path = get_exp_path(hps, exp_name)
     logger.info(f"[INFO] Experiment Path: {exp_path}")
 
     # load data
@@ -170,7 +166,12 @@ def main():
     model = contrastive_reasoning_model(hps)
 
     # logger.info(f"=== model architecture ===\n{model}")
-    optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
+    if hps.use_wd:
+        optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()),
+                                        lr=hps.lr,
+                                        weight_decay=hps.wd)
+    else:
+        optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
     loss_function = load_loss_function(hps)
 
     # multi-Gpu training
@@ -183,7 +184,7 @@ def main():
             # model = nn.parallel.DistributedDataParallel(model, device_ids=gpu_ids)
 
     # contrastive training
-    CL_train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps, exp_name)
+    train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps, exp_name, exp_path)
 
 
 if __name__ == '__main__':

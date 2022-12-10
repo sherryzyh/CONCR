@@ -12,6 +12,7 @@ longexp.sh
 *.sh
 *.pem
 huggingface_cache/
+output/
 output/saved_model/
 output/log/test_*
 output/log/testlog/
@@ -19,3 +20,5 @@ output/
 .idea/
 
 conceptnet5
+
+/data/output

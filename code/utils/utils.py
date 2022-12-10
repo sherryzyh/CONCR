@@ -20,6 +20,10 @@ import pdb
 import torch.nn as nn
 import json
 
+"""
+    Helper
+"""
+
 
 def parse_hps():
     parser = argparse.ArgumentParser(description='ECR-ANLP')
@@ -54,6 +58,8 @@ def parse_hps():
     parser.add_argument('--evaluation_step', type=int, default=20,
                         help='when training for some steps, start evaluation')
     parser.add_argument('--lr', type=float, default=1e-5, help='the learning rate of training')
+    parser.add_argument('--use_wd', type=bool, default=False, help='Whether to add weight decay')
+    parser.add_argument('--wd', type=float, default=1e-4, help='the weight decay')
     parser.add_argument('--set_seed', type=bool, default=True, help='Whether to fix the random seed')
     parser.add_argument('--seed', type=int, default=1024, help='fix the random seed for reproducible')
     parser.add_argument('--patient', type=int, default=10, help='the patient of early-stopping')
@@ -94,6 +100,86 @@ def load_loss_function(hps):
     elif hps.loss_func == "BCE":
         loss_function = nn.BCEWithLogitsLoss(reduction='mean')
     return loss_function
+
+
+def load_data(path):
+    data = [json.loads(line) for line in open(path, 'r')]
+    return data
+
+
+def print_prediction(exp_path, task, hps, eval_step, predict_labels):
+    print_path = os.path.join(exp_path, "predictions")
+    if not os.path.exists(print_path):
+        os.mkdir(print_path)
+    pred_path = os.path.join(print_path, f"{task}_pred_{hps.evaluation_strategy}_{eval_step}.csv")
+    with open(pred_path, 'w', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerows([[l] for l in predict_labels])
+
+
+def define_logger():
+    logger = logging.getLogger('Discriminate logger')
+    formatter = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.formatter = formatter
+    console_handler.setLevel(logging.INFO)
+    logger.addHandler(console_handler)
+    logger.setLevel(logging.DEBUG)
+
+    return logger, formatter
+
+
+def get_exp_path(hps, exp_name):
+    if hps.storage:
+        exp_path = os.path.join(hps.storage_dir, hps.save_dir, exp_name)
+    else:
+        exp_path = os.path.join(hps.save_dir, exp_name)
+    if not os.path.exists(exp_path):
+        os.mkdir(exp_path)
+    return exp_path
+
+
+def save_model(model, hps, exp_name, mode="best"):
+    exp_path = get_exp_path(hps, exp_name)
+    if not os.path.exists(exp_path):
+        os.mkdir(exp_path)
+    if mode == "best":
+        torch.save(model, os.path.join(exp_path, "best_acc_ckpt.pt"))
+
+
+def save_metric_log(metric_log, hps, exp_name):
+    exp_path = get_exp_path(hps, exp_name)
+    if not os.path.exists(exp_path):
+        os.mkdir(exp_path)
+    with open(os.path.join(exp_path, "metric_log.json"), 'w', encoding='utf-8') as fp:
+        json.dump(metric_log, fp)
+
+
+"""
+    Tokenization
+"""
+
+
+def load_pretrained_tokenizer(hps):
+    # load pretrained tokenizer
+    if hps.model_name == 'bert':
+        tokenizer = BertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
+    elif hps.model_name == 'roberta':
+        tokenizer = RobertaTokenizer.from_pretrained(hps.model_dir, padding_side='left')
+    elif hps.model_name == 'albert':
+        tokenizer = AlbertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
+    elif hps.model_name == 'gpt':
+        tokenizer = OpenAIGPTTokenizer.from_pretrained(hps.model_dir, unk_token="<unk>", padding_side='left')
+        tokenizer.pad_token = tokenizer.unk_token
+    elif hps.model_name == 'gpt2':
+        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
+        tokenizer.pad_token = tokenizer.unk_token
+    elif hps.model_name == 'bart':
+        tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
+    else:
+        tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir, padding_side='left')
+
+    return tokenizer
 
 
 def tokenize_data(data, model_path, model_name):
@@ -190,28 +276,6 @@ def tokenize_multi_choices(data, hps):
 
     return torch.LongTensor(input_ids), torch.LongTensor(attention_mask), \
            torch.LongTensor(token_type_ids), torch.LongTensor(labels), torch.LongTensor(length) - 1
-
-
-def load_pretrained_tokenizer(hps):
-    # load pretrained tokenizer
-    if hps.model_name == 'bert':
-        tokenizer = BertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
-    elif hps.model_name == 'roberta':
-        tokenizer = RobertaTokenizer.from_pretrained(hps.model_dir, padding_side='left')
-    elif hps.model_name == 'albert':
-        tokenizer = AlbertTokenizer.from_pretrained(hps.model_dir, padding_side='left')
-    elif hps.model_name == 'gpt':
-        tokenizer = OpenAIGPTTokenizer.from_pretrained(hps.model_dir, unk_token="<unk>", padding_side='left')
-        tokenizer.pad_token = tokenizer.unk_token
-    elif hps.model_name == 'gpt2':
-        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
-        tokenizer.pad_token = tokenizer.unk_token
-    elif hps.model_name == 'bart':
-        tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
-    else:
-        tokenizer = XLNetTokenizer.from_pretrained(hps.model_dir, padding_side='left')
-
-    return tokenizer
 
 
 def contrastive_tokenize(data, hps, loading_mode="train"):
@@ -333,6 +397,65 @@ def tokenize_multi_task(hps, data):
     return input_ids1, input_ids2, truth_ids[:, 1:], mask1, mask2, mask_truth[:, 1:], torch.LongTensor(labels)
 
 
+def tokenize_gen(data, hps):
+    if hps.model_name == 'bart':
+        tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
+    elif hps.model_name == 'gpt2':
+        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
+        tokenizer.pad_token = tokenizer.unk_token
+    else:
+        tokenizer = None
+
+    inputs = []
+    labels = []
+    premise = []
+    for example in data:
+        if hps.model_name == 'bart':
+            seq1 = example['cause'] + example['effect']
+            seq2 = example['conceptual_explanation']
+            inputs.append(seq1)
+            labels.append(seq2)
+        elif hps.model_name == 'gpt2':
+            inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
+            premise.append(example['cause'] + ' ' + example['effect'])
+            labels.append(example['conceptual_explanation'])
+        else:
+            return
+
+    if hps.model_name == 'bart':
+        outputs = tokenizer(inputs, padding=True)
+        input_ids = torch.LongTensor(outputs['input_ids'])
+        input_attention_mask = torch.LongTensor(outputs['attention_mask'])
+        label_output = tokenizer(labels, padding=True)
+        label_ids = torch.LongTensor(label_output['input_ids'])
+        label_attention_mask = torch.LongTensor(label_output['attention_mask'])
+
+        return input_ids, input_attention_mask, label_ids, label_attention_mask
+
+    elif hps.model_name == 'gpt2':
+        evaluate_outputs = tokenizer(labels, padding=True, return_token_type_ids=True)
+        labels_ids = torch.LongTensor(evaluate_outputs['input_ids'])
+        labels_mask = torch.LongTensor(evaluate_outputs['attention_mask'])
+        labels_seg_id = torch.LongTensor(evaluate_outputs['token_type_ids'])
+
+        tokenizer.padding_side = 'left'
+        outputs = tokenizer(inputs, padding=True, return_token_type_ids=True)
+        input_ids = torch.LongTensor(outputs['input_ids'])
+        input_attention_mask = torch.LongTensor(outputs['attention_mask'])
+        input_seg_id = torch.LongTensor(outputs['token_type_ids'])
+
+        premise_outputs = tokenizer(premise, padding=True, return_token_type_ids=True)
+        premise_ids = torch.LongTensor(premise_outputs['input_ids'])
+        premise_mask = torch.LongTensor(premise_outputs['attention_mask'])
+        premise_seg_ids = torch.LongTensor(premise_outputs['token_type_ids'])
+        return input_ids, input_attention_mask, input_seg_id, labels_ids, labels_mask, labels_seg_id, premise_ids, premise_mask, premise_seg_ids
+
+
+"""
+    Metric Computation
+"""
+
+
 def compute_ppl(hps, model, data):
     # device = 'cuda'
     if hps.model_name == 'gpt2':
@@ -388,102 +511,13 @@ def compute_ppl(hps, model, data):
     return ppl.item()
 
 
-def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
-    tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
-    bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
-    count = 0
-    for batch1, batch2, t in zip(dataloader_input, dataloader_output, trange(len(dataloader_input))):
-        if hps.cuda:
-            device = f"cuda:{hps.gpu}"
-            batch1 = tuple(term.to(device) for term in batch1)
-            batch2 = tuple(term.to(device) for term in batch2)
-
-        input_ids, attention_mask, labels = batch1
-        decoder_ids, decoder_mask = batch2
-        scores, _ = model(input_ids,
-                          attention_mask,
-                          decoder_ids,
-                          decoder_mask,
-                          labels,
-                          mode='train')
-        scores = torch.cat((scores[::2].unsqueeze(1), scores[1::2].unsqueeze(1)), 1)
-        index = torch.argmax(scores, 1)
-        predict_labels = index.cpu().tolist()
-        labels = torch.cat((labels[::2].unsqueeze(1), labels[1::2].unsqueeze(1)), 1)
-        labels = torch.argmax(labels, 1).cpu().tolist()
-        for k in range(len(predict_labels)):
-            if labels[k] == predict_labels[k]:
-                count += 1
-            else:
-                continue
-
-        input_ids = torch.cat((input_ids[::2].unsqueeze(1), input_ids[1::2].unsqueeze(1)), 1)
-        input_ids = input_ids[range(input_ids.shape[0]), index, :]
-        attention_mask = torch.cat((attention_mask[::2].unsqueeze(1), attention_mask[1::2].unsqueeze(1)), 1)
-        attention_mask = attention_mask[range(attention_mask.shape[0]), index, :]
-
-        # for i in range(input_ids.shape[0]):
-        gen_ids = model(input_ids,
-                        attention_mask,
-                        decoder_ids,
-                        decoder_mask,
-                        labels,
-                        mode='generate')
-        generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
-                          gen_ids.tolist()]
-        gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
-                     decoder_ids[::2, :].tolist()]
-
-        for i in range(len(generated_text)):
-            bleu1 += bleu([gold_text[i]], generated_text[i], [1, 0, 0, 0])
-            bleu2 += bleu([gold_text[i]], generated_text[i], [0, 1, 0, 0])
-            bleu3 += bleu([gold_text[i]], generated_text[i], [0, 0, 1, 0])
-            bleu4 += bleu([gold_text[i]], generated_text[i], [0, 0, 0, 1])
-
-    num_instances = (len(dataloader_output) - 1) * hps.batch_size // 2 + input_ids.shape[0]
-    return count / num_instances, bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances
+"""
+    Evaluation
+"""
 
 
-# def evaluate_multi_task(model, dataloader, hps):
-#     tokenizer = GPT2Tokenizer.from_pretrained(hps.generate_model_dir, padding_side='left')
-#     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
-#     count = 0
-#     for batch in dataloader:
-#         if hps.cuda:
-#             batch = tuple(term.cuda() for term in batch)
-
-#         ids1, ids2, ids3, mask1, mask2, mask3, label = batch
-#         probs, _, gen_model, sentences, attention_mask = model(ids1, mask1, ids2, mask2, ids3, mask3)
-#         predict_label = torch.argmax(probs, 1)
-#         count += torch.sum(predict_label == label).item()
-
-#         output = sample_sequence(gen_model, hps.length, device='cuda', context=sentences, batch_size=hps.batch_size,
-#                                  attention_mask=attention_mask, input_type='embeddings')
-
-#         generated = output
-
-#         for i in range(generated.shape[0]):
-#             predict_tokens = tokenizer.convert_ids_to_tokens(generated[i])
-#             generated_text = remove_special_tokens(tokenizer.convert_tokens_to_string(predict_tokens))
-
-#             gold_tokens = tokenizer.convert_ids_to_tokens(ids3[i])
-#             gold_text = remove_special_tokens(tokenizer.convert_tokens_to_string(gold_tokens))
-
-#             bleu1 += bleu([gold_text], generated_text, [1, 0, 0, 0])
-#             bleu2 += bleu([gold_text], generated_text, [0, 1, 0, 0])
-#             bleu3 += bleu([gold_text], generated_text, [0, 0, 1, 0])
-#             bleu4 += bleu([gold_text], generated_text, [0, 0, 0, 1])
-
-#     num_instances = (len(dataloader) - 1) * hps.batch_size + ids1.shape[0]
-#     return count / num_instances, bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances
-
-
-def load_data(path):
-    data = [json.loads(line) for line in open(path, 'r')]
-    return data
-
-
-def cl_evaluation(hps, dataloader, model, loss_function, mode='train', verbose=False):
+def cl_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mode='dev', print_pred=True,
+                  verbose=False):
     predictions = []
     labels = []
     loss = 0
@@ -493,7 +527,7 @@ def cl_evaluation(hps, dataloader, model, loss_function, mode='train', verbose=F
             device = f"cuda:{hps.gpu}"
             batch = tuple(term.to(device) for term in batch)
 
-        if mode == 'train':
+        if mode == 'dev':
             sent, seg_id, atten_mask, tmp_label, tmp_length = batch
             batch_size = len(sent)
             probs_hypothesis_0, probs_hypothesis_1 = model(sent, atten_mask, tmp_label, seg_ids=seg_id,
@@ -508,7 +542,7 @@ def cl_evaluation(hps, dataloader, model, loss_function, mode='train', verbose=F
         labels += label
         if verbose:
             print("label:", label)
-            print("pres:", pred)
+            print("pred:", pred)
 
     count = 0
     for i in range(len(predictions)):
@@ -518,47 +552,33 @@ def cl_evaluation(hps, dataloader, model, loss_function, mode='train', verbose=F
             continue
     acc = count / len(predictions)
 
+    if print_pred:
+        print_prediction(exp_path, "contrastive_cr", hps, eval_step, predictions)
+
     return acc, loss
 
 
-def evaluation(hps, dataloader, model, loss_function, epoch, mode='train'):
+def cr_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mode='dev', print_pred=True):
     predictions = []
     labels = []
     loss = 0
     model.eval()
     for batch in dataloader:
         if hps.cuda:
-            batch = tuple(term.cuda() for term in batch)
+            device = f"cuda:{hps.gpu}"
+            batch = tuple(term.to(device) for term in batch)
 
-        if mode == 'train':
+        if mode == 'dev':
             sent, seg_id, atten_mask, tmp_labels, tmp_length = batch
             probs = model(sent, atten_mask, seg_ids=seg_id, length=tmp_length).squeeze()
         else:
             sent, atten_mask, tmp_labels = batch
             _, probs = model(sent, atten_mask)
-        # sent, seg_id, atten_mask, tmp_labels, tmp_length = batch
-        # probs = model(sent, atten_mask, seg_ids=seg_id, length=tmp_length)
 
-        # if hps.loss_func == "CrossEntropy":
-        #     # predictions += torch.argmax(probs, 1).cpu().numpy().tolist()
-        #     predictions += torch.argmax(torch.cat((probs[::2].unsqueeze(1), probs[1::2].unsqueeze(1)), 1), 1).cpu().tolist()
-        #     labels += tmp_labels.cpu().tolist()
-        #     loss += loss_function(probs, tmp_labels.float()).item()
-        # else:
         predictions += probs.squeeze().cpu().tolist()
         loss += loss_function(probs, tmp_labels.float()).item()
         labels += tmp_labels.cpu().numpy().tolist()
 
-    # if hps.loss_func == 'CrossEntropy':
-    #     count = 0
-    #     for i in range(len(predictions)):
-    #         if predictions[i] == labels[i]:
-    #             count += 1
-    #         else:
-    #             continue
-
-    #     return count/len(labels), loss
-    # else:
     if hps.data_name == 'commonsenseqa':
         a1 = torch.FloatTensor(predictions[::5]).unsqueeze(1)
         a2 = torch.FloatTensor(predictions[1::5]).unsqueeze(1)
@@ -624,78 +644,71 @@ def evaluation(hps, dataloader, model, loss_function, epoch, mode='train'):
             count += 1
         else:
             continue
-
-    with open(hps.output_dir + f'/bert_cr_epoch_{epoch}_labels.csv', 'w', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerows([[l] for l in predict_labels])
+    if print_pred:
+        print_prediction(exp_path, "cr", hps, eval_step, predict_labels)
 
     return count / len(true_labels), loss
 
 
-def define_logger():
-    logger = logging.getLogger('Discriminate logger')
-    formatter = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.formatter = formatter
-    console_handler.setLevel(logging.INFO)
-    logger.addHandler(console_handler)
-    logger.setLevel(logging.DEBUG)
-
-    return logger, formatter
+"""
+    Misc.
+"""
 
 
-def tokenize_gen(data, hps):
-    if hps.model_name == 'bart':
-        tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
-    elif hps.model_name == 'gpt2':
-        tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
-        tokenizer.pad_token = tokenizer.unk_token
-    else:
-        tokenizer = None
+def evaluate_multi_task(model, dataloader_input, dataloader_output, hps):
+    tokenizer = BartTokenizer.from_pretrained(hps.model_dir, padding_side='left')
+    bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
+    count = 0
+    for batch1, batch2, t in zip(dataloader_input, dataloader_output, trange(len(dataloader_input))):
+        if hps.cuda:
+            device = f"cuda:{hps.gpu}"
+            batch1 = tuple(term.to(device) for term in batch1)
+            batch2 = tuple(term.to(device) for term in batch2)
 
-    inputs = []
-    labels = []
-    premise = []
-    for example in data:
-        if hps.model_name == 'bart':
-            seq1 = example['cause'] + example['effect']
-            seq2 = example['conceptual_explanation']
-            inputs.append(seq1)
-            labels.append(seq2)
-        elif hps.model_name == 'gpt2':
-            inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
-            premise.append(example['cause'] + ' ' + example['effect'])
-            labels.append(example['conceptual_explanation'])
-        else:
-            return
+        input_ids, attention_mask, labels = batch1
+        decoder_ids, decoder_mask = batch2
+        scores, _ = model(input_ids,
+                          attention_mask,
+                          decoder_ids,
+                          decoder_mask,
+                          labels,
+                          mode='train')
+        scores = torch.cat((scores[::2].unsqueeze(1), scores[1::2].unsqueeze(1)), 1)
+        index = torch.argmax(scores, 1)
+        predict_labels = index.cpu().tolist()
+        labels = torch.cat((labels[::2].unsqueeze(1), labels[1::2].unsqueeze(1)), 1)
+        labels = torch.argmax(labels, 1).cpu().tolist()
+        for k in range(len(predict_labels)):
+            if labels[k] == predict_labels[k]:
+                count += 1
+            else:
+                continue
 
-    if hps.model_name == 'bart':
-        outputs = tokenizer(inputs, padding=True)
-        input_ids = torch.LongTensor(outputs['input_ids'])
-        input_attention_mask = torch.LongTensor(outputs['attention_mask'])
-        label_output = tokenizer(labels, padding=True)
-        label_ids = torch.LongTensor(label_output['input_ids'])
-        label_attention_mask = torch.LongTensor(label_output['attention_mask'])
+        input_ids = torch.cat((input_ids[::2].unsqueeze(1), input_ids[1::2].unsqueeze(1)), 1)
+        input_ids = input_ids[range(input_ids.shape[0]), index, :]
+        attention_mask = torch.cat((attention_mask[::2].unsqueeze(1), attention_mask[1::2].unsqueeze(1)), 1)
+        attention_mask = attention_mask[range(attention_mask.shape[0]), index, :]
 
-        return input_ids, input_attention_mask, label_ids, label_attention_mask
+        # for i in range(input_ids.shape[0]):
+        gen_ids = model(input_ids,
+                        attention_mask,
+                        decoder_ids,
+                        decoder_mask,
+                        labels,
+                        mode='generate')
+        generated_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                          gen_ids.tolist()]
+        gold_text = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in
+                     decoder_ids[::2, :].tolist()]
 
-    elif hps.model_name == 'gpt2':
-        evaluate_outputs = tokenizer(labels, padding=True, return_token_type_ids=True)
-        labels_ids = torch.LongTensor(evaluate_outputs['input_ids'])
-        labels_mask = torch.LongTensor(evaluate_outputs['attention_mask'])
-        labels_seg_id = torch.LongTensor(evaluate_outputs['token_type_ids'])
+        for i in range(len(generated_text)):
+            bleu1 += bleu([gold_text[i]], generated_text[i], [1, 0, 0, 0])
+            bleu2 += bleu([gold_text[i]], generated_text[i], [0, 1, 0, 0])
+            bleu3 += bleu([gold_text[i]], generated_text[i], [0, 0, 1, 0])
+            bleu4 += bleu([gold_text[i]], generated_text[i], [0, 0, 0, 1])
 
-        tokenizer.padding_side = 'left'
-        outputs = tokenizer(inputs, padding=True, return_token_type_ids=True)
-        input_ids = torch.LongTensor(outputs['input_ids'])
-        input_attention_mask = torch.LongTensor(outputs['attention_mask'])
-        input_seg_id = torch.LongTensor(outputs['token_type_ids'])
-
-        premise_outputs = tokenizer(premise, padding=True, return_token_type_ids=True)
-        premise_ids = torch.LongTensor(premise_outputs['input_ids'])
-        premise_mask = torch.LongTensor(premise_outputs['attention_mask'])
-        premise_seg_ids = torch.LongTensor(premise_outputs['token_type_ids'])
-        return input_ids, input_attention_mask, input_seg_id, labels_ids, labels_mask, labels_seg_id, premise_ids, premise_mask, premise_seg_ids
+    num_instances = (len(dataloader_output) - 1) * hps.batch_size // 2 + input_ids.shape[0]
+    return count / num_instances, bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances
 
 
 def evaluation_bart(dataloader, model, hps):
@@ -773,32 +786,6 @@ def top_k_logits(logits, k):
     values, _ = torch.topk(logits, k)
     min_values = values[:, -1].unsqueeze(1)
     return torch.where(logits < min_values, torch.ones_like(logits, dtype=logits.dtype) * -1e10, logits)
-
-
-# def sample_sequence(model, length, start_token=None, batch_size=None, context=None, temperature=0.7, top_k=40, device='cuda', sample=True, attention_mask=None):
-#     if start_token is None:
-#         assert context is not None, 'Specify exactly one of start_token and context!'
-
-#         context = torch.tensor(context, device=device, dtype=torch.long)
-#     else:
-#         assert context is None, 'Specify exactly one of start_token and context!'
-#         context = torch.full((batch_size, 1), start_token, device=device, dtype=torch.long)
-#     prev = context
-#     output = context.cuda()
-#     past = None
-#     with torch.no_grad():
-#         for i in trange(length):
-#             logits, past = model(output, attention_mask, past_key_values=None, mode='test')[1:]
-#             logits = logits[:, -1, :] / temperature
-#             logits = top_k_logits(logits, k=top_k)
-#             log_probs = F.softmax(logits, dim=-1)
-#             if sample:
-#                 prev = torch.multinomial(log_probs, num_samples=1)
-#             else:
-#                 _, prev = torch.topk(log_probs, k=1, dim=-1)
-#             output = torch.cat((output, prev), dim=1)
-#             attention_mask = torch.cat((attention_mask, torch.ones(prev.shape).long().cuda()), -1)
-#     return output
 
 
 def sample_sequence(model, length, start_token=None, batch_size=None, context=None, temperature=0.7, top_k=40,
@@ -1030,25 +1017,3 @@ def bart_evaluate(model, data_loader, hps):
 
     return bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances, rouge1r / num_instances, rouge2r / num_instances, rougelr / num_instances
 
-
-def get_exp_path(hps, exp_name):
-    if hps.storage:
-        exp_path = os.path.join(hps.storage_dir, hps.save_dir, exp_name)
-    else:
-        exp_path = os.path.join(hps.save_dir, exp_name)
-    return exp_path
-
-def save_model(model, hps, exp_name, mode="best"):
-    exp_path = get_exp_path(hps, exp_name)
-    if not os.path.exists(exp_path):
-        os.mkdir(exp_path)
-    if mode == "best":
-        torch.save(model, os.path.join(exp_path, "best_acc_ckpt.pt"))
-
-
-def save_metric_log(metric_log, hps, exp_name):
-    exp_path = get_exp_path(hps, exp_name)
-    if not os.path.exists(exp_path):
-        os.mkdir(exp_path)
-    with open(os.path.join(exp_path, "metric_log.json"), 'w', encoding='utf-8') as fp:
-        json.dump(metric_log, fp)

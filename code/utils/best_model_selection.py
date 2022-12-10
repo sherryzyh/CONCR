@@ -3,8 +3,8 @@ import os
 import json
 import jsonlines
 
-def load_metric_log(exp_type, exp_name):
-    with open(os.path.join("output/saved_model", exp_name, "metric_log.json")) as f:
+def load_metric_log(exp_name):
+    with open(os.path.join("/data/output/saved_model", exp_name, "metric_log.json")) as f:
         metric_log = json.load(f)
 
     return metric_log
@@ -41,7 +41,7 @@ def main():
                         type=str, default=None, help='Experiment Name')
     
     args = parser.parse_args()
-    metric_log = load_metric_log(args.exp_type, args.exp_name)
+    metric_log = load_metric_log(args.exp_name)
     best_epoch, best_epoch_metric = select_epoch(metric_log, metric="dev_accu")
     print(f"Best Epoch {best_epoch}")
     for metric, value in best_epoch_metric.items():
