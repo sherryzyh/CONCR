@@ -1,6 +1,6 @@
 import argparse
 from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, load_loss_function, \
-    cr_evaluation, define_logger, save_model
+    cr_evaluation, define_logger, save_model, save_metric_log
 import random
 import numpy as np
 import torch
@@ -19,7 +19,8 @@ from utils.kb import get_all_features
 from utils.kb_dataset import MyDataLoader
 
 
-def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, eval_step, metric_log, exp_name, exp_path):
+def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, eval_step, metric_log, exp_name,
+             exp_path):
     model.eval()
     stop_train = False
 
@@ -27,7 +28,8 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
         print('\n')
         logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
         if hps.loss_func == 'CrossEntropy':
-            dev_accu, dev_exact_accu, dev_loss = cr_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path)
+            dev_accu, dev_exact_accu, dev_loss = cr_evaluation(hps, dev_dataloader, model, loss_function, eval_step,
+                                                               exp_path)
             print('\n')
             logger.info("[Dev Metrics] Dev Soft Accuracy: \t{}".format(dev_accu))
             logger.info("[Dev Metrics] Dev Exact Accuracy: \t{}".format(dev_exact_accu))
@@ -36,9 +38,6 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             print('\n')
             logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
         logger.info("[Dev Metrics] Dev Loss: \t{}".format(dev_loss))
-
-        with open(exp_path + '/bert_cr_metric_log.json', 'w', encoding='utf-8') as fp:
-            json.dump(metric_log, fp)
 
         if dev_accu >= best_accuracy:
             patient = 0
@@ -95,25 +94,31 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             optimizer.step()
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
-                patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
-                                               hps, step, metric_log, exp_name, exp_path)
+                patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy,
+                                                                   loss_function, logger,
+                                                                   hps, step, metric_log, exp_name, exp_path)
                 metric_log[f'step_{step}']['dev_accu'] = dev_accu
                 metric_log[f'step_{step}']['dev_loss'] = dev_loss
                 if stop_train:
                     return
             step += 1
 
-        train_accu, train_loss = cr_evaluation(hps, train_dataloader, model, loss_function, eval_step, exp_path, print_pred=False)
+        train_accu, train_loss = cr_evaluation(hps, train_dataloader, model, loss_function, eval_step, exp_path,
+                                               print_pred=False)
         logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
         logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
         metric_log[f'epoch_{epoch}']['train_accu'] = train_accu
         metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
 
         if hps.evaluation_strategy == "epoch":
-            patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
-                                           epoch, metric_log, exp_name, exp_path)
+            patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy,
+                                                               loss_function, logger, hps,
+                                                               epoch, metric_log, exp_name, exp_path)
             metric_log[f'epoch_{epoch}']['dev_accu'] = dev_accu
             metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
+
+        save_metric_log(metric_log, hps, exp_name)
+
         if stop_train:
             return
 
