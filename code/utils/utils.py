@@ -421,10 +421,18 @@ def tokenize_gen(data, hps):
             inputs.append(seq1)
             labels.append(seq2)
         elif hps.model_name == 'gpt2':
-            # inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
-            inputs.append([example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?', example['conceptual_explanation']])
-            # premise.append(example['cause'] + ' ' + example['effect'])
-            premise.append(example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?')
+            if hps.prompt == 'T0':
+                inputs.append([example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?', example['conceptual_explanation']])
+                premise.append(example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?')
+            elif hps.prompt == 'T1':
+                inputs.append([example['cause'][:-1] + ' causes ' + example['effect'][:-1] + '. Why?', example['conceptual_explanation']])
+                premise.append(example['cause'][:-1] + ' causes ' + example['effect'][:-1] + '. Why?')
+            elif hps.prompt == 'T2':
+                inputs.append(['Cause: ' + example['cause'] + ' ' + 'Effect: ' + example['effect'] + ' Explanation: ', example['conceptual_explanation']])
+                premise.append('Cause: ' + example['cause'] + ' ' + 'Effect: ' + example['effect'] + ' Explanation: ')
+            else:
+                inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
+                premise.append(example['cause'] + ' ' + example['effect'])
             labels.append(example['conceptual_explanation'])
         else:
             return
@@ -749,7 +757,7 @@ def gpt2_eg_evaluate(model, length, data_loader, hps, epoch):
     for metric in evaluation_output.keys():
         evaluation_output[metric] /= num_instances
 
-    with open(hps.output_dir + f'/prompt1_gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
+    with open(hps.output_dir + f'/{hps.prompt}_gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerows(output_text)
 
