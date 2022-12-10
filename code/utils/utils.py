@@ -486,7 +486,15 @@ def compute_ppl(hps, model, data):
         lls = []
         total_length = 0
         for example in data:
-            input_text = example['cause'] + ' ' + example['effect']
+            # input_text = example['cause'] + ' ' + example['effect']
+            if hps.prompt == 'T0':
+                input_text = example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?'
+            elif hps.prompt == 'T1':
+                input_text = example['cause'][:-1] + ' causes ' + example['effect'][:-1] + '. Why?'
+            elif hps.prompt == 'T2':
+                input_text = 'Cause: ' + example['cause'] + ' ' + 'Effect: ' + example['effect'] + ' Explanation: '
+            else:
+                input_text = example['cause'] + ' ' + example['effect']
             truth = example['conceptual_explanation']
             inputs = tokenizer(input_text)
             input_ids = torch.LongTensor(inputs['input_ids']).unsqueeze(0).cuda()
@@ -532,6 +540,7 @@ def compute_ppl(hps, model, data):
         ppl = torch.exp(torch.stack(lls).sum() / total_length)
 
     return ppl.item()
+
 
 
 """
