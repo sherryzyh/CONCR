@@ -53,7 +53,7 @@ def main():
     hps = parser.parse_args()
     logger, formatter = define_logger()
     nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    log_path = os.path.join(hps.log_dir, 'prompt_generated_'+hps.model_name+'.txt')
+    log_path = os.path.join(hps.log_dir, 'prompt1_generated_'+hps.model_name+'.txt')
     file_handler = logging.FileHandler(log_path)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -165,7 +165,7 @@ def main():
             evaluation_output['rouge1'], evaluation_output['rouge2'], evaluation_output['rougel']))
         logger.info("[Dev Metrics] Perplexity: \t{}".format(dev_ppl))
 
-        with open(hps.output_dir + '/gpt2_eg_metric_log.json', 'w', encoding='utf-8') as fp:
+        with open(hps.output_dir + '/prompt1_gpt2_eg_metric_log.json', 'w', encoding='utf-8') as fp:
             json.dump(metric_log, fp)
 
         if epoch == 0 or evaluation_output['val_loss'] < best_loss:
