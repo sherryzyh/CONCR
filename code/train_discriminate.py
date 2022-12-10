@@ -103,7 +103,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
                     return
             step += 1
 
-        train_accu, train_loss = cr_evaluation(hps, train_dataloader, model, loss_function, eval_step, exp_path,
+        train_accu, train_loss = cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path,
                                                print_pred=False)
         logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
         logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
