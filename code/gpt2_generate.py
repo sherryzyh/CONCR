@@ -53,7 +53,7 @@ def main():
     hps = parser.parse_args()
     logger, formatter = define_logger()
     nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    log_path = os.path.join(hps.log_dir, 'generated_'+hps.model_name+'.txt')
+    log_path = os.path.join(hps.log_dir, 'prompt_generated_'+hps.model_name+'.txt')
     file_handler = logging.FileHandler(log_path)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
