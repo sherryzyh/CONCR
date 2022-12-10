@@ -11,6 +11,7 @@ exp.sh
 longexp.sh
 *.sh
 huggingface_cache/
+output/
 output/saved_model/
 output/log/test_*
 output/log/testlog/
