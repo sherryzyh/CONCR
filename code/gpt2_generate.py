@@ -121,6 +121,7 @@ def main():
                 batch = tuple(term.cuda() for term in batch)
 
             input_ids, input_mask, input_seg_ids, input_labels, input_labels_mask = batch
+            print(input_mask)
             # pdb.set_trace()
             tmp = torch.ones(input_labels_mask.shape).long()
             count_mask_length = torch.sum(tmp==input_labels_mask.cpu(), 1).squeeze().tolist()
