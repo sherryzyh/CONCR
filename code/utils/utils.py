@@ -73,6 +73,7 @@ def parse_hps():
     parser.add_argument('--score', type=str, default="cossim", help="scorer type")
     parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
     parser.add_argument('--prompt', type=str, default=None, help="prompt template, options: [T0][T1][T2] etc.")
+    parser.add_argument('--length', type=int, default=22, help='the max length of generated text')
 
     # parsing the hyper-parameters from command line and define logger
     hps = parser.parse_args()
