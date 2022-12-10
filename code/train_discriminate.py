@@ -1,6 +1,6 @@
 import argparse
 from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, load_loss_function, \
-    evaluation, define_logger, save_model
+    cr_evaluation, define_logger, save_model
 import random
 import numpy as np
 import torch
@@ -19,25 +19,20 @@ from utils.kb import get_all_features
 from utils.kb_dataset import MyDataLoader
 
 
-def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log, exp_name, exp_path):
+def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, eval_step, metric_log, exp_name, exp_path):
     model.eval()
     stop_train = False
 
     with torch.no_grad():
         print('\n')
-        logger.info("[Dev Evaluation] Strain Evaluation on Dev Set")
+        logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
         if hps.loss_func == 'CrossEntropy':
-            dev_accu, dev_exact_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch, exp_path)
-            metric_log[f'epoch_{epoch}']['dev_accuarcy'] = dev_accu
-            metric_log[f'epoch_{epoch}']['dev_exact_accuracy'] = dev_exact_accu
-            metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
+            dev_accu, dev_exact_accu, dev_loss = cr_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path)
             print('\n')
             logger.info("[Dev Metrics] Dev Soft Accuracy: \t{}".format(dev_accu))
             logger.info("[Dev Metrics] Dev Exact Accuracy: \t{}".format(dev_exact_accu))
         else:
-            dev_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch, exp_path)
-            metric_log[f'epoch_{epoch}']['dev_accuarcy'] = dev_accu
-            metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
+            dev_accu, dev_loss = cr_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path)
             print('\n')
             logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
         logger.info("[Dev Metrics] Dev Loss: \t{}".format(dev_loss))
@@ -58,7 +53,7 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
         if patient >= hps.patient:
             logger.info("[INFO] Stopping Training by Early Stopping")
             stop_train = True
-    return patient, stop_train
+    return patient, stop_train, dev_accu, dev_loss
 
 
 def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps, exp_name, exp_path):
@@ -99,20 +94,27 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             optimizer.step()
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
-                patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
-                                               hps, epoch, metric_log, exp_name, exp_path)
+                patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
+                                               hps, step, metric_log, exp_name, exp_path)
+                metric_log[f'step_{step}']['dev_accu'] = dev_accu
+                metric_log[f'step_{step}']['dev_loss'] = dev_loss
                 if stop_train:
                     return
             step += 1
 
-        train_loss = total_loss / (epoch_step * hps.batch_size) * 100
+        train_accu, train_loss = cr_evaluation(hps, train_dataloader, model, loss_function, eval_step, exp_path, print_pred=False)
+        logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
+        logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
+        metric_log[f'epoch_{epoch}']['train_accu'] = train_accu
         metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
 
         if hps.evaluation_strategy == "epoch":
-            patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
+            patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
                                            epoch, metric_log, exp_name, exp_path)
-            if stop_train:
-                return
+            metric_log[f'epoch_{epoch}']['dev_accu'] = dev_accu
+            metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
+        if stop_train:
+            return
 
 
 def main():
@@ -120,8 +122,6 @@ def main():
     hps = parse_hps()
     exp_name = get_exp_name(hps, "discriminate")
     exp_path = get_exp_path(hps, exp_name)
-    if not os.path.exists(exp_path):
-        os.mkdir(exp_path)
 
     # fix random seed
     if hps.set_seed:
