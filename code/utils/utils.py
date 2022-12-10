@@ -417,7 +417,7 @@ def tokenize_gen(data, hps):
             labels.append(seq2)
         elif hps.model_name == 'gpt2':
             # inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
-            inputs.append([example['cause'] + ' is the cause.' + example['effect'] + ' is the effect. What is the explanation?', example['conceptual_explanation']])
+            inputs.append([example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?', example['conceptual_explanation']])
             premise.append(example['cause'] + ' ' + example['effect'])
             labels.append(example['conceptual_explanation'])
         else:
