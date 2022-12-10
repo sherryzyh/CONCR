@@ -1,0 +1,35 @@
+2022-12-09 22:17:08,124 INFO    : === hps ===
+Namespace(data_dir='./data/Causal_Reasoning/', model_dir='bert-base-cased', save_dir='output/saved_model', log_dir='output/log', apex_dir='output/log', storage=True, storage_dir='/data', train='train.jsonl', dev='dev.jsonl', devload='dev', test='test.pkl', model_name='bert', save_name='cossim_devload_hnw0_1e-5_wd1e-4_bs64_50e_seed42', data_name='copa', cuda=True, gpu='0', apex=False, batch_size=64, shuffle=False, epochs=50, evaluation_strategy='epoch', evaluation_step=20, lr=1e-05, set_seed=True, seed=42, patient=10, loss_func='BCE', hyp_only=False, warmup_proportion=0.1, with_kb=False, with_cl='true', prompt=None, score='cossim', hard_negative_weight=0.0, nowtime='20221209_221708')
+2022-12-09 22:17:08,124 INFO    : [INFO] Experiment Path: /data/output/saved_model/cl_cossim_devload_hnw0_1e-5_wd1e-4_bs64_50e_seed42_discriminate_bert-base-cased
+2022-12-09 22:17:08,124 INFO    : [DATA] Loading Data
+2022-12-09 22:17:08,124 INFO    : [DATA] Hypothesis Only: False
+2022-12-09 22:17:08,186 INFO    : [DATA] Tokenization and Padding for Data
+2022-12-09 22:17:16,318 INFO    : [INFO] Creating Dataset and splitting batch for data
+2022-12-09 22:17:16,319 INFO    : [INFO] Loading pretrained model, setting optimizer and loss function
+2022-12-09 22:17:16,319 INFO    : [MODEL] bert
+2022-12-09 22:17:20,339 INFO    : [INFO] Start Training
+2022-12-09 22:17:20,340 INFO    : [Epoch] 0
+2022-12-09 22:24:41,723 INFO    : [Train Metrics] Train Accuracy: 	0.71241961414791
+2022-12-09 22:24:41,723 INFO    : [Train Metrics] Train Loss: 	1813.721095085144
+2022-12-09 22:24:41,724 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 22:24:57,750 INFO    : [Dev Metrics] Dev Accuracy: 	0.6974671669793621
+2022-12-09 22:24:57,751 INFO    : [Dev Metrics] Dev Loss: 	263.9485402107239
+2022-12-09 22:24:58,383 INFO    : [Saving] Saving Model to output/saved_model/cl_cossim_devload_hnw0_1e-5_wd1e-4_bs64_50e_seed42_discriminate_bert-base-cased
+2022-12-09 22:24:58,383 INFO    : [Patient] 0
+2022-12-09 22:24:58,384 INFO    : [Epoch] 1
+2022-12-09 22:32:41,037 INFO    : [Train Metrics] Train Accuracy: 	0.774986602357985
+2022-12-09 22:32:41,038 INFO    : [Train Metrics] Train Loss: 	1643.1141300201416
+2022-12-09 22:32:41,039 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 22:32:56,934 INFO    : [Dev Metrics] Dev Accuracy: 	0.723264540337711
+2022-12-09 22:32:56,934 INFO    : [Dev Metrics] Dev Loss: 	239.21375560760498
+2022-12-09 22:32:59,800 INFO    : [Saving] Saving Model to output/saved_model/cl_cossim_devload_hnw0_1e-5_wd1e-4_bs64_50e_seed42_discriminate_bert-base-cased
+2022-12-09 22:32:59,800 INFO    : [Patient] 0
+2022-12-09 22:32:59,801 INFO    : [Epoch] 2
+2022-12-09 22:40:41,032 INFO    : [Train Metrics] Train Accuracy: 	0.8242899249732047
+2022-12-09 22:40:41,033 INFO    : [Train Metrics] Train Loss: 	1532.750608921051
+2022-12-09 22:40:41,034 INFO    : [Dev Evaluation] Start Evaluation on Dev Set
+2022-12-09 22:40:56,559 INFO    : [Dev Metrics] Dev Accuracy: 	0.7307692307692307
+2022-12-09 22:40:56,560 INFO    : [Dev Metrics] Dev Loss: 	223.8605079650879
+2022-12-09 22:40:59,441 INFO    : [Saving] Saving Model to output/saved_model/cl_cossim_devload_hnw0_1e-5_wd1e-4_bs64_50e_seed42_discriminate_bert-base-cased
+2022-12-09 22:40:59,441 INFO    : [Patient] 0
+2022-12-09 22:40:59,441 INFO    : [Epoch] 3
