@@ -416,12 +416,14 @@ def tokenize_gen(data, hps):
             inputs.append(seq1)
             labels.append(seq2)
         elif hps.model_name == 'gpt2':
-            inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
+            # inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
+            inputs.append([example['cause'] + ' is the cause.' + example['effect'] + ' is the effect. What is the explanation?', example['conceptual_explanation']])
             premise.append(example['cause'] + ' ' + example['effect'])
             labels.append(example['conceptual_explanation'])
         else:
             return
 
+    print(input)
     if hps.model_name == 'bart':
         outputs = tokenizer(inputs, padding=True)
         input_ids = torch.LongTensor(outputs['input_ids'])
