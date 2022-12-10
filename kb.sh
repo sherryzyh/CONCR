@@ -3,8 +3,6 @@ export TRANSFORMERS_CACHE=./huggingface_cache/
 python3 code/train_discriminate.py \
   --data_dir "./data/Causal_Reasoning/" \
   --model_dir "bert-base-cased" \
-  --save_dir "./output/saved_model" \
-  --log_dir "./output/log" \
   --train "train.jsonl" \
   --dev "dev.jsonl" \
   --test "test.jsonl" \

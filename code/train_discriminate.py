@@ -19,7 +19,7 @@ from utils.kb import get_all_features
 from utils.kb_dataset import MyDataLoader
 
 
-def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log):
+def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, epoch, metric_log, exp_name, exp_path):
     model.eval()
     stop_train = False
 
@@ -27,7 +27,7 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
         print('\n')
         logger.info("[Dev Evaluation] Strain Evaluation on Dev Set")
         if hps.loss_func == 'CrossEntropy':
-            dev_accu, dev_exact_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch)
+            dev_accu, dev_exact_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch, exp_path)
             metric_log[f'epoch_{epoch}']['dev_accuarcy'] = dev_accu
             metric_log[f'epoch_{epoch}']['dev_exact_accuracy'] = dev_exact_accu
             metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
@@ -35,23 +35,21 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             logger.info("[Dev Metrics] Dev Soft Accuracy: \t{}".format(dev_accu))
             logger.info("[Dev Metrics] Dev Exact Accuracy: \t{}".format(dev_exact_accu))
         else:
-            dev_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch)
+            dev_accu, dev_loss = evaluation(hps, dev_dataloader, model, loss_function, epoch, exp_path)
             metric_log[f'epoch_{epoch}']['dev_accuarcy'] = dev_accu
             metric_log[f'epoch_{epoch}']['dev_loss'] = dev_loss
             print('\n')
             logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
         logger.info("[Dev Metrics] Dev Loss: \t{}".format(dev_loss))
 
-        with open(hps.output_dir + '/bert_cr_metric_log.json', 'w', encoding='utf-8') as fp:
+        with open(exp_path + '/bert_cr_metric_log.json', 'w', encoding='utf-8') as fp:
             json.dump(metric_log, fp)
 
         if dev_accu >= best_accuracy:
             patient = 0
             best_accuracy = dev_accu
-            if not os.path.exists(hps.save_dir):
-                os.mkdir(hps.save_dir)
             save_model(model, hps, exp_name)
-            logger.info("[Saving] Saving Model to {}".format(os.path.join(hps.save_dir, exp_name)))
+            logger.info("[Saving] Saving Model to {}".format(exp_path))
 
         else:
             patient += 1
@@ -63,7 +61,7 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
     return patient, stop_train
 
 
-def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps):
+def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps, exp_name, exp_path):
     logger.info("[INFO] Start Training")
     step = 0
     patient = 0
@@ -102,7 +100,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
 
             if hps.evaluation_strategy == "step" and step % hps.evaluation_step == 0 and step != 0:
                 patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger,
-                                               hps, epoch, metric_log)
+                                               hps, epoch, metric_log, exp_name, exp_path)
                 if stop_train:
                     return
             step += 1
@@ -112,7 +110,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
 
         if hps.evaluation_strategy == "epoch":
             patient, stop_train = evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps,
-                                           epoch, metric_log)
+                                           epoch, metric_log, exp_name, exp_path)
             if stop_train:
                 return
 
@@ -121,6 +119,9 @@ def main():
     # parse hyper parameters
     hps = parse_hps()
     exp_name = get_exp_name(hps, "discriminate")
+    exp_path = get_exp_path(hps, exp_name)
+    if not os.path.exists(exp_path):
+        os.mkdir(exp_path)
 
     # fix random seed
     if hps.set_seed:
@@ -131,7 +132,7 @@ def main():
 
     # prepare logger
     logger, formatter = define_logger()
-    log_path = os.path.join(hps.log_dir, exp_name + ".txt")
+    log_path = os.path.join(exp_path, exp_name + ".txt")
 
     file_handler = logging.FileHandler(log_path)
     file_handler.setFormatter(formatter)
@@ -140,7 +141,6 @@ def main():
     # logging all the hyper parameters
     logger.info(f"=== hps ===\n{hps}")
 
-    exp_path = get_exp_path(hps, exp_name)
     logger.info(f"[INFO] Experiment Path: {exp_path}")
 
     # load data
@@ -165,12 +165,6 @@ def main():
     else:
         logger.info("[DATA] Tokenization and Padding for Data")
         train_ids, train_mask, train_seg_ids, train_pos_ids, train_labels = get_all_features(train_data, hps)
-        print("got all train features as long tensors")
-        print(f"size of input_ids: {train_ids.size()}")
-        print(f"size of attention_mask: {train_mask.size()}")
-        print(f"size of segment_ids: {train_seg_ids.size()}")
-        print(f"size of soft_pos_ids: {train_pos_ids.size()}")
-        print(f"size of labels: {train_labels.size()}")
         dev_ids, dev_mask, dev_seg_ids, dev_pos_ids, dev_labels = get_all_features(dev_data, hps)
         # Dataset and DataLoader
         logger.info("[INFO] Creating Dataset and splitting batch for data")
@@ -196,7 +190,7 @@ def main():
             # model = nn.parallel.DistributedDataParallel(model, device_ids=gpu_ids)
 
     # training
-    train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps)
+    train(model, optimizer, train_dataloader, dev_dataloader, loss_function, logger, hps, exp_name, exp_path)
 
 
 if __name__ == '__main__':
