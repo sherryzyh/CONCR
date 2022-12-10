@@ -112,14 +112,20 @@ def load_data(path):
     return data
 
 
-def print_prediction(exp_path, task, hps, eval_step, predict_labels):
+def print_prediction(exp_path, task, hps, eval_step, predictions):
     print_path = os.path.join(exp_path, "predictions")
     if not os.path.exists(print_path):
         os.mkdir(print_path)
     pred_path = os.path.join(print_path, f"{task}_pred_{hps.evaluation_strategy}_{eval_step}.csv")
-    with open(pred_path, 'w', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerows([[l] for l in predict_labels])
+
+    if "cr" in task:
+        with open(pred_path, 'w', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerows([[l] for l in predictions])
+    elif "eg" in task:
+        with open(pred_path, 'w', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerows(predictions)
 
 
 def define_logger():
@@ -150,6 +156,8 @@ def save_model(model, hps, exp_name, mode="best"):
         os.mkdir(exp_path)
     if mode == "best":
         torch.save(model, os.path.join(exp_path, "best_acc_ckpt.pt"))
+    elif mode == "minloss":
+        torch.save(model, os.path.join(exp_path, "best_loss_ckpt.pt"))
 
 
 def save_metric_log(metric_log, hps, exp_name):
@@ -665,7 +673,7 @@ def cr_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mo
     return count / len(true_labels), loss
 
 # called in gpt2_generate.py
-def gpt2_eg_evaluate(model, length, data_loader, hps, epoch):
+def gpt2_eg_evaluate(hps, data_loader, model, eval_step, exp_path, mode='dev', print_pred=True):
     tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
     val_loss = 0
     bleu1, bleu2, bleu3, bleu4 = 0, 0, 0, 0
@@ -701,7 +709,7 @@ def gpt2_eg_evaluate(model, length, data_loader, hps, epoch):
         # output = sample_sequence(model, length, device='cuda', context=premise_ids, batch_size=hps.batch_size, attention_mask=premise_mask, input_type='ids')
         generated = model.generate(input_ids=premise_ids,
                                    attention_mask=premise_mask,
-                                   max_length=length + premise_ids.shape[1],
+                                   max_length=hps.length + premise_ids.shape[1],
                                    num_beams=5,
                                    early_stopping=True,
                                    do_sample=True,
@@ -757,9 +765,8 @@ def gpt2_eg_evaluate(model, length, data_loader, hps, epoch):
     for metric in evaluation_output.keys():
         evaluation_output[metric] /= num_instances
 
-    with open(hps.output_dir + f'/{hps.prompt}_gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerows(output_text)
+    if print_pred:
+        print_prediction(exp_path, f"{hps.prompt}_eg", hps, eval_step, output_text)
 
     return evaluation_output
 
