@@ -422,7 +422,8 @@ def tokenize_gen(data, hps):
         elif hps.model_name == 'gpt2':
             # inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
             inputs.append([example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?', example['conceptual_explanation']])
-            premise.append(example['cause'] + ' ' + example['effect'])
+            # premise.append(example['cause'] + ' ' + example['effect'])
+            premise.append(example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?')
             labels.append(example['conceptual_explanation'])
         else:
             return
@@ -747,7 +748,7 @@ def gpt2_eg_evaluate(model, length, data_loader, hps, epoch):
     for metric in evaluation_output.keys():
         evaluation_output[metric] /= num_instances
 
-    with open(hps.output_dir + f'/gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
+    with open(hps.output_dir + f'/prompt1_gpt2_eg_epoch_{epoch}_explanations.csv', 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerows(output_text)
 
