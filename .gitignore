@@ -18,3 +18,5 @@ output/log/testlog/
 .idea/
 
 conceptnet5
+
+/data/output
