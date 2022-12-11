@@ -9,8 +9,8 @@ from utils.utils import load_pretrained_tokenizer
 from utils.kb_dataset import MyDataset
 import spacy
 
-def get_all_features(data, hps, max_seq_length=128):
-    semantic_features = get_features_with_kbert(data, hps,
+def get_all_features(data, hps, nlp, max_seq_length=128):
+    semantic_features = get_features_with_kbert(data, hps, nlp,
                                               max_seq_length=max_seq_length)
     input_ids = [i[0][1] for i in semantic_features]
     attention_mask = [i[0][2] for i in semantic_features]
@@ -21,8 +21,7 @@ def get_all_features(data, hps, max_seq_length=128):
         torch.stack(segment_ids, dim=0), torch.stack(soft_pos_ids, dim=0), torch.LongTensor(labels)
 
 
-def get_features_with_kbert(data, hps,
-                                        max_seq_length):
+def get_features_with_kbert(data, hps, nlp, max_seq_length):
     tokenizer = load_pretrained_tokenizer(hps)
 
     graph = GraphUtils()
@@ -61,6 +60,7 @@ def get_features_with_kbert(data, hps,
                                                                                      cause=cause,
                                                                                      effect=effect,
                                                                                      tokenizer=tokenizer,
+                                                                                     nlp=nlp,
                                                                                      max_entities=2,
                                                                                      max_length=max_seq_length)
             soft_pos_id = torch.LongTensor(soft_pos_id)
@@ -80,14 +80,14 @@ def get_features_with_kbert(data, hps,
 
             features.append(
                 ((tokens, input_ids, attention_mask, segment_ids, soft_pos_id), labels[i]))
-            if e < 5:
-                print(i)
-                print(f'tokens: {[(ti, t) for ti, t in enumerate(tokens)]}')
-                print(f'input_ids: {input_ids}')
-                print(f'attention_mask: \n1: {attention_mask[1]}\n5: {attention_mask[5]}\n15: {attention_mask[15]}\n20: {attention_mask[20]}')
-                print(f'segment_ids: {segment_ids}')
-                print(f'soft_pos_id: {soft_pos_id}')
-                print(f'label: {labels[i]}')
+            # if e < 5:
+            #     print(i)
+            #     print(f'tokens: {[(ti, t) for ti, t in enumerate(tokens)]}')
+            #     print(f'input_ids: {input_ids}')
+            #     print(f'attention_mask: \n1: {attention_mask[1]}\n5: {attention_mask[5]}\n15: {attention_mask[15]}\n20: {attention_mask[20]}')
+            #     print(f'segment_ids: {segment_ids}')
+            #     print(f'soft_pos_id: {soft_pos_id}')
+            #     print(f'label: {labels[i]}')
     return features
 
 
@@ -95,6 +95,7 @@ def add_knowledge_with_vm(mp_all,
                           cause,
                           effect,
                           tokenizer,
+                          nlp,
                           max_entities=2,
                           max_length=128):
     """
@@ -157,7 +158,6 @@ def add_knowledge_with_vm(mp_all,
         #     ent_values[0] = 'Ġ' + ent_values[0]
         return ent_values
 
-    nlp = spacy.load('en_core_web_sm')
     cause_tokens = tokenizer.tokenize(cause)
     effect_tokens = tokenizer.tokenize(effect)
     instance_tokens = [tokenizer.cls_token] + cause_tokens + [tokenizer.sep_token] + effect_tokens + [tokenizer.sep_token]
@@ -244,19 +244,3 @@ def add_knowledge_with_vm(mp_all,
         pos = pos[:max_length]
         visible_matrix = visible_matrix[:max_length, :max_length]
     return know_sent, pos, visible_matrix, seg
-
-
-def create_datasets_with_kbert(features, shuffle=True):
-    """
-    使用 features 构建 dataset
-    :param features:
-    :param choices_num: 选项(label) 个数
-    :param shuffle: 是否随机顺序，默认 True
-    :return:
-    """
-    if shuffle:
-        perm = torch.randperm(len(features))
-        features = [features[i] for i in perm]
-    x = [i[0] for i in features]
-    y = torch.tensor([i[1] for i in features])
-    return MyDataset(x, y)

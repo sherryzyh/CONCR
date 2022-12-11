@@ -1,4 +1,4 @@
-export TRANSFORMERS_CACHE=./huggingface_cache/
+export TRANSFORMERS_CACHE=/data/huggingface_cache/
 
 python3 code/train_discriminate.py \
   --data_dir "./data/Causal_Reasoning/" \

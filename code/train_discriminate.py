@@ -75,6 +75,11 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
 
             if hps.with_kb:
                 sent, seg_id, attention_mask, labels, pos_ids = batch
+                print(f'input_ids: {sent.shape}')
+                print(f'attention_mask: {attention_mask.shape}')
+                print(f'segment_ids: {seg_id.shape}')
+                print(f'soft_pos_id: {pos_ids.shape}')
+                print(f'labels: {labels.shape}')
                 probs = model(sent, attention_mask, seg_ids=seg_id, position_ids=pos_ids)
             elif hps.model_architecture == "siamese":
                 sent, seg_id, attention_mask, labels, length, ask_for = batch
@@ -87,7 +92,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
                 loss = loss_function(probs, labels)
             elif hps.loss_func == "BCE":
                 loss = loss_function(probs.squeeze(1), labels.float())
-
+            
             total_loss += loss.item()
             t.set_postfix(avg_loss='{}'.format(total_loss / (epoch_step + 1)))
             epoch_step += 1
@@ -106,11 +111,9 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             step += 1
 
         if hps.model.architecture == "siamese":
-            train_accu, train_loss = siamese_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path,
-                                                           print_pred=False)
+            train_accu, train_loss = siamese_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path, print_pred=False)
         else:
-            train_accu, train_loss = vanilla_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path,
-                                                           print_pred=False)
+            train_accu, train_loss = vanilla_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path, print_pred=False)
 
         logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
         logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
@@ -133,13 +136,13 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
 def load_tokenized_dataset(hps, data, mode, nlp=None):
     if hps.with_kb:
         data_ids, data_mask, data_seg_ids, data_pos_ids, data_labels = get_all_features(data, hps, nlp)
-        DATA = TensorDataset(data_ids, data_mask, data_seg_ids, data_pos_ids, data_labels)
+        DATA = TensorDataset(data_ids, data_seg_ids, data_mask, data_labels, data_pos_ids)
     elif hps.model_architecture == "siamese":
         data_ids, data_mask, dataseg_ids, data_labels, data_length, data_ask_for = dual_tokenize(data, hps, mode)
         DATA = TensorDataset(data_ids, data_mask, dataseg_ids, data_labels, data_length, data_ask_for)
     else:  # standard
         data_ids, data_mask, dataseg_ids, data_labels, data_length = quick_tokenize(data, hps)
-        DATA = TensorDataset(data_ids, data_mask, dataseg_ids, data_labels, data_length)
+        DATA = TensorDataset(data_ids, dataseg_ids, data_mask, data_labels, data_length)
 
     return DATA
 
