@@ -13,7 +13,7 @@ LAMBDA = 1
 EG_filename = './data_CEQ/gpt2_cr_eg_epoch_8_explanations.csv'
 OUT_filename = './data_CEQ/creg_CEQ.csv'
 
-def tokenize(sent):
+def tokenize_ceq(sent):
     sent = sent.lower()
     sent = sent.strip('.')
     lemmatizer = ns.WordNetLemmatizer()
@@ -31,7 +31,7 @@ def tokenize(sent):
     return sent
 
 
-def cs_word(w_cause, w_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
+def cs_word_ceq(w_cause, w_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
     
     M = 62675002
     
@@ -61,13 +61,13 @@ def cs_word(w_cause, w_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
     return cs
     
     
-def cs_sent(s_cause, s_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
+def cs_sent_ceq(s_cause, s_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
     
     cs = 0
     num_zero = 0
     for w_cause in s_cause:
         for w_effect in s_effect:
-            cs_tmp = cs_word(w_cause, w_effect, effects, causes, ALPHA=ALPHA, LAMBDA=LAMBDA)
+            cs_tmp = cs_word_ceq(w_cause, w_effect, effects, causes, ALPHA=ALPHA, LAMBDA=LAMBDA)
             cs = cs + cs_tmp
             if cs_tmp == 0:
                 num_zero = num_zero + 1        
@@ -76,7 +76,7 @@ def cs_sent(s_cause, s_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
     return cs
     
     
-def inf(data):
+def inf_ceq(data):
     L = data.shape[0]
 
     premise = data['cause'].tolist()
@@ -105,14 +105,14 @@ def inf(data):
 
     for ith in trange(L):
 
-        premise_tmp = tokenize(premise[ith])
-        hypothesis_tmp = tokenize(hypothesis[ith])
-        premise_truth_tmp = tokenize(premise[ith] + truth[ith])
-        truth_hypothesis_tmp = tokenize(truth[ith] + hypothesis[ith])
+        premise_tmp = tokenize_ceq(premise[ith])
+        hypothesis_tmp = tokenize_ceq(hypothesis[ith])
+        premise_truth_tmp = tokenize_ceq(premise[ith] + truth[ith])
+        truth_hypothesis_tmp = tokenize_ceq(truth[ith] + hypothesis[ith])
 
-        cs_tmp_1 = cs_sent(premise_tmp, hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
-        cs_tmp_2 = cs_sent(premise_truth_tmp, hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
-        cs_tmp_3 = cs_sent(premise_tmp, truth_hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
+        cs_tmp_1 = cs_sent_ceq(premise_tmp, hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
+        cs_tmp_2 = cs_sent_ceq(premise_truth_tmp, hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
+        cs_tmp_3 = cs_sent_ceq(premise_tmp, truth_hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
 
         cs_1.append(cs_tmp_1)
         cs_2.append(cs_tmp_2)
@@ -161,4 +161,4 @@ if __name__ == '__main__':
     effects = pickle.load(f)
     f.close()
 
-    res = inf(data)
+    res = inf_ceq(data)
