@@ -858,6 +858,8 @@ def gpt2_eg_evaluate(hps, data_loader, model, eval_step, exp_path, mode='dev', p
 
     num_instances = (len(data_loader) - 1) * hps.batch_size + gen_ids.shape[0]
 
+    ceq = CEQ_gen(hps, eval_step)
+
     evaluation_output = dict(
         val_loss=val_loss * 100,
         bleu1=bleu1,
@@ -867,10 +869,12 @@ def gpt2_eg_evaluate(hps, data_loader, model, eval_step, exp_path, mode='dev', p
         avg_bleu=sum([bleu1, bleu2, bleu3, bleu4]) / 4,
         rouge1=rouge1r,
         rouge2=rouge2r,
-        rougel=rougelr
+        rougel=rougelr,
+        CEQ=ceq
     )
     for metric in evaluation_output.keys():
-        evaluation_output[metric] /= num_instances
+        if metric is not "CEQ":
+            evaluation_output[metric] /= num_instances
 
     if print_pred:
         print_prediction(exp_path, f"{hps.prompt}_eg", hps, eval_step, output_text)
@@ -1266,7 +1270,7 @@ def inf_ceq(data, i, hps, causes, effects):
     
     res.to_csv(f"/data/data_CEQ/{hps.prompt}_CEQ_epoch{i}.csv")
     print("Average CEQ for " + str(i) + " is: ", (r / cnt))
-    return res
+    return (r / cnt)
 
 def CEQ_gen(hps, epoch):
     dev_data = [json.loads(line) for line in open('../../data/Explanation_Generation/dev.jsonl', 'r')]

@@ -78,6 +78,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, dev_data, logger, 
         logger.info("[Dev Metrics] Rouge:\t({}, {}, {})".format(
             evaluation_output['rouge1'], evaluation_output['rouge2'], evaluation_output['rougel']))
         logger.info("[Dev Metrics] Perplexity: \t{}".format(dev_ppl))
+        logger.info("[Dev Metrics] CEQ: \t{}".format(evaluation_output['CEQ']))
 
         save_metric_log(metric_log, hps, exp_name)
 
