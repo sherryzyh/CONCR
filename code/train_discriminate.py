@@ -75,16 +75,12 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
 
             if hps.with_kb:
                 sent, seg_id, attention_mask, labels, pos_ids = batch
-                print(f'input_ids: {sent.shape}')
-                print(f'attention_mask: {attention_mask.shape}')
-                print(f'segment_ids: {seg_id.shape}')
-                print(f'soft_pos_id: {pos_ids.shape}')
-                print(f'labels: {labels.shape}')
                 probs = model(sent, attention_mask, seg_ids=seg_id, position_ids=pos_ids)
             elif hps.model_architecture == "siamese":
-                sent, seg_id, attention_mask, labels, length, ask_for = batch
+                # Dataset: [data_ids, data_mask, dataseg_ids, data_labels, data_length, data_ask_for]
+                sent, attention_mask, seg_id, labels, length, ask_for = batch
                 probs = model(sent, attention_mask, ask_for=ask_for, seg_ids=seg_id, length=length)
-            else:
+            else: # standard
                 sent, seg_id, attention_mask, labels, length = batch
                 probs = model(sent, attention_mask, seg_ids=seg_id, length=length)
 
