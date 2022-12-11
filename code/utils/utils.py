@@ -19,11 +19,15 @@ import csv
 import pdb
 import torch.nn as nn
 import json
+import pandas as pd
+import nltk.stem as ns
 
 """
     Helper
 """
 
+ALPHA = 0.66
+LAMBDA = 1
 
 def parse_hps():
     parser = argparse.ArgumentParser(description='ECR-ANLP')
@@ -1141,3 +1145,157 @@ def bart_evaluate(model, data_loader, hps):
 
     return bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances, rouge1r / num_instances, rouge2r / num_instances, rougelr / num_instances
 
+
+
+
+"""
+    CEQ Metric.
+"""
+
+def tokenize_ceq(sent):
+    sent = sent.lower()
+    sent = sent.strip('.')
+    lemmatizer = ns.WordNetLemmatizer()
+    sent = sent.replace("'s", '')
+    sent = sent.split(' ')
+    for ith, word in enumerate(sent):
+        word_n = lemmatizer.lemmatize(word, pos='n')
+        word_v = lemmatizer.lemmatize(word, pos='v')
+        
+        if word_n != word_v:
+            if word_n == word:
+                sent[ith] = word_v
+            else:
+                sent[ith] = word_n
+    return sent
+
+
+def cs_word_ceq(w_cause, w_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
+    
+    M = 62675002
+    
+    try:
+        p_w_cause = float(sum(causes[w_cause].values())) / M
+    except KeyError:
+        p_w_cause = 0
+        
+    try:
+        p_w_effect = float(sum(effects[w_effect].values())) / M
+    except KeyError:
+        p_w_effect = 0
+    
+    try:
+        p_join = float(causes[w_cause][w_effect]) / M
+    except KeyError:
+        p_join = 0
+    
+    if p_join != 0:
+        cs_nes = p_join / p_w_cause ** ALPHA / p_w_effect
+        cs_surf = p_join / p_w_cause / p_w_effect ** ALPHA 
+        cs = cs_nes ** LAMBDA * cs_surf ** (1 - LAMBDA)
+    else:
+        cs = float(2) / len(causes)
+    return cs
+    
+    
+def cs_sent_ceq(s_cause, s_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
+    
+    cs = 0
+    num_zero = 0
+    for w_cause in s_cause:
+        for w_effect in s_effect:
+            cs_tmp = cs_word_ceq(w_cause, w_effect, effects, causes, ALPHA=ALPHA, LAMBDA=LAMBDA)
+            cs = cs + cs_tmp
+            if cs_tmp == 0:
+                num_zero = num_zero + 1        
+    cs = cs / (len(s_cause) + len(s_effect))
+    
+    return cs
+    
+    
+def inf_ceq(data, i, hps, causes, effects):
+    L = data.shape[0]
+
+    premise = data['cause'].tolist()
+    hypothesis = data['effect'].tolist()
+    truth = data['explanation'].tolist()
+
+    pred = list()
+    reference_rnn = list()
+    reference_gpt2 = list()
+    reference_mt = list()
+
+    # Causal_Strength(Cause, Effect)
+    cs_1 = list()
+
+    # Causal_Strength(Cause + Truth, Effect)
+    cs_2 = list()
+
+    # Causal_Strength(Cause, Truth + Effect)
+    cs_3 = list()
+    
+    # CEQ result
+    cs = list()
+
+    cnt = 0
+    r = 0
+
+    for ith in trange(L):
+
+        premise_tmp = tokenize_ceq(premise[ith])
+        hypothesis_tmp = tokenize_ceq(hypothesis[ith])
+        premise_truth_tmp = tokenize_ceq(premise[ith] + truth[ith])
+        truth_hypothesis_tmp = tokenize_ceq(truth[ith] + hypothesis[ith])
+
+        cs_tmp_1 = cs_sent_ceq(premise_tmp, hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
+        cs_tmp_2 = cs_sent_ceq(premise_truth_tmp, hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
+        cs_tmp_3 = cs_sent_ceq(premise_tmp, truth_hypothesis_tmp, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA)
+
+        cs_1.append(cs_tmp_1)
+        cs_2.append(cs_tmp_2)
+        cs_3.append(cs_tmp_3)
+        cs.append(max(cs_tmp_2, cs_tmp_3) - cs_tmp_1)
+        cnt += 1
+        r += max(cs_tmp_2, cs_tmp_3) - cs_tmp_1
+        
+    res = data.copy()
+    res['Cause:Effect'] = cs_1
+    res['Cause+Truth:Effect'] = cs_2
+    res['Cause:Truth+Effect'] = cs_3
+    res['CEQ'] = cs
+    
+    res.to_csv(f"/data/data_CEQ/{hps.prompt}_CEQ_epoch{i}.csv")
+    print("Average CEQ for " + str(i) + " is: ", (r / cnt))
+    return res
+
+def CEQ_gen(hps, epoch):
+    dev_data = [json.loads(line) for line in open('../../data/Explanation_Generation/dev.jsonl', 'r')]
+    headerList = ['cause', 'effect', 'explanation']
+
+    with open('/data/data_CEQ/ceq_data1.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        spamwriter = csv.writer(csvfile)
+        for d in dev_data:
+            c = d['cause']
+            e = d['effect']
+            spamwriter.writerow([c, e])
+
+    with open('/data/data_CEQ/ceq_data1.csv') as in_1, open(f"/data/output/saved_model/{hps.prompt}_generate_gpt2/predictions/{hps.prompt}_eg_pred_epoc_{epoch}.csv") as in_2, open('/data/data_CEQ/ceq_data.csv', 'w') as out:
+        reader1 = csv.reader(in_1)
+        reader2 = csv.reader(in_2)
+        writer = csv.writer(out)
+        writer.writerow(headerList)
+        for row1, row2 in zip(reader1, reader2):
+            if row1[0] and row2[0]:
+                writer.writerow([row1[0], row1[1], row2[0]])
+
+    data = pd.read_csv('/data/data_CEQ/ceq_data.csv')
+
+    f = open("/data/data_CEQ/causes.pkl", 'rb')
+    causes = pickle.load(f)
+    f.close()
+
+    f = open("/data/data_CEQ/effects.pkl", 'rb')
+    effects = pickle.load(f)
+    f.close()
+
+    res = inf_ceq(data, epoch, hps, causes, effects)
