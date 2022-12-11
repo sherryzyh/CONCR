@@ -2,6 +2,7 @@ export TRANSFORMERS_CACHE=/data/huggingface_cache/
 
 python3 code/train_discriminate.py \
   --data_dir "./data/Causal_Reasoning/" \
+  --save_name "wordquery_sentseg" \
   --model_dir "bert-base-cased" \
   --train "train.jsonl" \
   --dev "dev.jsonl" \

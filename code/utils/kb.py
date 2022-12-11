@@ -243,4 +243,5 @@ def add_knowledge_with_vm(mp_all,
         token_type_ids = token_type_ids[:max_length]
         pos = pos[:max_length]
         visible_matrix = visible_matrix[:max_length, :max_length]
-    return know_sent, pos, visible_matrix, seg
+    # return know_sent, pos, visible_matrix, seg
+    return know_sent, pos, visible_matrix, token_type_ids
