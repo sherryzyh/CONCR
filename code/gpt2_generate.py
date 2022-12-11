@@ -104,7 +104,6 @@ def main():
 
     # prepare logger
     logger, formatter = define_logger()
-    log_path = os.path.join(hps.log_dir, 'prompt1_generated_'+hps.model_name+'.txt')
     log_path = os.path.join(exp_path, exp_name + ".txt")
 
     nowtime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -142,7 +141,6 @@ def main():
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
 
-    # model = gpt2_generate(hps)
     model = GPT2LMHeadModel.from_pretrained(hps.model_dir, pad_token_id=50256)
 
     optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
