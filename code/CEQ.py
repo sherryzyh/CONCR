@@ -10,8 +10,8 @@ import json
 
 ALPHA = 0.66
 LAMBDA = 1
-EG_filename = './data_CEQ/gpt2_cr_eg_epoch_8_explanations.csv'
-OUT_filename = './data_CEQ/creg_CEQ.csv'
+EG_filename = '/data/output/saved_model/T2_generate_gpt2/predictions/T2_eg_pred_step_0.csv'
+OUT_filename = '/data/data_CEQ/T2_CEQ.csv'
 
 def tokenize_ceq(sent):
     sent = sent.lower()
@@ -133,7 +133,7 @@ def inf_ceq(data):
 
 
 if __name__ == '__main__':
-    dev_data = [json.loads(line) for line in open('/data/data_CEQ/Explanation_Generation/dev.jsonl', 'r')]
+    dev_data = [json.loads(line) for line in open('~/baseline/Explainable-Causal-Reasoning/data/Explanation_Generation/dev.jsonl', 'r')]
     headerList = ['cause', 'effect', 'explanation']
     with open('/data/data_CEQ/ceq_data1.csv', 'w', newline='', encoding='utf-8') as csvfile:
         spamwriter = csv.writer(csvfile)
