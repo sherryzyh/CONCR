@@ -1,10 +1,11 @@
 import argparse
-from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, load_loss_function, \
-    cr_evaluation, define_logger, save_model, save_metric_log
+from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, dual_tokenize, \
+    load_loss_function, cr_evaluation, define_logger, save_model, save_metric_log
 import random
 import numpy as np
 import torch
 from model.discriminate_model import pretrained_model
+from model.siamese_discriminate_model import siamese_reasoning_model
 # from transformers import AdamW
 import sys
 import torch.nn as nn
@@ -74,12 +75,19 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             if hps.cuda:
                 device = f"cuda:{hps.gpu}"
                 batch = tuple(term.to(device) for term in batch)
-            if not hps.with_kb:
-                sent, seg_id, attention_mask, labels, length = batch
-                probs = model(sent, attention_mask, seg_ids=seg_id, length=length)
-            else:
+
+            if hps.with_kb:
                 sent, seg_id, attention_mask, labels, pos_ids = batch
                 probs = model(sent, attention_mask, seg_ids=seg_id, position_ids=pos_ids)
+            else:
+                sent, seg_id, attention_mask, labels, length = batch
+                print("sent:", sent.size())
+                print("seg_id:", seg_id.size())
+                print("attention_mask:", attention_mask.size())
+                print("labels:", labels.size())
+                print("length:", length.size())
+
+                probs = model(sent, attention_mask, seg_ids=seg_id, length=length)
 
             if hps.loss_func == 'CrossEntropy':
                 loss = loss_function(probs, labels)
@@ -123,6 +131,20 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             return
 
 
+def load_tokenized_dataset(hps, data):
+    if hps.with_kb:
+        data_ids, data_mask, data_seg_ids, data_pos_ids, data_labels = get_all_features(data, hps)
+        DATA = TensorDataset(data_ids, data_mask, data_seg_ids, data_pos_ids, data_labels)
+    elif hps.model_architecture == "siamese":
+        data_ids, data_mask, dataseg_ids, data_labels, data_length, data_ask_for = dual_tokenize(data, hps)
+        DATA = TensorDataset(data_ids, data_mask, dataseg_ids, data_labels, data_length, data_ask_for)
+    else:  # standard
+        data_ids, data_mask, dataseg_ids, data_labels, data_length = quick_tokenize(data, hps)
+        DATA = TensorDataset(data_ids, data_mask, dataseg_ids, data_labels, data_length)
+
+    return DATA
+
+
 def main():
     # parse hyper parameters
     hps = parse_hps()
@@ -144,10 +166,10 @@ def main():
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
+    logger.info(f"[INFO] Experiment Path: {exp_path}")
+
     # logging all the hyper parameters
     logger.info(f"=== hps ===\n{hps}")
-
-    logger.info(f"[INFO] Experiment Path: {exp_path}")
 
     # load data
     logger.info("[DATA] Loading Data")
@@ -155,35 +177,25 @@ def main():
     train_data = load_data(os.path.join(hps.data_dir, hps.train))
     dev_data = load_data(os.path.join(hps.data_dir, hps.dev))
     # test_data = load_data(os.path.join(hps.data_dir, hps.test))
-    print("loaded data:", dev_data[0])
 
     # tokenization and data loading
-    if not hps.with_kb:
-        logger.info("[DATA] Tokenization and Padding for Data")
-        train_ids, train_mask, train_seg_ids, train_labels, train_length = quick_tokenize(train_data, hps)
-        dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = quick_tokenize(dev_data, hps)
-        # Dataset and DataLoader
-        logger.info("[INFO] Creating Dataset and splitting batch for data")
-        TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_length)
-        DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_length)
-        train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-        dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-    else:
-        logger.info("[DATA] Tokenization and Padding for Data")
-        train_ids, train_mask, train_seg_ids, train_pos_ids, train_labels = get_all_features(train_data, hps)
-        dev_ids, dev_mask, dev_seg_ids, dev_pos_ids, dev_labels = get_all_features(dev_data, hps)
-        # Dataset and DataLoader
-        logger.info("[INFO] Creating Dataset and splitting batch for data")
-        TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_pos_ids)
-        DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_pos_ids)
-        train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
-        dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+    logger.info("[DATA] Tokenization and Padding for Data")
+    TRAIN = load_tokenized_dataset(hps, train_data)
+    DEV = load_tokenized_dataset(hps, dev_data)
+
+    train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
+    dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
 
     # initialize model, optimizer, loss_function
     logger.info('[INFO] Loading pretrained model, setting optimizer and loss function')
     logger.info("[MODEL] {}".format(hps.model_name))
-    model = pretrained_model(hps)
+
+    if hps.model_architecture == "single":
+        model = pretrained_model(hps)
+    elif hps.model_architecture == "siamese":
+        model = siamese_reasoning_model(hps)
     # logger.info(f"=== model architecture ===\n{model}")
+
     optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
     loss_function = load_loss_function(hps)
 

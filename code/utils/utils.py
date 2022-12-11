@@ -45,6 +45,8 @@ def parse_hps():
     parser.add_argument('--test', type=str, default='test.pkl', help='The test data directory')
 
     # Model Settings
+    parser.add_argument('--model_architecture', type=str, default='single',
+                        help='Model Architecture. Options: [single][siamese]')
     parser.add_argument('--model_name', type=str, default='xlnet', help='Pretrained model name')
     parser.add_argument('--save_name', type=str, default=None, help='Experiment save name')
     parser.add_argument('--data_name', type=str, default='copa')
@@ -328,19 +330,47 @@ def contrastive_tokenize(data, hps, loading_mode="train"):
 
     data_size = len(data)
     max_len = max(length)
-    # print(f"dataset size: {data_size} | max seq len: {max_len}")
     input_ids_tensor = torch.LongTensor(input_ids).view((data_size, 3, max_len))
-    # print(f"input_ids_tensor: {input_ids_tensor.size()}")
     attention_mask_tensor = torch.LongTensor(attention_mask).view((data_size, 3, max_len))
-    # print(f"attention_mask_tensor: {attention_mask_tensor.size()}")
     token_type_ids_tensor = torch.LongTensor(token_type_ids).view((data_size, 3, max_len))
-    # print(f"token_type_ids_tensor: {token_type_ids_tensor.size()}")
     labels_tensor = torch.LongTensor(labels).view((data_size, 3))
-    # print(f"labels: {labels_tensor.size()}")
     length_tensor = torch.LongTensor(length).view((data_size, 3)) - 1
-    # print(f"length: {length_tensor.size()}")
 
     return input_ids_tensor, attention_mask_tensor, token_type_ids_tensor, labels_tensor, length_tensor
+
+
+def dual_tokenize(data, hps):
+    tokenizer = load_pretrained_tokenizer(hps)
+
+    instances = []
+    labels = []
+    ask_for = []
+    for example in data:
+        premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
+        instances += [premise, hyp0]
+        instances += [premise, hyp1]
+        labels += [0, 1] if example['label'] == 1 else [1, 0]
+        ask_for += [0, 0] if example['ask-for'] == 'cause' else [1, 1]
+
+    tokenized_inputs = tokenizer(instances, padding=True, return_token_type_ids=True, return_length=True)
+
+    input_ids = tokenized_inputs['input_ids']
+    attention_mask = tokenized_inputs['attention_mask']
+    token_type_ids = tokenized_inputs['token_type_ids']
+    length = tokenized_inputs['length']
+
+    data_size = len(data)
+    max_len = max(length)
+
+    input_ids_tensor = torch.LongTensor(input_ids).view((data_size * 2, 2, max_len))
+    attention_mask_tensor = torch.LongTensor(attention_mask).view((data_size * 2, 2, max_len))
+    token_type_ids_tensor = torch.LongTensor(token_type_ids).view((data_size * 2, 2, max_len))
+    labels_tensor = torch.LongTensor(labels)
+    length_tensor = torch.LongTensor(length).view((data_size * 2, 2)) - 1
+    ask_for_tensor = torch.LongTensor(ask_for)
+
+    return input_ids_tensor, attention_mask_tensor, token_type_ids_tensor, labels_tensor, \
+           length_tensor, ask_for_tensor
 
 
 def quick_tokenize(data, hps):
@@ -430,13 +460,18 @@ def tokenize_gen(data, hps):
             labels.append(seq2)
         elif hps.model_name == 'gpt2':
             if hps.prompt == 'T0':
-                inputs.append([example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?', example['conceptual_explanation']])
-                premise.append(example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?')
+                inputs.append([example['cause'][:-1] + ' is the cause. ' + example['effect'][
+                                                                           :-1] + ' is the effect. What is the explanation?',
+                               example['conceptual_explanation']])
+                premise.append(example['cause'][:-1] + ' is the cause. ' + example['effect'][
+                                                                           :-1] + ' is the effect. What is the explanation?')
             elif hps.prompt == 'T1':
-                inputs.append([example['cause'][:-1] + ' causes ' + example['effect'][:-1] + '. Why?', example['conceptual_explanation']])
+                inputs.append([example['cause'][:-1] + ' causes ' + example['effect'][:-1] + '. Why?',
+                               example['conceptual_explanation']])
                 premise.append(example['cause'][:-1] + ' causes ' + example['effect'][:-1] + '. Why?')
             elif hps.prompt == 'T2':
-                inputs.append(['Cause: ' + example['cause'] + ' ' + 'Effect: ' + example['effect'] + ' Explanation: ', example['conceptual_explanation']])
+                inputs.append(['Cause: ' + example['cause'] + ' ' + 'Effect: ' + example['effect'] + ' Explanation: ',
+                               example['conceptual_explanation']])
                 premise.append('Cause: ' + example['cause'] + ' ' + 'Effect: ' + example['effect'] + ' Explanation: ')
             else:
                 inputs.append([example['cause'] + ' ' + example['effect'], example['conceptual_explanation']])
@@ -488,7 +523,8 @@ def compute_ppl(hps, model, data):
         for example in data:
             # input_text = example['cause'] + ' ' + example['effect']
             if hps.prompt == 'T0':
-                input_text = example['cause'][:-1] + ' is the cause. ' + example['effect'][:-1] + ' is the effect. What is the explanation?'
+                input_text = example['cause'][:-1] + ' is the cause. ' + example['effect'][
+                                                                         :-1] + ' is the effect. What is the explanation?'
             elif hps.prompt == 'T1':
                 input_text = example['cause'][:-1] + ' causes ' + example['effect'][:-1] + '. Why?'
             elif hps.prompt == 'T2':
@@ -540,7 +576,6 @@ def compute_ppl(hps, model, data):
         ppl = torch.exp(torch.stack(lls).sum() / total_length)
 
     return ppl.item()
-
 
 
 """
@@ -681,6 +716,7 @@ def cr_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mo
 
     return count / len(true_labels), loss
 
+
 # called in gpt2_generate.py
 def gpt2_eg_evaluate(hps, data_loader, model, eval_step, exp_path, mode='dev', print_pred=True):
     tokenizer = GPT2Tokenizer.from_pretrained(hps.model_dir, padding_side='left')
@@ -778,7 +814,6 @@ def gpt2_eg_evaluate(hps, data_loader, model, eval_step, exp_path, mode='dev', p
         print_prediction(exp_path, f"{hps.prompt}_eg", hps, eval_step, output_text)
 
     return evaluation_output
-
 
 
 """
@@ -957,7 +992,6 @@ def sample_sequence(model, length, start_token=None, batch_size=None, context=No
 
             attention_mask = torch.cat((attention_mask, torch.ones(prev.shape).long().cuda()), -1)
     return output if input_type == 'ids' else output_id
-
 
 
 def bart_evaluate(model, data_loader, hps):
