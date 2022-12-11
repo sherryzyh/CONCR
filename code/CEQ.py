@@ -133,16 +133,16 @@ def inf_ceq(data):
 
 
 if __name__ == '__main__':
-    dev_data = [json.loads(line) for line in open('./data/Explanation_Generation/dev.jsonl', 'r')]
+    dev_data = [json.loads(line) for line in open('/data/data_CEQ/Explanation_Generation/dev.jsonl', 'r')]
     headerList = ['cause', 'effect', 'explanation']
-    with open('./data_CEQ/ceq_data1.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    with open('/data/data_CEQ/ceq_data1.csv', 'w', newline='', encoding='utf-8') as csvfile:
         spamwriter = csv.writer(csvfile)
         for d in dev_data:
             c = d['cause']
             e = d['effect']
             spamwriter.writerow([c, e])
     
-    with open('./data_CEQ/ceq_data1.csv') as in_1, open(EG_filename) as in_2, open('./data_CEQ/ceq_data.csv', 'w') as out:
+    with open('/data/data_CEQ/ceq_data1.csv') as in_1, open(EG_filename) as in_2, open('/data/data_CEQ/ceq_data.csv', 'w') as out:
         reader1 = csv.reader(in_1)
         reader2 = csv.reader(in_2)
         writer = csv.writer(out)
@@ -151,13 +151,13 @@ if __name__ == '__main__':
             if row1[0] and row2[0]:
                 writer.writerow([row1[0], row1[1], row2[0]])
 
-    data = pd.read_csv('./data_CEQ/ceq_data.csv')
+    data = pd.read_csv('/data/data_CEQ/ceq_data.csv')
 
-    f = open("./data_CEQ/causes.pkl", 'rb')
+    f = open("/data/data_CEQ/causes.pkl", 'rb')
     causes = pickle.load(f)
     f.close()
 
-    f = open("./data_CEQ/effects.pkl", 'rb')
+    f = open("/data/data_CEQ/effects.pkl", 'rb')
     effects = pickle.load(f)
     f.close()
 
