@@ -64,3 +64,19 @@ class CausalScorer(nn.Module):
         xypair = xypair.view(batch_size, batch_size, -1)  # [batch_size, batch_size, hidden_size * 2]
         # print("xypair.size:", xypair.size())
         return xypair
+
+class Projecter(nn.Module):
+    """
+    Head for getting sentence representations over RoBERTa/BERT's CLS representation.
+    """
+
+    def __init__(self, config):
+        super().__init__()
+        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+        self.activation = nn.Tanh()
+
+    def forward(self, features, **kwargs):
+        x = self.dense(features)
+        x = self.activation(x)
+
+        return x

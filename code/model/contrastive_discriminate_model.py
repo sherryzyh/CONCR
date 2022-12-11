@@ -8,7 +8,7 @@ from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel,
 from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertModel, BertLMPredictionHead
 from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOutputWithPoolingAndCrossAttentions
 from .discriminate_model import pretrained_model
-from .scorers import CosSimilarity, CausalScorer
+from .scorers import CosSimilarity, CausalScorer, Projecter
 
 class contrastive_reasoning_model(nn.Module):
     def __init__(self, hps):
@@ -33,6 +33,11 @@ class contrastive_reasoning_model(nn.Module):
         elif hps.model_name == 'gpt2':
             self.sentence_encoder = GPT2Model.from_pretrained(hps.model_dir)
             self.config = GPT2Config.from_pretrained(hps.model_dir)
+
+        # Projection
+        if hps.dual_projecter:
+            self.cause_projecter = Projecter(self.config)
+            self.effect_projecter = Projecter(self.config)
 
         # Scorer
         if hps.score == "cossim":
@@ -110,6 +115,12 @@ class contrastive_reasoning_model(nn.Module):
             (batch_size, num_sent, pooler_output.size(-1)))  # [bs, num_sent, hidden_size]
         return pooler_output
 
+    def get_cause_effect_projection(self, causes, effects):
+        if self.hps.dual_projecter:
+            causes = self.cause_projecter(causes)
+            effects = self.effect_projecter(effects)
+        return causes, effects
+
     def cl_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
         batch_size = input_ids.size(0)
         num_sent = input_ids.size(1)
@@ -122,6 +133,8 @@ class contrastive_reasoning_model(nn.Module):
         premise, hypothesis_0 = pooler_output[:, 0], pooler_output[:, 1]
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels, device)
 
+        causes_0, effects_0 = self.get_cause_effect_projection(causes_0, effects_0)
+
         contrastive_causal_score = self.sim(causes_0, effects_0)
         # print("contrastive score:", contrastive_causal_score.size())
         # print(contrastive_causal_score)
@@ -130,6 +143,7 @@ class contrastive_reasoning_model(nn.Module):
         if num_sent == 3:
             hypothesis_1 = pooler_output[:, 2]
             causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels, device)
+            causes_1, effects_1 = self.get_cause_effect_projection(causes_1, effects_1)
             hardneg_causal_score = self.sim(causes_1, effects_1)
 
             # print("contrastive score:", contrastive_causal_score.size())
@@ -172,11 +186,13 @@ class contrastive_reasoning_model(nn.Module):
 
         # Scoring hypothesis 0
         causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, labels, device)
+        causes_0, effects_0 = self.get_cause_effect_projection(causes_0, effects_0)
         premise_0_score_matrix = self.sim(causes_0, effects_0)
         score_0 = torch.diagonal(premise_0_score_matrix, offset=0).unsqueeze(1)
 
         # Scoring hypothesis 1
         causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, labels, device)
+        causes_1, effects_1 = self.get_cause_effect_projection(causes_1, effects_1)
         premise_1_score_matrix = self.sim(causes_1, effects_1)
         score_1 = torch.diagonal(premise_1_score_matrix, offset=0).unsqueeze(1)
 

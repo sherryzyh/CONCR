@@ -72,6 +72,7 @@ def parse_hps():
     # Method Settings
     parser.add_argument('--with_kb', type=str, default=False, help='Whether to use knowledge base')
     parser.add_argument('--with_cl', type=str, default=False, help='Whether to use knowledge base')
+    parser.add_argument('--dual_projecter', type=bool, default=False, help='Whether to use cause/effect projecter')
     parser.add_argument('--score', type=str, default="cossim", help="scorer type")
     parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
     parser.add_argument('--prompt', type=str, default=None, help="prompt template, options: [T0][T1][T2] etc.")
