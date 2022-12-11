@@ -45,7 +45,7 @@ def parse_hps():
     parser.add_argument('--test', type=str, default='test.pkl', help='The test data directory')
 
     # Model Settings
-    parser.add_argument('--model_architecture', type=str, default='single',
+    parser.add_argument('--model_architecture', type=str, default=None,
                         help='Model Architecture. Options: [single][siamese]')
     parser.add_argument('--model_name', type=str, default='xlnet', help='Pretrained model name')
     parser.add_argument('--save_name', type=str, default=None, help='Experiment save name')
