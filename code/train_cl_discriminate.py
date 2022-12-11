@@ -168,10 +168,21 @@ def main():
     # logger.info(f"=== model architecture ===\n{model}")
     if hps.use_wd:
         optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()),
-                                        lr=hps.lr,
-                                        weight_decay=hps.wd)
+                                      lr=hps.lr,
+                                      weight_decay=hps.wd)
+    elif hps.score == "causalscore":
+        scorer_params = model.sim.parameters()
+        scorer_param_id = list(map(id, scorer_params))
+        encoder_params = list(filter(lambda p: p.requires_grad and id(p) not in scorer_param_id, model.parameters()))
+
+        optimizer = torch.optim.AdamW([
+            {'params': encoder_params},
+            {'params': scorer_params, 'lr': hps.scorerlr}],
+            lr=hps.lr
+        )
     else:
         optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=hps.lr)
+
     loss_function = load_loss_function(hps)
 
     # multi-Gpu training

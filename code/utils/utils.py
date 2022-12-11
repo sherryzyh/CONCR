@@ -74,6 +74,7 @@ def parse_hps():
     parser.add_argument('--with_cl', type=str, default=False, help='Whether to use knowledge base')
     parser.add_argument('--dual_projecter', type=bool, default=False, help='Whether to use cause/effect projecter')
     parser.add_argument('--score', type=str, default="cossim", help="scorer type")
+    parser.add_argument('--scorerlr', type=float, default=1e-3, help="the learning rate of the causal scorer")
     parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
     parser.add_argument('--prompt', type=str, default=None, help="prompt template, options: [T0][T1][T2] etc.")
     parser.add_argument('--length', type=int, default=22, help='the max length of generated text')

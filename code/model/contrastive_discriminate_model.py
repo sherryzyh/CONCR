@@ -1,4 +1,3 @@
-from turtle import forward
 import torch.nn as nn
 import torch
 from transformers import BertModel, BertConfig, RobertaModel, RobertaConfig, AlbertModel, AlbertConfig
