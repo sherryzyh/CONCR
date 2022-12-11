@@ -654,7 +654,7 @@ def siamese_cr_evaluation(hps, dataloader, model, loss_function, eval_step, exp_
             batch = tuple(term.to(device) for term in batch)
 
         if mode == 'dev':
-            sent, seg_id, attention_mask, batch_labels, length, ask_for = batch
+            sent, attention_mask, seg_id, batch_labels, length, ask_for = batch
             probs_hypothesis_0, probs_hypothesis_1 = model(sent, attention_mask, ask_for=ask_for, seg_ids=seg_id,
                                                            length=length, mode="eval")
 

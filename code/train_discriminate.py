@@ -183,9 +183,7 @@ def main():
     else:
         nlp = None
     TRAIN = load_tokenized_dataset(hps, train_data, "train", nlp)
-    print("train data tokenized")
     DEV = load_tokenized_dataset(hps, dev_data, "dev", nlp)
-    print("dev data tokenized")
 
     train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
