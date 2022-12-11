@@ -10,8 +10,8 @@ import json
 
 ALPHA = 0.66
 LAMBDA = 1
-EG_filename = '/data/output/saved_model/T2_generate_gpt2/predictions/T2_eg_pred_step_4.csv'
-OUT_filename = '/data/data_CEQ/T2_CEQ.csv'
+EG_filename = '/data/output/saved_model/T1_generate_gpt2/predictions/T1_eg_pred_step_6.csv'
+OUT_filename = '/data/data_CEQ/T1_CEQ.csv'
 
 def tokenize_ceq(sent):
     sent = sent.lower()
