@@ -45,7 +45,7 @@ def parse_hps():
     parser.add_argument('--test', type=str, default='test.pkl', help='The test data directory')
 
     # Model Settings
-    parser.add_argument('--model_architecture', type=str, default=None,
+    parser.add_argument('--model_architecture', type=str, default="single",
                         help='Model Architecture. Options: [single][siamese]')
     parser.add_argument('--model_name', type=str, default='xlnet', help='Pretrained model name')
     parser.add_argument('--save_name', type=str, default=None, help='Experiment save name')
@@ -100,7 +100,7 @@ def get_exp_name(hps, task):
         else:
             exp_name = hps.prompt + "_" + exp_name
     elif task == "discriminate":
-        if hps.model_architecture is not None:
+        if hps.model_architecture != "single":
             exp_name = hps.model_architecture + "_" + exp_name
 
     return exp_name
