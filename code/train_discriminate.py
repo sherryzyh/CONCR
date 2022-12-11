@@ -105,7 +105,7 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
                     return
             step += 1
 
-        if hps.model.architecture == "siamese":
+        if hps.model_architecture == "siamese":
             train_accu, train_loss = siamese_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path,
                                                            print_pred=False)
         else:
