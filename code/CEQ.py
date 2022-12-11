@@ -133,7 +133,7 @@ def inf_ceq(data):
 
 
 if __name__ == '__main__':
-    dev_data = [json.loads(line) for line in open('~/baseline/Explainable-Causal-Reasoning/data/Explanation_Generation/dev.jsonl', 'r')]
+    dev_data = [json.loads(line) for line in open('../data/Explanation_Generation/dev.jsonl', 'r')]
     headerList = ['cause', 'effect', 'explanation']
     with open('/data/data_CEQ/ceq_data1.csv', 'w', newline='', encoding='utf-8') as csvfile:
         spamwriter = csv.writer(csvfile)
