@@ -1,6 +1,6 @@
 import argparse
 from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, dual_tokenize, \
-    load_loss_function, cr_evaluation, define_logger, save_model, save_metric_log
+    load_loss_function, vanilla_cr_evaluation, siamese_cr_evaluation, define_logger, save_model, save_metric_log
 import random
 import numpy as np
 import torch
@@ -18,6 +18,7 @@ from collections import defaultdict
 import json
 from utils.kb import get_all_features
 from utils.kb_dataset import MyDataLoader
+import spacy
 
 
 def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logger, hps, eval_step, metric_log, exp_name,
@@ -28,16 +29,13 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
     with torch.no_grad():
         print('\n')
         logger.info("[Dev Evaluation] Start Evaluation on Dev Set")
-        if hps.loss_func == 'CrossEntropy':
-            dev_accu, dev_exact_accu, dev_loss = cr_evaluation(hps, dev_dataloader, model, loss_function, eval_step,
-                                                               exp_path)
-            print('\n')
-            logger.info("[Dev Metrics] Dev Soft Accuracy: \t{}".format(dev_accu))
-            logger.info("[Dev Metrics] Dev Exact Accuracy: \t{}".format(dev_exact_accu))
+
+        if hps.model_architecture == "siamese":
+            dev_accu, dev_loss = siamese_cr_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path)
         else:
-            dev_accu, dev_loss = cr_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path)
-            print('\n')
-            logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
+            dev_accu, dev_loss = vanilla_cr_evaluation(hps, dev_dataloader, model, loss_function, eval_step, exp_path)
+        print('\n')
+        logger.info("[Dev Metrics] Dev Accuracy: \t{}".format(dev_accu))
         logger.info("[Dev Metrics] Dev Loss: \t{}".format(dev_loss))
 
         if dev_accu >= best_accuracy:
@@ -45,7 +43,6 @@ def evaluate(model, dev_dataloader, patient, best_accuracy, loss_function, logge
             best_accuracy = dev_accu
             save_model(model, hps, exp_name)
             logger.info("[Saving] Saving Model to {}".format(exp_path))
-
         else:
             patient += 1
 
@@ -108,8 +105,13 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
                     return
             step += 1
 
-        train_accu, train_loss = cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path,
-                                               print_pred=False)
+        if hps.model.architecture == "siamese":
+            train_accu, train_loss = siamese_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path,
+                                                           print_pred=False)
+        else:
+            train_accu, train_loss = vanilla_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path,
+                                                           print_pred=False)
+
         logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
         logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
         metric_log[f'epoch_{epoch}']['train_accu'] = train_accu
@@ -128,12 +130,12 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             return
 
 
-def load_tokenized_dataset(hps, data):
+def load_tokenized_dataset(hps, data, mode, nlp=None):
     if hps.with_kb:
-        data_ids, data_mask, data_seg_ids, data_pos_ids, data_labels = get_all_features(data, hps)
+        data_ids, data_mask, data_seg_ids, data_pos_ids, data_labels = get_all_features(data, hps, nlp)
         DATA = TensorDataset(data_ids, data_mask, data_seg_ids, data_pos_ids, data_labels)
     elif hps.model_architecture == "siamese":
-        data_ids, data_mask, dataseg_ids, data_labels, data_length, data_ask_for = dual_tokenize(data, hps)
+        data_ids, data_mask, dataseg_ids, data_labels, data_length, data_ask_for = dual_tokenize(data, hps, mode)
         DATA = TensorDataset(data_ids, data_mask, dataseg_ids, data_labels, data_length, data_ask_for)
     else:  # standard
         data_ids, data_mask, dataseg_ids, data_labels, data_length = quick_tokenize(data, hps)
@@ -177,8 +179,14 @@ def main():
 
     # tokenization and data loading
     logger.info("[DATA] Tokenization and Padding for Data")
-    TRAIN = load_tokenized_dataset(hps, train_data)
-    DEV = load_tokenized_dataset(hps, dev_data)
+    if hps.with_kb:
+        nlp = spacy.load('en_core_web_sm')
+    else:
+        nlp = None
+    TRAIN = load_tokenized_dataset(hps, train_data, "train", nlp)
+    print("train data tokenized")
+    DEV = load_tokenized_dataset(hps, dev_data, "dev", nlp)
+    print("dev data tokenized")
 
     train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)

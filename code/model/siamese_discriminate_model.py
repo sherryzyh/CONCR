@@ -10,6 +10,7 @@ from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOut
 from .discriminate_model import pretrained_model
 from .scorers import CosSimilarity, CausalScorer
 
+
 class siamese_reasoning_model(nn.Module):
     def __init__(self, hps):
         super(siamese_reasoning_model, self).__init__()
@@ -97,20 +98,18 @@ class siamese_reasoning_model(nn.Module):
             (batch_size, num_sent, pooler_output.size(-1)))  # [bs, num_sent, hidden_size]
         return pooler_output
 
-
     def forward(self, input_ids, attention_mask, ask_for, seg_ids=None, length=None, mode='train'):
-        print("input_ids:", input_ids.size())
-        print("attention_mask:", attention_mask.size())
-        print("seg_ids:", seg_ids.size())
-        print("length:", length.size())
-        print("ask_for:", ask_for.size())
+        if mode == "train":
+            return self.train_forward(input_ids, attention_mask, ask_for, seg_ids, length)
+        elif mode == "eval":
+            return self.eval_forward(input_ids, attention_mask, ask_for, seg_ids, length)
 
+    def train_forward(self, input_ids, attention_mask, ask_for, seg_ids=None, length=None):
         batch_size = input_ids.size(0)
         device = input_ids.device
 
         # Sentence pooler encoding
-        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, seg_ids, length)  # [bs, num_sent, hidden_size]
-        print("pooler_output.size:", pooler_output.size())
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, seg_ids, length)
 
         # Cause/Effect representation alignment
         premise, hypothesis = pooler_output[:, 0], pooler_output[:, 1]
@@ -118,3 +117,27 @@ class siamese_reasoning_model(nn.Module):
         scores_matirx = self.sim(causes, effects)
         scores = torch.diagonal(scores_matirx, offset=0).unsqueeze(1)
         return scores
+
+    def eval_forward(self, input_ids, attention_mask, ask_for, seg_ids=None, length=None):
+        batch_size = input_ids.size(0)
+        num_sent = input_ids.size(1)
+        device = input_ids.device
+
+        # Sentence pooler encoding
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, seg_ids, length)  # [bs, 3, hidden_size]
+
+        # Separate representation
+        premise, hypothesis_0, hypothesis_1 = pooler_output[:, 0], pooler_output[:, 1], pooler_output[:, 2]
+
+        # Scoring hypothesis 0
+        causes_0, effects_0 = self.compose_causal_pair(premise, hypothesis_0, ask_for, device)
+        premise_0_score_matrix = self.sim(causes_0, effects_0)
+        score_0 = torch.diagonal(premise_0_score_matrix, offset=0).unsqueeze(1)
+
+        # Scoring hypothesis 1
+        causes_1, effects_1 = self.compose_causal_pair(premise, hypothesis_1, ask_for, device)
+        premise_1_score_matrix = self.sim(causes_1, effects_1)
+        score_1 = torch.diagonal(premise_1_score_matrix, offset=0).unsqueeze(1)
+
+        # score = torch.cat([score_0, score_1], dim=1)
+        return score_0, score_1

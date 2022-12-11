@@ -98,6 +98,10 @@ def get_exp_name(hps, task):
             exp_name = "vanilla_" + exp_name
         else:
             exp_name = hps.prompt + "_" + exp_name
+    elif task == "discriminate":
+        if hps.model_architecture is not None:
+            exp_name = hps.model_architecture + "_" + exp_name
+
     return exp_name
 
 
@@ -339,7 +343,7 @@ def contrastive_tokenize(data, hps, loading_mode="train"):
     return input_ids_tensor, attention_mask_tensor, token_type_ids_tensor, labels_tensor, length_tensor
 
 
-def dual_tokenize(data, hps):
+def dual_tokenize(data, hps, mode="train"):
     tokenizer = load_pretrained_tokenizer(hps)
 
     instances = []
@@ -347,13 +351,19 @@ def dual_tokenize(data, hps):
     ask_for = []
     for example in data:
         premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
-        instances += [premise, hyp0]
-        instances += [premise, hyp1]
-        labels += [0, 1] if example['label'] == 1 else [1, 0]
-        ask_for += [0, 0] if example['ask-for'] == 'cause' else [1, 1]
+        if mode == "train":
+            instances += [premise, hyp0]
+            instances += [premise, hyp1]
+            labels += [0, 1] if example['label'] == 1 else [1, 0]
+            ask_for += [0, 0] if example['ask-for'] == 'cause' else [1, 1]
+        elif mode == "dev":
+            premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
+            instances += [premise, hyp0, hyp1]
+            label = [0, 1] if example['label'] == 1 else [1, 0]
+            labels.append(label)
+            ask_for += [0] if example['ask-for'] == 'cause' else [1]
 
     tokenized_inputs = tokenizer(instances, padding=True, return_token_type_ids=True, return_length=True)
-
     input_ids = tokenized_inputs['input_ids']
     attention_mask = tokenized_inputs['attention_mask']
     token_type_ids = tokenized_inputs['token_type_ids']
@@ -362,11 +372,19 @@ def dual_tokenize(data, hps):
     data_size = len(data)
     max_len = max(length)
 
-    input_ids_tensor = torch.LongTensor(input_ids).view((data_size * 2, 2, max_len))
-    attention_mask_tensor = torch.LongTensor(attention_mask).view((data_size * 2, 2, max_len))
-    token_type_ids_tensor = torch.LongTensor(token_type_ids).view((data_size * 2, 2, max_len))
+    if mode == "train":
+        input_ids_tensor = torch.LongTensor(input_ids).view((data_size * 2, 2, max_len))
+        attention_mask_tensor = torch.LongTensor(attention_mask).view((data_size * 2, 2, max_len))
+        token_type_ids_tensor = torch.LongTensor(token_type_ids).view((data_size * 2, 2, max_len))
+        length_tensor = torch.LongTensor(length).view((data_size * 2, 2)) - 1
+
+    elif mode == "dev":
+        input_ids_tensor = torch.LongTensor(input_ids).view((data_size, 3, max_len))
+        attention_mask_tensor = torch.LongTensor(attention_mask).view((data_size, 3, max_len))
+        token_type_ids_tensor = torch.LongTensor(token_type_ids).view((data_size, 3, max_len))
+        length_tensor = torch.LongTensor(length).view((data_size, 3)) - 1
+
     labels_tensor = torch.LongTensor(labels)
-    length_tensor = torch.LongTensor(length).view((data_size * 2, 2)) - 1
     ask_for_tensor = torch.LongTensor(ask_for)
 
     return input_ids_tensor, attention_mask_tensor, token_type_ids_tensor, labels_tensor, \
@@ -625,7 +643,45 @@ def cl_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mo
     return acc, loss
 
 
-def cr_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mode='dev', print_pred=True):
+def siamese_cr_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mode='dev', print_pred=True):
+    predictions = []
+    labels = []
+    loss = 0
+    model.eval()
+    for batch in dataloader:
+        if hps.cuda:
+            device = f"cuda:{hps.gpu}"
+            batch = tuple(term.to(device) for term in batch)
+
+        if mode == 'dev':
+            sent, seg_id, attention_mask, batch_labels, length, ask_for = batch
+            probs_hypothesis_0, probs_hypothesis_1 = model(sent, attention_mask, ask_for=ask_for, seg_ids=seg_id,
+                                                           length=length, mode="eval")
+
+        probs = torch.cat([probs_hypothesis_0, probs_hypothesis_1], dim=-1)
+        pred = torch.argmax(probs, dim=1).cpu()
+        predictions += pred.tolist()
+
+        loss += loss_function(probs.view(-1), batch_labels.view(-1).float()).item()
+        labels += torch.argmax(batch_labels, dim=1).cpu().tolist()
+
+    assert len(predictions) == len(labels), "Predictions length should be equal to the labels length!"
+
+    count = 0
+    for i in range(len(predictions)):
+        if predictions[i] == labels[i]:
+            count += 1
+        else:
+            continue
+    acc = count / len(predictions)
+
+    if print_pred:
+        print_prediction(exp_path, "siamese_cr", hps, eval_step, predictions)
+
+    return acc, loss
+
+
+def vanilla_cr_evaluation(hps, dataloader, model, loss_function, eval_step, exp_path, mode='dev', print_pred=True):
     predictions = []
     labels = []
     loss = 0
