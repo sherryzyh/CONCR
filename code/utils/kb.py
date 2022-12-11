@@ -111,7 +111,7 @@ def add_knowledge_with_vm(mp_all,
         :param ent: ('university', '/r/AtLocation', 6.325)
         :return: 返回 ent 翻译成自然语言并分词后的结果
         """
-        relation_to_language = {'/r/AtLocation': 'is at the location of the',
+        relation_to_language = {'/r/AtLocation': 'is located at', # 'is at the location of the'
                                 '/r/CapableOf': 'is capable of',
                                 '/r/Causes': 'causes',
                                 '/r/CausesDesire': 'causes the desire for', # 'causes the desire of'
@@ -122,25 +122,25 @@ def add_knowledge_with_vm(mp_all,
                                 '/r/Entails': 'entails',
                                 '/r/EtymologicallyDerivedFrom': 'is etymologically derived from',
                                 '/r/EtymologicallyRelatedTo': 'is etymologically related to',
-                                '/r/FormOf': 'is an inflected form of',
+                                #'/r/FormOf': 'is an inflected form of',
                                 '/r/HasA': 'has a',
                                 '/r/HasContext': 'appears in the context of',
-                                '/r/HasFirstSubevent': 'is an event that begins with subevent',
-                                '/r/HasLastSubevent': 'is an event that concludes with subevent',
-                                '/r/HasPrerequisite': 'has prerequisite of', # 'has prerequisite is'
+                                '/r/HasFirstSubevent': 'begins with', # 'is an event that begins with subevent'
+                                '/r/HasLastSubevent': 'concludes with', # 'is an event that concludes with subevent'
+                                '/r/HasPrerequisite': 'has a prerequisite of', # 'has prerequisite is'
                                 '/r/HasProperty': 'has an attribute of', # 'has an attribute is'
-                                '/r/HasSubevent': 'has a subevent is',
-                                '/r/InstanceOf': 'runs an instance of',
+                                '/r/HasSubevent': 'has a subevent of', # 'has a subevent is'
+                                '/r/InstanceOf': 'is a', # 'runs an instance of'
                                 '/r/IsA': 'is a',
                                 '/r/LocatedNear': 'is located near',
                                 '/r/MadeOf': 'is made of',
-                                '/r/MannerOf': 'is the manner of',
+                                '/r/MannerOf': 'is a specific way to do', # 'is the manner of'
                                 '/r/MotivatedByGoal': 'is a step toward accomplishing the goal',
                                 '/r/NotCapableOf': 'is not capable of',
                                 '/r/NotDesires': 'does not desire',
                                 '/r/NotHasProperty': 'has no attribute of', # 'has no attribute'
                                 '/r/PartOf': 'is a part of',
-                                '/r/ReceivesAction': 'receives action for',
+                                '/r/ReceivesAction': 'can receive action for', # 'receives action for'
                                 '/r/RelatedTo': 'is related to',
                                 '/r/SimilarTo': 'is similar to',
                                 '/r/SymbolOf': 'is the symbol of',
