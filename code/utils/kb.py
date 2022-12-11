@@ -7,6 +7,7 @@ import numpy as np
 from utils.graph import GraphUtils
 from utils.utils import load_pretrained_tokenizer
 from utils.kb_dataset import MyDataset
+import spacy
 
 def get_all_features(data, hps, max_seq_length=128):
     semantic_features = get_features_with_kbert(data, hps,
@@ -35,7 +36,8 @@ def get_features_with_kbert(data, hps,
     print('reduce graph noise done!')
 
     features = []
-    for example in data:
+    # for example in data:
+    for e, example in enumerate(data):
         premise, a1, a2 = example['premise'], example['hypothesis1'], example['hypothesis2']
         if example['ask-for'] == 'cause':
             instance1 = [a1, premise]
@@ -47,40 +49,29 @@ def get_features_with_kbert(data, hps,
         # choices_features = []
         labels = [0, 1] if example['label'] == 1 else [1, 0]
         for i, instance in enumerate([instance1, instance2]):
-            context_tokens = instance[0]
-            ending_tokens = instance[1]
+            cause, effect = instance
 
-            source_sent = '{} {} {} {} {}'.format(tokenizer.cls_token,
-                                                  context_tokens,
-                                                  tokenizer.sep_token,
-                                                  ending_tokens,
-                                                  tokenizer.sep_token)
+            # source_sent = '{} {} {} {} {}'.format(tokenizer.cls_token,
+            #                                       context_tokens,
+            #                                       tokenizer.sep_token,
+            #                                       ending_tokens,
+            #                                       tokenizer.sep_token)
 
             tokens, soft_pos_id, attention_mask, segment_ids = add_knowledge_with_vm(mp_all=graph.mp_all,
-                                                                                     sent_batch=[source_sent],
+                                                                                     cause=cause,
+                                                                                     effect=effect,
                                                                                      tokenizer=tokenizer,
                                                                                      max_entities=2,
                                                                                      max_length=max_seq_length)
-            tokens = tokens[0]
-            soft_pos_id = torch.LongTensor(soft_pos_id[0])
-            attention_mask = torch.LongTensor(attention_mask[0])
-            segment_ids = torch.LongTensor(segment_ids[0])
+            soft_pos_id = torch.LongTensor(soft_pos_id)
+            attention_mask = torch.LongTensor(attention_mask)
+            segment_ids = torch.LongTensor(segment_ids)
             input_ids = torch.LongTensor(tokenizer.convert_tokens_to_ids(tokens))
 
-            assert input_ids.shape[0] == max_seq_length
-            assert attention_mask.shape[0] == max_seq_length
-            assert soft_pos_id.shape[0] == max_seq_length
-            assert segment_ids.shape[0] == max_seq_length
-
-            # soft_pos_id = soft_pos_id[0]
-            # attention_mask = attention_mask[0]
-            # segment_ids = segment_ids[0]
-            # input_ids = tokenizer.convert_tokens_to_ids(tokens)
-
-            # assert len(input_ids) == max_seq_length
-            # assert len(attention_mask) == max_seq_length
-            # assert len(soft_pos_id) == max_seq_length
-            # assert len(segment_ids) == max_seq_length
+            assert input_ids.shape[0] == max_seq_length, f"{input_ids.shape[0]}"
+            assert attention_mask.shape[0] == max_seq_length, f"{attention_mask.shape[0]}"
+            assert soft_pos_id.shape[0] == max_seq_length, f"{soft_pos_id[0]}"
+            assert segment_ids.shape[0] == max_seq_length, f"{segment_ids[0]}"
 
             if 'Roberta' in str(type(tokenizer)):
                 # 这里做特判是因为 Roberta 的 Embedding pos_id 是从 2 开始的
@@ -89,11 +80,20 @@ def get_features_with_kbert(data, hps,
 
             features.append(
                 ((tokens, input_ids, attention_mask, segment_ids, soft_pos_id), labels[i]))
+            if e < 5:
+                print(i)
+                print(f'tokens: {[(ti, t) for ti, t in enumerate(tokens)]}')
+                print(f'input_ids: {input_ids}')
+                print(f'attention_mask: \n1: {attention_mask[1]}\n5: {attention_mask[5]}\n15: {attention_mask[15]}\n20: {attention_mask[20]}')
+                print(f'segment_ids: {segment_ids}')
+                print(f'soft_pos_id: {soft_pos_id}')
+                print(f'label: {labels[i]}')
     return features
 
 
 def add_knowledge_with_vm(mp_all,
-                          sent_batch,
+                          cause,
+                          effect,
                           tokenizer,
                           max_entities=2,
                           max_length=128):
@@ -113,7 +113,7 @@ def add_knowledge_with_vm(mp_all,
         relation_to_language = {'/r/AtLocation': 'is at the location of the',
                                 '/r/CapableOf': 'is capable of',
                                 '/r/Causes': 'causes',
-                                '/r/CausesDesire': 'causes the desire of',
+                                '/r/CausesDesire': 'causes the desire for', # 'causes the desire of'
                                 '/r/CreatedBy': 'is created by',
                                 '/r/DefinedAs': 'is defined as',
                                 '/r/DerivedFrom': 'is derived from',
@@ -126,8 +126,8 @@ def add_knowledge_with_vm(mp_all,
                                 '/r/HasContext': 'appears in the context of',
                                 '/r/HasFirstSubevent': 'is an event that begins with subevent',
                                 '/r/HasLastSubevent': 'is an event that concludes with subevent',
-                                '/r/HasPrerequisite': 'has prerequisite is',
-                                '/r/HasProperty': 'has an attribute is',
+                                '/r/HasPrerequisite': 'has prerequisite of', # 'has prerequisite is'
+                                '/r/HasProperty': 'has an attribute of', # 'has an attribute is'
                                 '/r/HasSubevent': 'has a subevent is',
                                 '/r/InstanceOf': 'runs an instance of',
                                 '/r/IsA': 'is a',
@@ -137,7 +137,7 @@ def add_knowledge_with_vm(mp_all,
                                 '/r/MotivatedByGoal': 'is a step toward accomplishing the goal',
                                 '/r/NotCapableOf': 'is not capable of',
                                 '/r/NotDesires': 'does not desire',
-                                '/r/NotHasProperty': 'has no attribute',
+                                '/r/NotHasProperty': 'has no attribute of', # 'has no attribute'
                                 '/r/PartOf': 'is a part of',
                                 '/r/ReceivesAction': 'receives action for',
                                 '/r/RelatedTo': 'is related to',
@@ -157,130 +157,93 @@ def add_knowledge_with_vm(mp_all,
         #     ent_values[0] = 'Ġ' + ent_values[0]
         return ent_values
 
-    split_sent_batch = [tokenizer.tokenize(sent) for sent in sent_batch]
-    know_sent_batch = []
-    position_batch = []
-    visible_matrix_batch = []
-    seg_batch = []
-    for split_sent in split_sent_batch:
-
-        # create tree
-        sent_tree = []
-        pos_idx_tree = []
-        abs_idx_tree = []
-        pos_idx = -1  # soft position idx，深度相同的节点 idx 相等
-        abs_idx = -1  # hard position idx，不重复
-        abs_idx_src = []
-        for token in split_sent:
-            """
-            k-bert 这里只挑了前 max_entities 个 kg 里邻接的实体，如果采样得出或根据其他方法会不会更好
-            """
-            # entities = list(mp_all.get(token,
-            #                            []))[:max_entities]
-            # Ġ 是 GPT-2/Roberta Tokenizer，▁ 是 Albert 中的
-            entities = sorted(list(mp_all.get(token.strip(',|.|?|;|:|!|Ġ|_|▁'), [])), key=lambda x: x[2], reverse=True)[
-                       :max_entities]
-
-            sent_tree.append((token, entities))
-
-            if token in tokenizer.all_special_tokens:
-                token_pos_idx = [pos_idx + 1]
-                token_abs_idx = [abs_idx + 1]
-            else:
-                token_pos_idx = [pos_idx + 1]
-                token_abs_idx = [abs_idx + 1]
-                # token_pos_idx = [
-                #     pos_idx + i for i in range(1,
-                #                                len(token) + 1)
-                # ]
-                # token_abs_idx = [
-                #     abs_idx + i for i in range(1,
-                #                                len(token) + 1)
-                # ]
-            abs_idx = token_abs_idx[-1]
-
-            entities_pos_idx = []
-            entities_abs_idx = []
-            for ent in entities:
-                ent_values = conceptnet_relation_to_nl(ent)
-
-                ent_pos_idx = [
-                    token_pos_idx[-1] + i for i in range(1,
-                                                         len(ent_values) + 1)
-                ]
-                entities_pos_idx.append(ent_pos_idx)
-                ent_abs_idx = [abs_idx + i for i in range(1, len(ent_values) + 1)]
-                abs_idx = ent_abs_idx[-1]
-                entities_abs_idx.append(ent_abs_idx)
-
-            pos_idx_tree.append((token_pos_idx, entities_pos_idx))
-            pos_idx = token_pos_idx[-1]
-            abs_idx_tree.append((token_abs_idx, entities_abs_idx))
-            abs_idx_src += token_abs_idx
-
-        # Get know_sent and pos
-        know_sent = []  # 每个 token 占一个
-        pos = []  # 每个 token 的 soft position idx
-        seg = []  # token 是属于主干还是分支，主干为 0，分支为 1
-        for i in range(len(sent_tree)):
-            word = sent_tree[i][0]
-            if word in tokenizer.all_special_tokens:
-                know_sent += [word]
-                seg += [0]
-            else:
-                know_sent += [word]
-                seg += [0]
-            pos += pos_idx_tree[i][0]
-            for j in range(len(sent_tree[i][1])):
-                ent = sent_tree[i][1][j]  # ('university', '/r/AtLocation', 6.325)
-                ent_values = conceptnet_relation_to_nl(ent)
-
-                add_word = ent_values
-                know_sent += add_word
-                seg += [1] * len(add_word)
-                pos += list(pos_idx_tree[i][1][j])
-
-        token_num = len(know_sent)
-
-        # Calculate visible matrix
-        visible_matrix = np.zeros((token_num, token_num))
-        for item in abs_idx_tree:
-            src_ids = item[0]
-            for id in src_ids:
-                # abs_idx_src 代表所有主干上的节点 id，src_ids 为当前遍历主干 token 的 id
-                # 这里 visible_abs_idx 代表主干上的节点可以看到主干其他节点，并且也可以看到其下面分支的节点
-                visible_abs_idx = abs_idx_src + [
-                    idx for ent in item[1] for idx in ent
-                ]
-                visible_matrix[id, visible_abs_idx] = 1
-            for ent in item[1]:
-                for id in ent:
-                    # 这里遍历分支节点，它可以看到该分支上所有节点以及其依赖的那些主干节点
-                    # 依赖的主干节点可能有多个，因为一个词比如 “我的世界” 它分字后有四个节点
-                    visible_abs_idx = ent + src_ids
-                    visible_matrix[id, visible_abs_idx] = 1
-
-        src_length = len(know_sent)
-        if len(know_sent) < max_length:
-            pad_num = max_length - src_length
-            know_sent += [tokenizer.pad_token] * pad_num
-            seg += [0] * pad_num
-            pos += [max_length - 1] * pad_num
-            visible_matrix = np.pad(visible_matrix,
-                                    ((0, pad_num), (0, pad_num)),
-                                    'constant')  # pad 0
+    nlp = spacy.load('en_core_web_sm')
+    cause_tokens = tokenizer.tokenize(cause)
+    effect_tokens = tokenizer.tokenize(effect)
+    instance_tokens = [tokenizer.cls_token] + cause_tokens + [tokenizer.sep_token] + effect_tokens + [tokenizer.sep_token]
+    ori_token_type_ids = [0] * (len(cause_tokens) + 2) + [1] * (len(effect_tokens) + 1)
+    # know_search: 
+    #   key: index of ending token
+    #   value: [index of starting token, word, tokenized_ent_list]
+    know_search = dict()
+    incomplete_word = False
+    word_cache = ""
+    cache_start = 0
+    for i, token in enumerate(instance_tokens):
+        if len(token) < 3 or token[:2] != "##":
+            if not incomplete_word:
+                word_cache = token
+                continue
+            know_search[i - 1] = [cache_start, word_cache]
+            cache_start = i
+            incomplete_word = False
+            word_cache = token
         else:
-            know_sent = know_sent[:max_length]
-            seg = seg[:max_length]
-            pos = pos[:max_length]
-            visible_matrix = visible_matrix[:max_length, :max_length]
+            word_cache += token[2:]
+            incomplete_word = True
+    know_search[len(instance_tokens) - 1] = [cache_start, word_cache]
+    ent_token_num = 0
 
-        know_sent_batch.append(know_sent)
-        position_batch.append(pos)
-        visible_matrix_batch.append(visible_matrix)
-        seg_batch.append(seg)
-
-    return know_sent_batch, position_batch, visible_matrix_batch, seg_batch
+    for key, value in know_search.items():
+        query = nlp(value[1])[0].lemma_
+        entities = sorted(list(mp_all.get(query.strip(',|.|?|;|:|!|Ġ|_|▁'), [])), key=lambda x: x[2], reverse=True)[
+                    :max_entities]
+        tokenized_ent_list = []
+        for ent in entities:
+            ent_tokens = conceptnet_relation_to_nl(ent)
+            tokenized_ent_list.append(ent_tokens)
+            ent_token_num += len(ent_tokens)
+        know_search[key].append(tokenized_ent_list)
+    
+    know_sent = []  # 每个 token 占一个
+    pos = []  # 每个 token 的 soft position idx
+    seg = []  # token 是属于主干还是分支，主干为 0，分支为 1
+    token_type_ids = [] # whether a token is in the first (0) or second (1) sentence
+    new_sent_len = ent_token_num + len(instance_tokens)
+    visible_matrix = np.zeros((new_sent_len, new_sent_len))
+    hard_pos_idx = -1
+    for i, ori_token in enumerate(instance_tokens):
+        token_type = ori_token_type_ids[i]
+        hard_pos_idx += 1
+        know_sent.append(ori_token)
+        pos.append(i)
+        seg.append(0)
+        token_type_ids.append(token_type)
+        if i not in know_search:
+            continue
+        tokenized_ent_list = know_search[i][2]
+        for ent in tokenized_ent_list:
+            know_sent += ent
+            pos += [(i + j + 1) for j in range(len(ent))]
+            seg += [1] * len(ent)
+            token_type_ids += [token_type] * len(ent)
+            for j in range(hard_pos_idx + 1, hard_pos_idx + len(ent) + 1):
+                for k in range(hard_pos_idx + 1, hard_pos_idx + len(ent) + 1):
+                    visible_matrix[j][k] = 1
+                visible_matrix[j][i] = 1
+                visible_matrix[i][j] = 1
+            hard_pos_idx += len(ent)
+    for i, seg_val_i in enumerate(seg):
+        for j, seg_val_j in enumerate(seg):
+            if seg_val_i == 0 and seg_val_j == 0:
+                visible_matrix[i][j] = 1
+    src_length = len(know_sent)
+    if len(know_sent) < max_length:
+        pad_num = max_length - src_length
+        know_sent += [tokenizer.pad_token] * pad_num
+        seg += [0] * pad_num
+        token_type_ids += [0] * pad_num
+        pos += [max_length - 1] * pad_num
+        visible_matrix = np.pad(visible_matrix,
+                                ((0, pad_num), (0, pad_num)),
+                                'constant')  # pad 0
+    else:
+        know_sent = know_sent[:max_length]
+        seg = seg[:max_length]
+        token_type_ids = token_type_ids[:max_length]
+        pos = pos[:max_length]
+        visible_matrix = visible_matrix[:max_length, :max_length]
+    return know_sent, pos, visible_matrix, seg
 
 
 def create_datasets_with_kbert(features, shuffle=True):

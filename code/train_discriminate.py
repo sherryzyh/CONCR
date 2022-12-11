@@ -149,7 +149,10 @@ def main():
     # parse hyper parameters
     hps = parse_hps()
     exp_name = get_exp_name(hps, "discriminate")
-    exp_path = get_exp_path(hps, exp_name)
+    # exp_path = get_exp_path(hps, exp_name)
+    exp_path = "output/" + exp_name
+    if not os.path.exists(exp_path):
+        os.mkdir(exp_path)
 
     # fix random seed
     if hps.set_seed:

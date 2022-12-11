@@ -10,3 +10,5 @@ pip install jsonlines
 pip install matplotlib
 pip install wordfreq
 pip install bidict
+pip install spacy
+python -m spacy download en_core_web_sm
