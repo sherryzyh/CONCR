@@ -79,14 +79,11 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             if hps.with_kb:
                 sent, seg_id, attention_mask, labels, pos_ids = batch
                 probs = model(sent, attention_mask, seg_ids=seg_id, position_ids=pos_ids)
+            elif hps.model_architecture == "siamese":
+                sent, seg_id, attention_mask, labels, length, ask_for = batch
+                probs = model(sent, attention_mask, ask_for=ask_for, seg_ids=seg_id, length=length)
             else:
                 sent, seg_id, attention_mask, labels, length = batch
-                print("sent:", sent.size())
-                print("seg_id:", seg_id.size())
-                print("attention_mask:", attention_mask.size())
-                print("labels:", labels.size())
-                print("length:", length.size())
-
                 probs = model(sent, attention_mask, seg_ids=seg_id, length=length)
 
             if hps.loss_func == 'CrossEntropy':
@@ -149,10 +146,7 @@ def main():
     # parse hyper parameters
     hps = parse_hps()
     exp_name = get_exp_name(hps, "discriminate")
-    # exp_path = get_exp_path(hps, exp_name)
-    exp_path = "output/" + exp_name
-    if not os.path.exists(exp_path):
-        os.mkdir(exp_path)
+    exp_path = get_exp_path(hps, exp_name)
 
     # fix random seed
     if hps.set_seed:
