@@ -124,7 +124,8 @@ class siamese_reasoning_model(nn.Module):
         device = input_ids.device
 
         # Sentence pooler encoding
-        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, seg_ids, length)  # [bs, 3, hidden_size]
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, seg_ids, length)  # [bs, num_sent, hidden_size]
+
 
         # Separate representation
         premise, hypothesis_0, hypothesis_1 = pooler_output[:, 0], pooler_output[:, 1], pooler_output[:, 2]

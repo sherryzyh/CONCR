@@ -107,14 +107,14 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
             step += 1
 
         if hps.model_architecture == "siamese":
-            train_accu, train_loss = siamese_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path, print_pred=False)
+            logger.info("[Train Metrics] [Warning] Siamese Architecture training data evaluation to be done soon")
         else:
             train_accu, train_loss = vanilla_cr_evaluation(hps, train_dataloader, model, loss_function, epoch, exp_path, print_pred=False)
 
-        logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
-        logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
-        metric_log[f'epoch_{epoch}']['train_accu'] = train_accu
-        metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
+            logger.info("[Train Metrics] Train Accuracy: \t{}".format(train_accu))
+            logger.info("[Train Metrics] Train Loss: \t{}".format(train_loss))
+            metric_log[f'epoch_{epoch}']['train_accu'] = train_accu
+            metric_log[f'epoch_{epoch}']['train_loss'] = train_loss
 
         if hps.evaluation_strategy == "epoch":
             patient, stop_train, dev_accu, dev_loss = evaluate(model, dev_dataloader, patient, best_accuracy,
