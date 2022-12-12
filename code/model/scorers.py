@@ -17,6 +17,17 @@ class CosSimilarity(nn.Module):
         y = y.unsqueeze(0)
         return self.cos(x, y) / self.temp
 
+class DotScorer(nn.Module):
+    """
+    Dot product or cosine similarity
+    """
+
+    def __init__(self,):
+        super().__init__()
+
+    def forward(self, x, y):
+        scores = x @ y.T
+        return scores
 
 class CausalScorer(nn.Module):
     """

@@ -7,7 +7,7 @@ from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel,
 from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertModel, BertLMPredictionHead
 from transformers.modeling_outputs import SequenceClassifierOutput, BaseModelOutputWithPoolingAndCrossAttentions
 from .discriminate_model import pretrained_model
-from .scorers import CosSimilarity, CausalScorer, Projecter
+from .scorers import CosSimilarity, CausalScorer, DotScorer, Projecter
 
 class contrastive_reasoning_model(nn.Module):
     def __init__(self, hps):
@@ -43,6 +43,8 @@ class contrastive_reasoning_model(nn.Module):
             self.sim = CosSimilarity()
         elif hps.score == "causalscore":
             self.sim = CausalScorer(self.config)
+        elif hps.score == "dot":
+            self.sim = DotScorer()
 
         # Contrastive Loss
         self.contrastive_loss = nn.CrossEntropyLoss()
