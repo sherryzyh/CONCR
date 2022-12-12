@@ -5,24 +5,22 @@ import torch
 from transformers import BertTokenizer, RobertaTokenizer
 import numpy as np
 from utils.graph import GraphUtils
-from utils.utils import load_pretrained_tokenizer
 from utils.kb_dataset import MyDataset
 import spacy
 
-def get_all_x_features(sentences, hps, nlp, max_seq_length=128):
-    semantic_features = get_x_features_with_kbert(sentences, hps, nlp,
-                                              max_seq_length=max_seq_length)
+
+def get_all_x_features(tokenizer, sentences, hps, nlp, max_seq_length=128):
+    semantic_features = get_x_features_with_kbert(tokenizer, sentences, hps, nlp,
+                                                  max_seq_length=max_seq_length)
     input_ids = [i[1] for i in semantic_features]
     attention_mask = [i[2] for i in semantic_features]
     segment_ids = [i[3] for i in semantic_features]
     soft_pos_ids = [i[4] for i in semantic_features]
     return torch.stack(input_ids, dim=0), torch.stack(attention_mask, dim=0), \
-        torch.stack(segment_ids, dim=0), torch.stack(soft_pos_ids, dim=0)
+           torch.stack(segment_ids, dim=0), torch.stack(soft_pos_ids, dim=0)
 
 
-def get_x_features_with_kbert(sentences, hps, nlp, max_seq_length):
-    tokenizer = load_pretrained_tokenizer(hps)
-
+def get_x_features_with_kbert(tokenizer, sentences, hps, nlp, max_seq_length):
     graph = GraphUtils()
     print('graph init...')
     graph.load_mp_all_by_pickle(graph.args['mp_pickle_path'])
@@ -37,11 +35,11 @@ def get_x_features_with_kbert(sentences, hps, nlp, max_seq_length):
     # for example in data:
     for s, sentence in enumerate(sentences):
         tokens, soft_pos_id, attention_mask, segment_ids = add_knowledge_with_vm(mp_all=graph.mp_all,
-                                                                                    sentence=sentence,
-                                                                                    tokenizer=tokenizer,
-                                                                                    nlp=nlp,
-                                                                                    max_entities=2,
-                                                                                    max_length=max_seq_length)
+                                                                                 sentence=sentence,
+                                                                                 tokenizer=tokenizer,
+                                                                                 nlp=nlp,
+                                                                                 max_entities=2,
+                                                                                 max_length=max_seq_length)
         soft_pos_id = torch.LongTensor(soft_pos_id)
         attention_mask = torch.LongTensor(attention_mask)
         segment_ids = torch.LongTensor(segment_ids)
@@ -88,10 +86,10 @@ def add_knowledge_with_vm(mp_all,
         :param ent: ('university', '/r/AtLocation', 6.325)
         :return: 返回 ent 翻译成自然语言并分词后的结果
         """
-        relation_to_language = {'/r/AtLocation': 'is located at', # 'is at the location of the'
+        relation_to_language = {'/r/AtLocation': 'is located at',  # 'is at the location of the'
                                 '/r/CapableOf': 'is capable of',
                                 '/r/Causes': 'causes',
-                                '/r/CausesDesire': 'causes the desire for', # 'causes the desire of'
+                                '/r/CausesDesire': 'causes the desire for',  # 'causes the desire of'
                                 '/r/CreatedBy': 'is created by',
                                 '/r/DefinedAs': 'is defined as',
                                 '/r/DerivedFrom': 'is derived from',
@@ -99,25 +97,25 @@ def add_knowledge_with_vm(mp_all,
                                 '/r/Entails': 'entails',
                                 '/r/EtymologicallyDerivedFrom': 'is etymologically derived from',
                                 '/r/EtymologicallyRelatedTo': 'is etymologically related to',
-                                #'/r/FormOf': 'is an inflected form of',
+                                # '/r/FormOf': 'is an inflected form of',
                                 '/r/HasA': 'has a',
                                 '/r/HasContext': 'appears in the context of',
-                                '/r/HasFirstSubevent': 'begins with', # 'is an event that begins with subevent'
-                                '/r/HasLastSubevent': 'concludes with', # 'is an event that concludes with subevent'
-                                '/r/HasPrerequisite': 'has a prerequisite of', # 'has prerequisite is'
-                                '/r/HasProperty': 'has an attribute of', # 'has an attribute is'
-                                '/r/HasSubevent': 'has a subevent of', # 'has a subevent is'
-                                '/r/InstanceOf': 'is a', # 'runs an instance of'
+                                '/r/HasFirstSubevent': 'begins with',  # 'is an event that begins with subevent'
+                                '/r/HasLastSubevent': 'concludes with',  # 'is an event that concludes with subevent'
+                                '/r/HasPrerequisite': 'has a prerequisite of',  # 'has prerequisite is'
+                                '/r/HasProperty': 'has an attribute of',  # 'has an attribute is'
+                                '/r/HasSubevent': 'has a subevent of',  # 'has a subevent is'
+                                '/r/InstanceOf': 'is a',  # 'runs an instance of'
                                 '/r/IsA': 'is a',
                                 '/r/LocatedNear': 'is located near',
                                 '/r/MadeOf': 'is made of',
-                                '/r/MannerOf': 'is a specific way to do', # 'is the manner of'
+                                '/r/MannerOf': 'is a specific way to do',  # 'is the manner of'
                                 '/r/MotivatedByGoal': 'is a step toward accomplishing the goal',
                                 '/r/NotCapableOf': 'is not capable of',
                                 '/r/NotDesires': 'does not desire',
-                                '/r/NotHasProperty': 'has no attribute of', # 'has no attribute'
+                                '/r/NotHasProperty': 'has no attribute of',  # 'has no attribute'
                                 '/r/PartOf': 'is a part of',
-                                '/r/ReceivesAction': 'can receive action for', # 'receives action for'
+                                '/r/ReceivesAction': 'can receive action for',  # 'receives action for'
                                 '/r/RelatedTo': 'is related to',
                                 '/r/SimilarTo': 'is similar to',
                                 '/r/SymbolOf': 'is the symbol of',
@@ -136,7 +134,7 @@ def add_knowledge_with_vm(mp_all,
         return ent_values
 
     instance_tokens = tokenizer.tokenize(sentence)
-    # know_search: 
+    # know_search:
     #   key: index of ending token
     #   value: [index of starting token, word, tokenized_ent_list]
     know_search = dict()
@@ -161,19 +159,19 @@ def add_knowledge_with_vm(mp_all,
     for key, value in know_search.items():
         query = nlp(value[1])[0].lemma_
         entities = sorted(list(mp_all.get(query.strip(',|.|?|;|:|!|Ġ|_|▁'), [])), key=lambda x: x[2], reverse=True)[
-                    :max_entities]
+                   :max_entities]
         tokenized_ent_list = []
         for ent in entities:
             ent_tokens = conceptnet_relation_to_nl(ent)
             tokenized_ent_list.append(ent_tokens)
             ent_token_num += len(ent_tokens)
         know_search[key].append(tokenized_ent_list)
-    
+
     know_sent = []  # 每个 token 占一个
     pos = []  # 每个 token 的 soft position idx
     seg = []  # token 是属于主干还是分支，主干为 0，分支为 1
     new_sent_len = ent_token_num + len(instance_tokens)
-    token_type_ids = [0] * new_sent_len # whether a token is in the first (0) or second (1) sentence
+    token_type_ids = [0] * new_sent_len  # whether a token is in the first (0) or second (1) sentence
     visible_matrix = np.zeros((new_sent_len, new_sent_len))
     hard_pos_idx = -1
     for i, ori_token in enumerate(instance_tokens):

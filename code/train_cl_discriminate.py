@@ -1,7 +1,7 @@
 import argparse
-from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, contrastive_tokenize, load_loss_function, \
-    cl_evaluation, define_logger, save_model, save_metric_log
+from utils.utils import parse_hps, get_exp_name, get_exp_path, load_data, quick_tokenize, contrastive_tokenize, contrastive_kb_tokenize, load_loss_function, cl_evaluation, define_logger, save_model, save_metric_log
 import random
+import spacy
 import numpy as np
 import torch
 from collections import defaultdict
@@ -72,8 +72,17 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
                 device = f"cuda:{hps.gpu}"
                 batch = tuple(term.to(device) for term in batch)
 
-            sent, seg_id, atten_mask, labels, length = batch
-            output = model.forward(sent, atten_mask, labels, seg_ids=seg_id, length=length, mode='train')
+            if hps.with_kb:
+                sent, seg_id, atten_mask, labels, position_ids = batch
+                print(f"sent: {sent.shape}")
+                print(f"seg_id: {seg_id.shape}")
+                print(f"atten_mask: {atten_mask.shape}")
+                print(f"labels: {labels.shape}")
+                print(f"position_ids: {position_ids.shape}")
+                output = model.forward(sent, atten_mask, labels, seg_ids=seg_id, position_ids=position_ids, mode='train')
+            else:
+                sent, seg_id, atten_mask, labels, length = batch
+                output = model.forward(sent, atten_mask, labels, seg_ids=seg_id, length=length, mode='train')
             loss = output.loss
 
             total_loss += loss.item()
@@ -146,15 +155,26 @@ def main():
 
     # contrastive Tokenization
     logger.info("[DATA] Tokenization and Padding for Data")
-    train_ids, train_mask, train_seg_ids, train_labels, train_length = contrastive_tokenize(train_data, hps,
-                                                                                            loading_mode="train")
-    dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = contrastive_tokenize(dev_data, hps,
-                                                                                  loading_mode=hps.devload)
+    if hps.with_kb:
+        nlp = spacy.load('en_core_web_sm')
+        train_ids, train_mask, train_seg_ids, train_labels, train_pos_ids = contrastive_kb_tokenize(train_data, hps, nlp, "train")
+        dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_pos_id = contrastive_kb_tokenize(train_data, hps, nlp, "dev")
 
-    # contrastive Dataset and DataLoader
-    logger.info("[INFO] Creating Dataset and splitting batch for data")
-    TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_length)
-    DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_length)
+        # contrastive Dataset and DataLoader
+        logger.info("[INFO] Creating Dataset and splitting batch for data")
+        TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_pos_ids)
+        DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_pos_id)
+    else:
+        train_ids, train_mask, train_seg_ids, train_labels, train_length = contrastive_tokenize(train_data, hps,
+                                                                                                loading_mode="train")
+        dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_length = contrastive_tokenize(dev_data, hps,
+                                                                                    loading_mode=hps.devload)
+
+        # contrastive Dataset and DataLoader
+        logger.info("[INFO] Creating Dataset and splitting batch for data")
+        TRAIN = TensorDataset(train_ids, train_seg_ids, train_mask, train_labels, train_length)
+        DEV = TensorDataset(dev_ids, dev_seg_ids, dev_mask, dev_labels, dev_length)
+
     # TEST = TensorDataset(test_ids, test_seg_ids, test_mask, test_labels, test_length)
     train_dataloader = DataLoader(TRAIN, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)
     dev_dataloader = DataLoader(DEV, batch_size=hps.batch_size, shuffle=hps.shuffle, drop_last=False)

@@ -21,6 +21,7 @@ import torch.nn as nn
 import json
 import pandas as pd
 import nltk.stem as ns
+from .kb_cl import get_all_x_features
 
 """
     Helper
@@ -28,6 +29,7 @@ import nltk.stem as ns
 
 ALPHA = 0.66
 LAMBDA = 1
+
 
 def parse_hps():
     parser = argparse.ArgumentParser(description='ECR-ANLP')
@@ -77,6 +79,7 @@ def parse_hps():
     parser.add_argument('--with_kb', type=str, default=False, help='Whether to use knowledge base')
     parser.add_argument('--with_cl', type=str, default=False, help='Whether to use knowledge base')
     parser.add_argument('--dual_projecter', type=bool, default=False, help='Whether to use cause/effect projecter')
+    parser.add_argument('--projecterlr', type=float, default=1e-3, help="the learning rate of the projecter")
     parser.add_argument('--score', type=str, default="cossim", help="scorer type")
     parser.add_argument('--scorerlr', type=float, default=1e-3, help="the learning rate of the causal scorer")
     parser.add_argument('--hard_negative_weight', type=float, default=0.0, help="hard negative weight")
@@ -347,6 +350,53 @@ def contrastive_tokenize(data, hps, loading_mode="train"):
     length_tensor = torch.LongTensor(length).view((data_size, 3)) - 1
 
     return input_ids_tensor, attention_mask_tensor, token_type_ids_tensor, labels_tensor, length_tensor
+
+
+def contrastive_kb_tokenize(data, hps, nlp, loading_mode="train"):
+    tokenizer = load_pretrained_tokenizer(hps)
+
+    instances = []
+    labels = []
+    input_ids = []
+    attention_mask = []
+    token_type_ids = []
+    length = []
+    for i, example in enumerate(data):
+        if loading_mode == "train":
+            premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
+            if example['label'] == 0:
+                instance = [premise, hyp0, hyp1]
+            else:
+                instance = [premise, hyp1, hyp0]
+            instances += instance
+            # labels: [['0' for 'ask-for-cause'/'1' for 'ask-for-effect',
+            #           1 for correct hypothesis
+            #           0 for wrong hypothesis] x n samples]
+            labels += [0, 1, 0] if example['ask-for'] == 'cause' else [1, 1, 0]
+        elif loading_mode == "dev":
+            premise, hyp0, hyp1 = example['premise'], example['hypothesis1'], example['hypothesis2']
+            instances += [premise, hyp0, hyp1]
+            label = [0, 0, 0]
+            label[example['label'] + 1] = 1
+            label[0] = 0 if example['ask-for'] == 'cause' else 1
+            labels += label
+
+    # tokenized_inputs = tokenizer(text=instances, padding=True, return_token_type_ids=True, return_length=True)
+    # input_ids = tokenized_inputs['input_ids']
+    # attention_mask = tokenized_inputs['attention_mask']
+    # token_type_ids = tokenized_inputs['token_type_ids']
+    # length = tokenized_inputs['length']
+    input_ids, attention_mask, token_type_ids, soft_pos_ids = get_all_x_features(tokenizer, instances, hps, nlp)
+
+    data_size = len(data)
+    max_len = 128
+    input_ids_tensor = torch.LongTensor(input_ids).view((data_size, 3, max_len))
+    attention_mask_tensor = torch.LongTensor(attention_mask).view((data_size, 3, max_len, max_len))
+    token_type_ids_tensor = torch.LongTensor(token_type_ids).view((data_size, 3, max_len))
+    soft_pos_ids_tensor = torch.LongTensor(soft_pos_ids).view((data_size, 3, max_len))
+    labels_tensor = torch.LongTensor(labels).view((data_size, 3))
+
+    return input_ids_tensor, attention_mask_tensor, token_type_ids_tensor, labels_tensor, soft_pos_ids_tensor
 
 
 def dual_tokenize(data, hps, mode="train"):
@@ -873,7 +923,7 @@ def gpt2_eg_evaluate(hps, data_loader, model, eval_step, exp_path, mode='dev', p
         CEQ=ceq
     )
     for metric in evaluation_output.keys():
-        if metric is not "CEQ":
+        if metric != "CEQ":
             evaluation_output[metric] /= num_instances
 
     if print_pred:
@@ -1150,11 +1200,10 @@ def bart_evaluate(model, data_loader, hps):
     return bleu1 / num_instances, bleu2 / num_instances, bleu3 / num_instances, bleu4 / num_instances, rouge1r / num_instances, rouge2r / num_instances, rougelr / num_instances
 
 
-
-
 """
     CEQ Metric.
 """
+
 
 def tokenize_ceq(sent):
     sent = sent.lower()
@@ -1165,7 +1214,7 @@ def tokenize_ceq(sent):
     for ith, word in enumerate(sent):
         word_n = lemmatizer.lemmatize(word, pos='n')
         word_v = lemmatizer.lemmatize(word, pos='v')
-        
+
         if word_n != word_v:
             if word_n == word:
                 sent[ith] = word_v
@@ -1175,35 +1224,33 @@ def tokenize_ceq(sent):
 
 
 def cs_word_ceq(w_cause, w_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
-    
     M = 62675002
-    
+
     try:
         p_w_cause = float(sum(causes[w_cause].values())) / M
     except KeyError:
         p_w_cause = 0
-        
+
     try:
         p_w_effect = float(sum(effects[w_effect].values())) / M
     except KeyError:
         p_w_effect = 0
-    
+
     try:
         p_join = float(causes[w_cause][w_effect]) / M
     except KeyError:
         p_join = 0
-    
+
     if p_join != 0:
         cs_nes = p_join / p_w_cause ** ALPHA / p_w_effect
-        cs_surf = p_join / p_w_cause / p_w_effect ** ALPHA 
+        cs_surf = p_join / p_w_cause / p_w_effect ** ALPHA
         cs = cs_nes ** LAMBDA * cs_surf ** (1 - LAMBDA)
     else:
         cs = float(2) / len(causes)
     return cs
-    
-    
+
+
 def cs_sent_ceq(s_cause, s_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
-    
     cs = 0
     num_zero = 0
     for w_cause in s_cause:
@@ -1211,12 +1258,12 @@ def cs_sent_ceq(s_cause, s_effect, causes, effects, ALPHA=ALPHA, LAMBDA=LAMBDA):
             cs_tmp = cs_word_ceq(w_cause, w_effect, effects, causes, ALPHA=ALPHA, LAMBDA=LAMBDA)
             cs = cs + cs_tmp
             if cs_tmp == 0:
-                num_zero = num_zero + 1        
+                num_zero = num_zero + 1
     cs = cs / (len(s_cause) + len(s_effect))
-    
+
     return cs
-    
-    
+
+
 def inf_ceq(data, i, hps, causes, effects):
     L = data.shape[0]
 
@@ -1237,7 +1284,7 @@ def inf_ceq(data, i, hps, causes, effects):
 
     # Causal_Strength(Cause, Truth + Effect)
     cs_3 = list()
-    
+
     # CEQ result
     cs = list()
 
@@ -1245,7 +1292,6 @@ def inf_ceq(data, i, hps, causes, effects):
     r = 0
 
     for ith in trange(L):
-
         premise_tmp = tokenize_ceq(premise[ith])
         hypothesis_tmp = tokenize_ceq(hypothesis[ith])
         premise_truth_tmp = tokenize_ceq(premise[ith] + truth[ith])
@@ -1261,16 +1307,17 @@ def inf_ceq(data, i, hps, causes, effects):
         cs.append(max(cs_tmp_2, cs_tmp_3) - cs_tmp_1)
         cnt += 1
         r += max(cs_tmp_2, cs_tmp_3) - cs_tmp_1
-        
+
     res = data.copy()
     res['Cause:Effect'] = cs_1
     res['Cause+Truth:Effect'] = cs_2
     res['Cause:Truth+Effect'] = cs_3
     res['CEQ'] = cs
-    
+
     res.to_csv(f"/data/data_CEQ/{hps.prompt}_CEQ_epoch{i}.csv")
     print("Average CEQ for " + str(i) + " is: ", (r / cnt))
     return (r / cnt)
+
 
 def CEQ_gen(hps, epoch):
     dev_data = [json.loads(line) for line in open('../../data/Explanation_Generation/dev.jsonl', 'r')]
@@ -1283,7 +1330,8 @@ def CEQ_gen(hps, epoch):
             e = d['effect']
             spamwriter.writerow([c, e])
 
-    with open('/data/data_CEQ/ceq_data1.csv') as in_1, open(f"/data/output/saved_model/{hps.prompt}_generate_gpt2/predictions/{hps.prompt}_eg_pred_epoc_{epoch}.csv") as in_2, open('/data/data_CEQ/ceq_data.csv', 'w') as out:
+    with open('/data/data_CEQ/ceq_data1.csv') as in_1, open(f"/data/output/saved_model/{hps.prompt}_generate_gpt2/predictions/{hps.prompt}_eg_pred_epoc_{epoch}.csv") as in_2, open(
+            '/data/data_CEQ/ceq_data.csv', 'w') as out:
         reader1 = csv.reader(in_1)
         reader2 = csv.reader(in_2)
         writer = csv.writer(out)
