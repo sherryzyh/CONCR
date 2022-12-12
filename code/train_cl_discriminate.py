@@ -74,11 +74,6 @@ def train(model, optimizer, train_dataloader, dev_dataloader, loss_function, log
 
             if hps.with_kb:
                 sent, seg_id, atten_mask, labels, position_ids = batch
-                print(f"sent: {sent.shape}")
-                print(f"seg_id: {seg_id.shape}")
-                print(f"atten_mask: {atten_mask.shape}")
-                print(f"labels: {labels.shape}")
-                print(f"position_ids: {position_ids.shape}")
                 output = model.forward(sent, atten_mask, labels, seg_ids=seg_id, position_ids=position_ids, mode='train')
             else:
                 sent, seg_id, atten_mask, labels, length = batch
