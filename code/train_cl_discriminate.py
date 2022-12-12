@@ -203,7 +203,7 @@ def main():
     # multi-Gpu training
     if hps.cuda:
         gpu_ids = [int(x) for x in hps.gpu.split(',')]
-        device = f"cuda:{hps.gpu}"
+        device = torch.device(f"cuda:{hps.gpu}" if torch.cuda.is_available() else "cpu")
         model = model.to(device)
         if len(gpu_ids) > 1:
             model = nn.DataParallel(model, device_ids=gpu_ids)
