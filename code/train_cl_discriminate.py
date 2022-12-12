@@ -153,7 +153,7 @@ def main():
     if hps.with_kb:
         nlp = spacy.load('en_core_web_sm')
         train_ids, train_mask, train_seg_ids, train_labels, train_pos_ids = contrastive_kb_tokenize(train_data, hps, nlp, "train")
-        dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_pos_id = contrastive_kb_tokenize(train_data, hps, nlp, "dev")
+        dev_ids, dev_mask, dev_seg_ids, dev_labels, dev_pos_id = contrastive_kb_tokenize(dev_data, hps, nlp, "dev")
 
         # contrastive Dataset and DataLoader
         logger.info("[INFO] Creating Dataset and splitting batch for data")
