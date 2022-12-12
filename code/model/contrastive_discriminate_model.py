@@ -73,27 +73,37 @@ class contrastive_reasoning_model(nn.Module):
                 effects[i] = hypothesis[i]
         return causes.to(device), effects.to(device)
 
-    def forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None, mode='train'):
+    def forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None, position_ids=None, mode='train'):
         if mode == 'train':
-            return self.cl_forward(input_ids, attention_mask, labels, seg_ids, length)
+            return self.cl_forward(input_ids, attention_mask, labels, seg_ids, length, position_ids)
         else:
-            return self.eval_forward(input_ids, attention_mask, labels, seg_ids, length)
+            return self.eval_forward(input_ids, attention_mask, labels, seg_ids, length, position_ids)
 
-    def forward_sent_encoding(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
+    def forward_sent_encoding(self, input_ids, attention_mask, labels, seg_ids=None, length=None, position_ids=None):
         batch_size = input_ids.size(0)
         num_sent = input_ids.size(1)
 
         # Flatten input for encoding
         input_ids = input_ids.view((-1, input_ids.size(-1)))  # (bs * num_sent, len)
-        attention_mask = attention_mask.view((-1, attention_mask.size(-1)))  # (bs * num_sent len)
+        if self.hps.with_kb:
+            max_len = attention_mask.size(-1)
+            attention_mask = attention_mask.view((-1, max_len, max_len))
+        else:
+            attention_mask = attention_mask.view((-1, attention_mask.size(-1)))  # (bs * num_sent len)
         if seg_ids is not None:
             seg_ids = seg_ids.view((-1, seg_ids.size(-1)))
         if length is not None:
             length = length.view(-1)
+        if position_ids is not None:
+            position_ids = position_ids.view((-1, seg_ids.size(-1)))
 
         if self.hps.model_name in ['bert', 'albert', 'gpt2']:
-            sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask,
-                                              token_type_ids=seg_ids)
+            if self.hps.with_kb:
+                sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask,
+                                                    token_type_ids=seg_ids, position_ids=position_ids)
+            else:
+                sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask,
+                                                    token_type_ids=seg_ids)
         else:
             sent_embs = self.sentence_encoder(input_ids=input_ids, attention_mask=attention_mask)
 
@@ -120,13 +130,13 @@ class contrastive_reasoning_model(nn.Module):
             effects = self.effect_projecter(effects)
         return causes, effects
 
-    def cl_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
+    def cl_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None, position_ids=None):
         batch_size = input_ids.size(0)
         num_sent = input_ids.size(1)
         device = input_ids.device
 
         # Sentence pooler encoding
-        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length)  # [bs, num_sent, hidden_size]
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length, position_ids)  # [bs, num_sent, hidden_size]
 
         # Separate representation
         premise, hypothesis_0 = pooler_output[:, 0], pooler_output[:, 1]
@@ -172,13 +182,13 @@ class contrastive_reasoning_model(nn.Module):
             logits=contrastive_causal_score
         )
 
-    def eval_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None):
+    def eval_forward(self, input_ids, attention_mask, labels, seg_ids=None, length=None, position_ids=None):
         batch_size = input_ids.size(0)
         num_sent = input_ids.size(1)
         device = input_ids.device
 
         # Sentence pooler encoding
-        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length)  # [bs, num_sent, hidden_size]
+        pooler_output = self.forward_sent_encoding(input_ids, attention_mask, labels, seg_ids, length, position_ids)  # [bs, num_sent, hidden_size]
 
         # Separate representation
         premise, hypothesis_0, hypothesis_1 = pooler_output[:, 0], pooler_output[:, 1], pooler_output[:, 2]
