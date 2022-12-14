@@ -4,7 +4,12 @@ CONCR ia a CONtrastive learning framework for Causal Reasoning that advances sta
 
 ## 2. Tasks Based on e-CARE Dataset
 **Causal Reasoning Task**
+
 Given one premise, denoted as $P$, and two hypotheses candidates, denoted as $H_0$ and $H_1$, this task is formulated as a two-stage task: Firstly, the model takes premise and one hypothesis as the input, and predict its causal score. With these two scores $S_0$ and $S_1$, the predictor select the hypothesis with a higher causal score as the output.
+
+**Explanation Generation Task**
+
+Given one premise $P$ and the correct hypothesis $H$, this task is asking the model to take $P$ and $H$ as the input and generate a free-text-formed explanation $E$ for this cause-effect pair.
 
 
 ## 3. Experiment Results
