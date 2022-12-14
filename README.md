@@ -15,6 +15,8 @@ Given one premise $P$ and the correct hypothesis $H$, this task is asking the mo
 
 
 ## 4. Future Work
+We have three potential future directions. Firstly, we can evaluate this framework on other causal reasoning tasks like COPA.
 
+Moreover, currently there is no appropriate metric for evaluating explanations. Therefore, designing a reasonable metric that can be used to measure the quality of the generated explanations in causal reasoning can be another future work.
 
-## 5. Citations
+In addition, while knowledge bases have the potential to provide the model with important domain knowledge, we have yet to find an effective method to leverage knowledge bases for causal reasoning. Future work can consider more advanced designs with the goal to find the relevant knowledge and inject it in a way that helps with causal reasoning.
