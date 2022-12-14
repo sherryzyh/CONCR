@@ -12,11 +12,12 @@ Given one premise, denoted as $P$, and two hypotheses candidates, denoted as $H_
 Given one premise $P$ and the correct hypothesis $H$, this task is asking the model to take $P$ and $H$ as the input and generate a free-text-formed explanation $E$ for this cause-effect pair.
 
 ## 3. Experiment Results
-| Languague Model        | Accuracy           | xx|
+| Languague Model        | Accuracy(%) on e-Care           | Accuracy(%) on CONCR|
 | ------------- |:-------------:| -----:|
-| col 3 is      | right-aligned | $1600 |
-| col 2 is      | centered      |   $12 |
-| zebra stripes | are neat      |    $1 |
+| BERT-base-uncased      | 77.25 | 78.52 |
+| BERT-base-cased      | 75.18      |   77.58 |
+| RoBERTa-base | 74.67      |  78.75 |
+| XLNet-base-cased | 73.73      |   77.49 |
 
 ## 4. Future Work
 We have three potential future directions. Firstly, we can evaluate this framework on other causal reasoning tasks like COPA.
