@@ -12,7 +12,7 @@ Given one premise, denoted as $P$, and two hypotheses candidates, denoted as $H_
 Given one premise $P$ and the correct hypothesis $H$, this task is asking the model to take $P$ and $H$ as the input and generate a free-text-formed explanation $E$ for this cause-effect pair.
 
 ## 3. Experiment Results
-| Languague Model        | Accuracy           |
+| Languague Model        | Accuracy           | xx|
 | ------------- |:-------------:| -----:|
 | col 3 is      | right-aligned | $1600 |
 | col 2 is      | centered      |   $12 |
