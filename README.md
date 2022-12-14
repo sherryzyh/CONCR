@@ -12,7 +12,30 @@ Given one premise, denoted as $P$, and two hypotheses candidates, denoted as $H_
 Given one premise $P$ and the correct hypothesis $H$, this task is asking the model to take $P$ and $H$ as the input and generate a free-text-formed explanation $E$ for this cause-effect pair.
 
 ## 3. Experiment Results
-
+\begin{table*}[htbp]
+\centering
+\begin{tabular}{c c c}
+\toprule
+\textbf{Language Model} &  \multicolumn{2}{c}{\textbf{Accuracy ($\%$)}}\\
+ & e-CARE \cite{du2022ecare} & CONCR \\
+\midrule
+BERT-base-uncased  & $77.25^\dagger$(\xmark) & $\mathbf{78.52}$\\
+BERT-base-cased & $75.18^\dagger$ & $\mathbf{77.58}$ \\
+RoBERTa-base & $74.67^\dagger$ & $\mathbf{78.75}$ \\
+XLNet-base-cased & $73.73^\dagger$ & $\mathbf{77.49}$ \\
+\midrule
+sup-SimCSE-BERT-base-uncased & (\xmark) & $\mathbf{78.71}$ \\
+sup-SimCSE-RoBERTa-base & (\xmark) & $\mathbf{79.27}$ \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\footnotesize
+\item[1] $^\dagger$: Our reproduced results. (\xmark): Not reported in e-CARE paper.
+% \item[2] (\xmark): Not reported in e-CARE paper.
+\end{tablenotes}
+\caption{Results of CONCR fine-tuned on different pre-trained language model as the sentence encoder.}
+\label{tb:results}
+\end{table*}
 
 ## 4. Future Work
 We have three potential future directions. Firstly, we can evaluate this framework on other causal reasoning tasks like COPA.
