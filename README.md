@@ -12,6 +12,8 @@ Given one premise, denoted as $P$, and two hypotheses candidates, denoted as $H_
 Given one premise $P$ and the correct hypothesis $H$, this task is asking the model to take $P$ and $H$ as the input and generate a free-text-formed explanation $E$ for this cause-effect pair.
 
 ## 3. Experiment Results
+On top of any pre-trained language model, CONCR performs stablely better than current state-of-the-art e-CARE.
+
 | Languague Model        | Accuracy(%) on e-Care           | Accuracy(%) on CONCR|
 | ---------------------------- |:-------------:| :----:|
 | BERT-base-uncased            | 77.25         | 78.52 |
