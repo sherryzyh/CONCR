@@ -13,7 +13,7 @@ Given one premise $P$ and the correct hypothesis $H$, this task is asking the mo
 
 ## 3. Experiment Results
 | Languague Model        | Accuracy(%) on e-Care           | Accuracy(%) on CONCR|
-| ---------------------------- |:-------------:| -----:|
+| ---------------------------- |:-------------:| :----:|
 | BERT-base-uncased            | 77.25         | 78.52 |
 | BERT-base-cased              | 75.18.        | 77.58 |
 | RoBERTa-base                 | 74.67.        | 78.75 |
