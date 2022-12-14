@@ -12,7 +12,8 @@ Given one premise, denoted as $P$, and two hypotheses candidates, denoted as $H_
 Given one premise $P$ and the correct hypothesis $H$, this task is asking the model to take $P$ and $H$ as the input and generate a free-text-formed explanation $E$ for this cause-effect pair.
 
 ## 3. Experiment Results
-
+|Language Model|Accuracy|
+| |e-Care|CONCR|
 
 ## 4. Future Work
 We have three potential future directions. Firstly, we can evaluate this framework on other causal reasoning tasks like COPA.
