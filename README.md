@@ -14,12 +14,12 @@ Given one premise $P$ and the correct hypothesis $H$, this task is asking the mo
 ## 3. Experiment Results
 | Languague Model        | Accuracy(%) on e-Care           | Accuracy(%) on CONCR|
 | ---------------------------- |:-------------:| -----:|
-| BERT-base-uncased            | 77.25 |78.52 |
-| BERT-base-cased              | 75.18 |77.58 |
-| RoBERTa-base                 | 74.67 | 78.75 |
-| XLNet-base-cased             | 73.73 | 77.49 |
-| sup-SimCSE-BERT-base-uncased | / | 78.71 |
-| sup-SimCSE-RoBERTa-base      | / | 79.27 |
+| BERT-base-uncased            | 77.25         | 78.52 |
+| BERT-base-cased              | 75.18.        | 77.58 |
+| RoBERTa-base                 | 74.67.        | 78.75 |
+| XLNet-base-cased             | 73.73         | 77.49 |
+| sup-SimCSE-BERT-base-uncased | /             | 78.71 |
+| sup-SimCSE-RoBERTa-base      | /             | 79.27 |
 
 ## 4. Future Work
 We have three potential future directions. Firstly, we can evaluate this framework on other causal reasoning tasks like COPA.
